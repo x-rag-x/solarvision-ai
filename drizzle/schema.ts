@@ -1,17 +1,7 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { float, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -22,7 +12,33 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const inspections = mysqlTable("inspections", {
+  id: int("id").autoincrement().primaryKey(),
+  inspectionId: varchar("inspectionId", { length: 64 }).notNull().unique(),
+  sourceFilename: varchar("sourceFilename", { length: 255 }).notNull(),
+  modelName: varchar("modelName", { length: 128 }).notNull(),
+  status: mysqlEnum("status", ["completed", "failed"]).notNull(),
+  processingTimeMs: float("processingTimeMs").notNull(),
+  inputImageUrl: text("inputImageUrl"),
+  annotatedImageUrl: text("annotatedImageUrl"),
+  detectionsCount: int("detectionsCount").notNull().default(0),
+  persistenceStatus: varchar("persistenceStatus", { length: 128 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const detections = mysqlTable("detections", {
+  id: int("id").autoincrement().primaryKey(),
+  inspectionId: varchar("inspectionId", { length: 64 }).notNull(),
+  defectType: varchar("defectType", { length: 128 }).notNull(),
+  confidence: float("confidence").notNull(),
+  x1: float("x1").notNull(),
+  y1: float("y1").notNull(),
+  x2: float("x2").notNull(),
+  y2: float("y2").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-// TODO: Add your tables here
+export type Inspection = typeof inspections.$inferSelect;
+export type Detection = typeof detections.$inferSelect;
