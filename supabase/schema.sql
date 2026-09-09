@@ -1,5 +1,5 @@
--- SolarVision AI M1 schema for a Supabase Postgres project.
--- Apply through Supabase SQL editor or the Supabase MCP migration tool.
+-- SolarVision AI M1 schema for the connected Supabase Postgres project.
+-- This migration is safe to re-run and uses RLS-scoped anon access for the app adapter.
 
 create extension if not exists pgcrypto;
 
@@ -33,9 +33,24 @@ create index if not exists detections_inspection_id_idx on public.detections(ins
 create index if not exists detections_defect_type_idx on public.detections(defect_type);
 create index if not exists inspections_created_at_idx on public.inspections(created_at desc);
 
+alter table public.inspections enable row level security;
+alter table public.detections enable row level security;
+
+drop policy if exists solarvision_inspections_read on public.inspections;
+drop policy if exists solarvision_inspections_insert on public.inspections;
+drop policy if exists solarvision_detections_read on public.detections;
+drop policy if exists solarvision_detections_insert on public.detections;
+
+create policy solarvision_inspections_read on public.inspections for select to anon, authenticated using (true);
+create policy solarvision_inspections_insert on public.inspections for insert to anon, authenticated with check (true);
+create policy solarvision_detections_read on public.detections for select to anon, authenticated using (true);
+create policy solarvision_detections_insert on public.detections for insert to anon, authenticated with check (true);
+
 insert into storage.buckets (id, name, public)
 values ('solarvision-images', 'solarvision-images', false)
-on conflict (id) do nothing;
+on conflict (id) do update set public = false;
 
--- If the service role key is used server-side, no public policy is required.
--- Keep the bucket private and serve images through authenticated signed URLs in production.
+drop policy if exists solarvision_images_read on storage.objects;
+drop policy if exists solarvision_images_insert on storage.objects;
+create policy solarvision_images_read on storage.objects for select to anon, authenticated using (bucket_id = 'solarvision-images');
+create policy solarvision_images_insert on storage.objects for insert to anon, authenticated with check (bucket_id = 'solarvision-images');

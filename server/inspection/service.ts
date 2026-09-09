@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -11,7 +12,8 @@ export type RunInspectionInput = { filename: string; mimeType: string; base64Dat
 
 function runProcess(args: string[], cwd: string) {
   return new Promise<void>((resolvePromise, reject) => {
-    const pythonExecutable = process.env.PYTHON_EXECUTABLE || (process.platform === "win32" ? "python" : join(cwd, "backend/.venv/bin/python3"));
+    const localPython = process.platform === "win32" ? join(cwd, "backend/.venv/Scripts/python.exe") : join(cwd, "backend/.venv/bin/python3");
+    const pythonExecutable = process.env.PYTHON_EXECUTABLE || (existsSync(localPython) ? localPython : process.platform === "win32" ? "python" : "python3");
     const child = spawn(pythonExecutable, args, { cwd, env: { ...process.env, PYTHONPATH: cwd } });
     let stderr = "";
     child.stderr.on("data", chunk => { stderr += chunk.toString(); });

@@ -138,21 +138,19 @@ The WebDev preview server is available through the project preview URL. The fron
 
 ## Supabase setup
 
-No Supabase project was attached to this session, so the adapter is present but reports `Integration pending` until credentials are supplied. To use Supabase:
+SolarVision AI is connected to the Supabase project `njpaifezreokzdczfszr` in `ap-northeast-2`. The connected schema has been applied through the Supabase MCP migration tool. It creates `inspections`, `detections`, indexes, RLS policies, and the private `solarvision-images` Storage bucket.
 
-1. Create a Supabase project.
-2. Apply [`supabase/schema.sql`](./supabase/schema.sql) in the SQL editor. It creates `inspections`, `detections`, indexes, and the private `solarvision-images` Storage bucket.
-3. Configure server-side environment values in the deployment secret manager:
+The current deployment uses the active Supabase anon/publishable key with explicit RLS policies:
 
 ```text
 SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<server-only-service-role-key>
+SUPABASE_ANON_KEY=<anon-or-publishable-key>
 SUPABASE_STORAGE_BUCKET=solarvision-images
 ```
 
-4. Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser. The adapter uses it only from `server/inspection/supabase.ts`.
+The adapter also supports `SUPABASE_SERVICE_ROLE_KEY` when a server-only key is intentionally supplied. That key is required for direct Supabase Storage uploads; without it, images use the managed WebDev storage fallback while metadata and detections can still persist through RLS-scoped Postgres REST writes. Never expose a service-role key to the browser.
 
-The WebDev template also includes a managed S3-compatible storage helper. When Supabase credentials are absent, the app uses managed storage if available and labels the persistence state explicitly. If neither storage nor a database is configured, the UI remains empty rather than inventing records.
+The WebDev template includes a managed S3-compatible storage helper. When Supabase credentials are absent, the app labels the persistence state explicitly. If neither storage nor a database is configured, the UI remains empty rather than inventing records.
 
 ## Database setup
 

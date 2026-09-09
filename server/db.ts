@@ -2,6 +2,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { detections, inspections, InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { getSupabaseDashboardStats, getSupabaseDefectAnalytics, getSupabaseRecentInspections } from "./inspection/supabase";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -62,6 +63,14 @@ export async function saveInspection(input: typeof inspections.$inferInsert, ite
 }
 
 export async function getRecentInspections(limit = 25) {
+  if (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)) {
+    try {
+      const rows = await getSupabaseRecentInspections(limit);
+      if (rows) return rows;
+    } catch (error) {
+      console.warn("[Supabase] Falling back to WebDev history:", error);
+    }
+  }
   const db = await getDb();
   if (!db) return [];
   return db.select().from(inspections).orderBy(desc(inspections.createdAt)).limit(limit);
@@ -77,6 +86,14 @@ export async function getInspectionById(inspectionId: string) {
 }
 
 export async function getDashboardStats() {
+  if (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)) {
+    try {
+      const stats = await getSupabaseDashboardStats();
+      if (stats) return stats;
+    } catch (error) {
+      console.warn("[Supabase] Falling back to WebDev dashboard stats:", error);
+    }
+  }
   const db = await getDb();
   if (!db) return { configured: false, inspections: 0, detections: 0, avgProcessingTimeMs: null as number | null, defectTypes: 0 };
   const [inspectionCount] = await db.select({ value: sql<number>`count(*)` }).from(inspections);
@@ -87,6 +104,14 @@ export async function getDashboardStats() {
 }
 
 export async function getDefectAnalytics() {
+  if (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)) {
+    try {
+      const analytics = await getSupabaseDefectAnalytics();
+      if (analytics) return analytics;
+    } catch (error) {
+      console.warn("[Supabase] Falling back to WebDev analytics:", error);
+    }
+  }
   const db = await getDb();
   if (!db) return { configured: false, byType: [], recentTrend: [] };
   const detectionRows = await db.select({ defectType: detections.defectType, confidence: detections.confidence }).from(detections).limit(5000);

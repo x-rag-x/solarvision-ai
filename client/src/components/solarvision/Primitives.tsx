@@ -2,12 +2,12 @@ import { cn } from "@/lib/utils";
 import { ArrowUpRight, Database, Info } from "lucide-react";
 
 export function PageIntro({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: React.ReactNode }) {
-  return <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="mb-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#079a86]">{eyebrow}</p><h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#071b29] sm:text-[38px]">{title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{description}</p></div>{action}</div>;
+  return <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="mb-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#F2B941]">{eyebrow}</p><h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#0B0909] sm:text-[38px]">{title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{description}</p></div>{action}</div>;
 }
 
 export function StatusBadge({ tone = "neutral", children }: { tone?: "success" | "warning" | "neutral" | "danger"; children: React.ReactNode }) {
-  const styles = { success: "bg-[#e6faf5] text-[#087e6d]", warning: "bg-[#fff4df] text-[#a96808]", neutral: "bg-slate-100 text-slate-600", danger: "bg-[#fff0f0] text-[#b64949]" };
-  return <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold", styles[tone])}><span className={cn("h-1.5 w-1.5 rounded-full", tone === "success" ? "bg-[#0bd3b0]" : tone === "warning" ? "bg-[#e3a336]" : tone === "danger" ? "bg-[#e06868]" : "bg-slate-400")} />{children}</span>;
+  const styles = { success: "bg-[#e6faf5] text-[#087e6d]", warning: "bg-[#FFF3C4] text-[#0B0909]", neutral: "bg-slate-100 text-slate-600", danger: "bg-[#fff0f0] text-[#b64949]" };
+  return <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold", styles[tone])}><span className={cn("h-1.5 w-1.5 rounded-full", tone === "success" ? "bg-[#F2B941]" : tone === "warning" ? "bg-[#FDCD5E]" : tone === "danger" ? "bg-[#e06868]" : "bg-slate-400")} />{children}</span>;
 }
 
 export function EmptyData({ title = "No data available", description = "Connect the persistence layer and complete an inspection to populate this view.", compact = false }: { title?: string; description?: string; compact?: boolean }) {
