@@ -136,6 +136,14 @@ pnpm dev
 
 The WebDev preview server is available through the project preview URL. The frontend uses tRPC hooks for all application data calls; there are no client-side Axios wrappers.
 
+### Custom notifications
+
+The dashboard header includes a persistent Operations Inbox. It shows pipeline readiness, Supabase connectivity, model-evaluation reminders, and inspection completion or failure events. Operators can mark items read, open the linked workflow, clear history, or dismiss the panel. Inspection events are emitted through the typed `solarvision:notification` browser event contract in `client/src/components/solarvision/notification-model.ts`.
+
+### Deployment reliability
+
+The production image uses `.dockerignore` to exclude local `node_modules`, build outputs, logs, and virtual environments from the upload context. The custom Dockerfile installs CPU-only PyTorch wheels and uses frozen pnpm dependencies, avoiding the CUDA-heavy default wheel and reducing deployment build time. The trained checkpoint remains included under `backend/models/best.pt` for the Python inference bridge.
+
 ## Supabase setup
 
 SolarVision AI is connected to the Supabase project `njpaifezreokzdczfszr` in `ap-northeast-2`. The connected schema has been applied through the Supabase MCP migration tool. It creates `inspections`, `detections`, indexes, RLS policies, and the private `solarvision-images` Storage bucket.

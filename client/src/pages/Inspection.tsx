@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, FileImage, Loader2, ScanLine, UploadCloud,
 import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
+import { createInspectionNotification } from "@/components/solarvision/notification-model";
 import { toast } from "sonner";
 
 type Result = Awaited<ReturnType<typeof trpc.inspection.run.useMutation>> extends never ? never : { inspectionId: string; sourceFilename: string; processingTimeMs: number; detections: Array<{ defect_type: string; confidence: number; x1: number; y1: number; x2: number; y2: number }>; annotatedImageDataUrl?: string | null; annotatedImageUrl?: string | null; persistence: string };
@@ -19,7 +20,7 @@ export default function Inspection() {
   const runMutation = trpc.inspection.run.useMutation();
 
   const chooseFile = (candidate?: File) => { if (!candidate || !candidate.type.startsWith("image/")) { toast.error("Please choose a readable EL/NIR image."); return; } setFile(candidate); setPreview(URL.createObjectURL(candidate)); setResult(null); };
-  const runInspection = async () => { if (!file) return; try { const base64Data = await fileToBase64(file); const response = await runMutation.mutateAsync({ filename: file.name, mimeType: file.type, base64Data }); setResult(response); toast.success(`Inspection complete — ${response.detections.length} detections returned.`); } catch (error) { toast.error(error instanceof Error ? error.message : "Inspection failed"); } };
+  const runInspection = async () => { if (!file) return; try { const base64Data = await fileToBase64(file); const response = await runMutation.mutateAsync({ filename: file.name, mimeType: file.type, base64Data }); setResult(response); toast.success(`Inspection complete — ${response.detections.length} detections returned.`); window.dispatchEvent(new CustomEvent("solarvision:notification", { detail: createInspectionNotification(file.name, response.detections.length) })); } catch (error) { const message = error instanceof Error ? error.message : "Inspection failed"; toast.error(message); window.dispatchEvent(new CustomEvent("solarvision:notification", { detail: createInspectionNotification(file.name, 0, message) })); } };
   const imageUrl = result?.annotatedImageDataUrl || result?.annotatedImageUrl || preview;
 
   return <div><PageIntro eyebrow="Computer vision" title="Run a new inspection." description="Upload an EL/NIR cell image, run the configured YOLO26n model, and review evidence before it enters the inspection history." action={<Link href="/history" className="text-sm font-semibold text-[#F2B941] hover:text-[#0B0909]">Open history →</Link>} />

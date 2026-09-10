@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { startLogin } from "@/const";
 import { cn } from "@/lib/utils";
+import NotificationCenter from "@/components/solarvision/NotificationCenter";
 import { Activity, BarChart3, BrainCircuit, Factory, FileClock, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Route, ScanLine, Settings2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -55,7 +56,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className={cn("min-h-screen transition-[padding] duration-200 lg:pl-[272px]", collapsed && "lg:pl-[84px]")}>
         <header className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b border-slate-200/80 bg-[#EBE8D2]/90 px-5 backdrop-blur lg:px-8">
           <div className="flex items-center gap-3"><button className="rounded-lg p-2 text-slate-500 hover:bg-white lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu className="h-5 w-5" /></button><button className="hidden rounded-lg p-2 text-slate-500 hover:bg-white lg:block" onClick={() => setCollapsed(value => !value)} aria-label="Toggle navigation">{collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}</button><div><p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">Smart manufacturing / M1</p><p className="text-sm font-semibold text-slate-800">{menuItems.find(item => item.path === location)?.label || "Overview"}</p></div></div>
-          <div className="flex items-center gap-3"><div className="hidden items-center gap-2 rounded-full border border-[#F2B941]/20 bg-[#FFF3C4] px-3 py-1.5 text-xs font-medium text-[#087e6d] sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#F2B941] shadow-[0_0_0_4px_rgba(11,211,176,0.12)]" />Inference pipeline ready</div><button onClick={() => navigate("/roadmap")} className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 md:flex"><Route className="h-3.5 w-3.5" />Roadmap</button></div>
+          <div className="flex items-center gap-3"><div className="hidden items-center gap-2 rounded-full border border-[#F2B941]/20 bg-[#FFF3C4] px-3 py-1.5 text-xs font-medium text-[#087e6d] sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#F2B941] shadow-[0_0_0_4px_rgba(242,185,65,0.16)]" />Inference pipeline ready</div><NotificationCenter /><button onClick={() => navigate("/roadmap")} className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 md:flex"><Route className="h-3.5 w-3.5" />Roadmap</button></div>
         </header>
         <main className="mx-auto max-w-[1440px] px-5 py-7 lg:px-8">{children}</main>
       </div>
