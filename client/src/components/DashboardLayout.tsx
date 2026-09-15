@@ -14,6 +14,7 @@ const menuItems = [
   { icon: FileClock, label: "Inspection history", path: "/history" },
   { icon: BarChart3, label: "Defect analytics", path: "/analytics" },
   { icon: BrainCircuit, label: "Model performance", path: "/model" },
+  { icon: Settings2, label: "Settings", path: "/settings" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

@@ -136,6 +136,8 @@ pnpm dev
 
 The WebDev preview server is available through the project preview URL. The frontend uses tRPC hooks for all application data calls; there are no client-side Axios wrappers.
 
+The current operator workflow includes `/inspect` as an alias for `/inspection`, `/inspection/:inspectionId` for persisted evidence review, and `/settings` for local operator preferences and runtime status. The Python service preserves `/health`, `/model`, and `/inspect`, and now also exposes `/api/health`, `/api/model`, and `/api/inspections` for REST clients. Inspection responses include detection summaries, confidence aggregates, local image URLs, and the annotated image data URL.
+
 ### Custom notifications
 
 The dashboard header includes a persistent Operations Inbox. It shows pipeline readiness, Supabase connectivity, model-evaluation reminders, and inspection completion or failure events. Operators can mark items read, open the linked workflow, clear history, or dismiss the panel. Inspection events are emitted through the typed `solarvision:notification` browser event contract in `client/src/components/solarvision/notification-model.ts`.

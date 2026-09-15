@@ -45,6 +45,8 @@ class YoloInferenceService:
                 "exists": False,
                 "model_name": "YOLO26n",
                 "class_names": [],
+                "confidence_threshold": settings.confidence_threshold,
+                "image_size": settings.image_size,
                 "independent_metrics_status": "No independent test metrics provided",
             }
         try:
@@ -57,6 +59,8 @@ class YoloInferenceService:
                 "exists": True,
                 "model_name": "YOLO26n",
                 "class_names": class_names,
+                "confidence_threshold": settings.confidence_threshold,
+                "image_size": settings.image_size,
                 "independent_metrics_status": "No independent test metrics provided",
             }
         except Exception as exc:
@@ -66,6 +70,8 @@ class YoloInferenceService:
                 "exists": True,
                 "model_name": "YOLO26n",
                 "class_names": [],
+                "confidence_threshold": settings.confidence_threshold,
+                "image_size": settings.image_size,
                 "independent_metrics_status": f"Model load error: {exc}",
             }
 
