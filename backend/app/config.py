@@ -14,9 +14,8 @@ class Settings:
     storage_dir: Path = Path(
         os.getenv("LOCAL_STORAGE_DIR", str(BASE_DIR / "storage"))
     )
-    confidence_threshold: float = float(
-        os.getenv("CONFIDENCE_THRESHOLD", "0.25")
-    )
+    confidence_threshold: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.25"))
+    iou_threshold: float = float(os.getenv("IOU_THRESHOLD", "0.7"))
     image_size: int = int(os.getenv("IMAGE_SIZE", "640"))
     supabase_url: str | None = os.getenv("SUPABASE_URL")
     supabase_service_role_key: str | None = os.getenv(

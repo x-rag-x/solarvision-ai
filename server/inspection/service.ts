@@ -34,7 +34,7 @@ export async function runInspection(input: RunInspectionInput) {
   await writeFile(inputPath, original);
   try {
     await runProcess(["-m", "backend.app.infer_cli", "--input", inputPath, "--annotated", annotatedPath, "--json", resultPath], projectRoot);
-    const result = JSON.parse(await readFile(resultPath, "utf-8")) as { processing_time_ms: number; detections: Array<{ defect_type: string; confidence: number; x1: number; y1: number; x2: number; y2: number }>; annotated_image_data_url: string };
+    const result = JSON.parse(await readFile(resultPath, "utf-8")) as { processing_time_ms: number; detections: Array<{ defect_type: string; confidence: number; x1: number; y1: number; x2: number; y2: number }>; annotated_image_data_url: string; inference_configuration?: { confidence_threshold: number } };
     const annotatedBuffer = await readFile(annotatedPath);
     let inputImageUrl: string | null = null;
     let annotatedImageUrl: string | null = null;
@@ -80,7 +80,7 @@ export async function runInspection(input: RunInspectionInput) {
         persistenceNotes.push(`supabase_postgres_error:${supabaseError instanceof Error ? supabaseError.message : "unknown"}`);
       }
     }
-    return { inspectionId, sourceFilename: input.filename, modelName: "YOLO26n", processingTimeMs: result.processing_time_ms, detections: result.detections, annotatedImageUrl, annotatedImageDataUrl: result.annotated_image_data_url, persistence: persistenceNotes.join(",") || "not_persisted" };
+    return { inspectionId, sourceFilename: input.filename, modelName: "YOLO26n", processingTimeMs: result.processing_time_ms, detections: result.detections, annotatedImageUrl, annotatedImageDataUrl: result.annotated_image_data_url, persistence: persistenceNotes.join(",") || "not_persisted", inferenceConfiguration: result.inference_configuration ?? { confidence_threshold: Number(process.env.CONFIDENCE_THRESHOLD || 0.25) } };
   } finally {
     await rm(workingDir, { recursive: true, force: true });
   }

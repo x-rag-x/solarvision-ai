@@ -125,6 +125,19 @@ curl -X POST http://localhost:8000/inspect \
   -F "file=@/path/to/cell-image.png"
 ```
 
+For development diagnostics, the CLI can compare the unchanged model at the standard threshold and lower thresholds without changing the production default:
+
+```bash
+backend/.venv/bin/python -m backend.app.infer_cli \
+  --input /path/to/el-image.png \
+  --annotated /tmp/standard-annotated.jpg \
+  --diagnostic \
+  --diagnostic-annotated /tmp/diagnostic-annotated.jpg \
+  --json /tmp/diagnostic-result.json
+```
+
+The diagnostic JSON reports raw candidates at confidence `0.001`, results at `0.25`, `0.10`, and `0.05`, image dimensions, class names, image size, confidence threshold, and IoU/NMS threshold. The standard production threshold remains `0.25` unless `CONFIDENCE_THRESHOLD` is explicitly configured.
+
 ## Web application
 
 ```bash

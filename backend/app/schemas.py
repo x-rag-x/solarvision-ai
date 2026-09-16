@@ -16,6 +16,28 @@ class InspectionSummary(BaseModel):
     highest_confidence: float | None = None
 
 
+class InferenceConfiguration(BaseModel):
+    confidence_threshold: float
+    iou_threshold: float
+    image_size: int
+    width: int
+    height: int
+    class_names: list[str]
+
+
+class ThresholdDiagnostic(BaseModel):
+    threshold: float
+    detection_count: int
+    detections: list[Detection]
+    processing_time_ms: float
+
+
+class InspectionDiagnostics(BaseModel):
+    raw_prediction_count: int
+    raw_prediction_threshold: float
+    threshold_comparison: list[ThresholdDiagnostic]
+
+
 class InspectionResponse(BaseModel):
     inspection_id: str
     status: str
@@ -28,6 +50,8 @@ class InspectionResponse(BaseModel):
     annotated_image_url: str | None = None
     annotated_image_data_url: str | None = None
     persistence: str
+    inference_configuration: InferenceConfiguration | None = None
+    diagnostics: InspectionDiagnostics | None = None
 
 
 class ModelInfo(BaseModel):
@@ -37,5 +61,6 @@ class ModelInfo(BaseModel):
     model_name: str
     class_names: list[str] = []
     confidence_threshold: float
+    iou_threshold: float
     image_size: int
     independent_metrics_status: str

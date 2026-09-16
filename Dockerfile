@@ -16,7 +16,7 @@ COPY backend/requirements.txt ./backend/requirements.txt
 RUN corepack enable && corepack pnpm install --frozen-lockfile
 
 # Use compact CPU wheels; the default PyPI torch package can pull large CUDA runtimes.
-RUN python3 -m pip install --break-system-packages --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchvision \
+RUN python3 -m pip install --break-system-packages --no-cache-dir --index-url https://download.pytorch.org/whl/cpu --no-deps torch torchvision \
   && python3 -m pip install --break-system-packages --no-cache-dir -r /app/backend/requirements.txt \
   && python3 -m pip uninstall --break-system-packages -y opencv-python opencv-contrib-python 2>/dev/null || true \
   && python3 -m pip install --break-system-packages --no-cache-dir --force-reinstall --no-deps opencv-python-headless==4.12.0.88 \

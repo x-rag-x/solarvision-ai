@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .inference import inference_service, image_to_data_url
-from .schemas import InspectionResponse, InspectionSummary, ModelInfo
+from .schemas import InferenceConfiguration, InspectionDiagnostics, InspectionResponse, InspectionSummary, ModelInfo, ThresholdDiagnostic
 
 app = FastAPI(title="SolarVision AI Inference API", version="1.1.0")
 
@@ -36,7 +36,7 @@ def model_info() -> ModelInfo:
     return ModelInfo(**inference_service.model_info())
 
 
-async def run_inspection(file: UploadFile) -> InspectionResponse:
+async def run_inspection(file: UploadFile, diagnostic: bool = False) -> InspectionResponse:
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=415, detail="Please upload an EL/NIR image file.")
     payload = await file.read()
@@ -62,6 +62,7 @@ async def run_inspection(file: UploadFile) -> InspectionResponse:
         average_confidence=round(sum(confidences) / len(confidences), 6) if confidences else None,
         highest_confidence=round(max(confidences), 6) if confidences else None,
     )
+    diagnostic_result = inference_service.diagnostics(image) if diagnostic else None
     return InspectionResponse(
         inspection_id=inspection_id,
         status="completed",
@@ -74,10 +75,12 @@ async def run_inspection(file: UploadFile) -> InspectionResponse:
         annotated_image_url=f"/storage/{output_path.name}",
         annotated_image_data_url=image_to_data_url(annotated),
         persistence="local_filesystem_pending_supabase" if not settings.supabase_configured else "supabase_adapter_ready",
+        inference_configuration=InferenceConfiguration(confidence_threshold=settings.confidence_threshold, iou_threshold=settings.iou_threshold, image_size=settings.image_size, width=int(image.shape[1]), height=int(image.shape[0]), class_names=inference_service.class_names()),
+        diagnostics=InspectionDiagnostics(raw_prediction_count=diagnostic_result["raw_prediction_count"], raw_prediction_threshold=diagnostic_result["raw_prediction_threshold"], threshold_comparison=[ThresholdDiagnostic(**item) for item in diagnostic_result["threshold_comparison"]]) if diagnostic_result else None,
     )
 
 
 @app.post("/inspect", response_model=InspectionResponse)
 @app.post("/api/inspections", response_model=InspectionResponse)
-async def inspect(file: UploadFile = File(...)) -> InspectionResponse:
-    return await run_inspection(file)
+async def inspect(file: UploadFile = File(...), diagnostic: bool = False) -> InspectionResponse:
+    return await run_inspection(file, diagnostic=diagnostic)
