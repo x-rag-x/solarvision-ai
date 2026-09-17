@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import time
-from pathlib import Path
 from typing import Any
 
 import cv2
@@ -63,24 +62,39 @@ class YoloInferenceService:
                 x1, y1, x2, y2 = [float(value) for value in box]
                 label = str(names.get(int(class_id), class_id)) if isinstance(names, dict) else str(class_id)
                 detections.append(Detection(defect_type=label, confidence=float(confidence_value), x1=x1, y1=y1, x2=x2, y2=y2))
-                cv2.rectangle(annotated, (int(x1), int(y1)), (int(x2), int(y2)), (0, 212, 180), 2)
-                cv2.putText(annotated, f"{label} {float(confidence_value):.2f}", (int(x1), max(18, int(y1) - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 212, 180), 2, cv2.LINE_AA)
         elapsed_ms = (time.perf_counter() - started) * 1000
         return detections, annotated, elapsed_ms
 
+    @staticmethod
+    def _annotate(image: np.ndarray, detections: list[Detection]) -> np.ndarray:
+        annotated = image.copy()
+        for detection in detections:
+            cv2.rectangle(annotated, (int(detection.x1), int(detection.y1)), (int(detection.x2), int(detection.y2)), (0, 212, 180), 2)
+            cv2.putText(annotated, f"{detection.defect_type} {detection.confidence:.2f}", (int(detection.x1), max(18, int(detection.y1) - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 212, 180), 2, cv2.LINE_AA)
+        return annotated
+
     def predict(self, image: np.ndarray, confidence: float | None = None) -> tuple[list[Detection], np.ndarray, float]:
-        return self._predict_once(image, settings.confidence_threshold if confidence is None else confidence)
+        detections, _, elapsed_ms = self._predict_once(image, settings.confidence_threshold if confidence is None else confidence)
+        return detections, self._annotate(image, detections), elapsed_ms
 
     def diagnostics(self, image: np.ndarray, thresholds: tuple[float, ...] = (0.25, 0.10, 0.05)) -> dict[str, Any]:
-        raw_detections, _, raw_time = self._predict_once(image, 0.001)
+        # Ultralytics' public predict() result is already NMS-filtered. The pre-NMS
+        # tensor is not exposed by this application path, so it is reported honestly
+        # as unavailable rather than being confused with the post-NMS candidate count.
+        candidates, _, raw_time = self._predict_once(image, 0.001)
+        image_height, image_width = image.shape[:2]
+        for candidate in candidates:
+            candidate.near_image_boundary = candidate.x1 <= 2 or candidate.y1 <= 2 or candidate.x2 >= image_width - 2 or candidate.y2 >= image_height - 2
         comparison: list[dict[str, Any]] = []
         diagnostic_annotated = image.copy()
         for threshold in thresholds:
-            detections, annotated, processing_time_ms = self._predict_once(image, threshold)
+            started = time.perf_counter()
+            detections = [candidate for candidate in candidates if candidate.confidence >= threshold]
+            processing_time_ms = (time.perf_counter() - started) * 1000
             comparison.append({"threshold": threshold, "detection_count": len(detections), "detections": [item.model_dump() for item in detections], "processing_time_ms": round(processing_time_ms, 2)})
             if threshold == min(thresholds):
-                diagnostic_annotated = annotated
-        return {"raw_prediction_count": len(raw_detections), "raw_prediction_threshold": 0.001, "threshold_comparison": comparison, "diagnostic_annotated": diagnostic_annotated, "raw_processing_time_ms": round(raw_time, 2)}
+                diagnostic_annotated = self._annotate(image, detections)
+        return {"pre_nms_raw_prediction_count": None, "pre_nms_raw_prediction_status": "Unavailable through the public Ultralytics predict() result used by this service", "nms_filtered_candidate_count": len(candidates), "candidate_confidence": 0.001, "threshold_comparison": comparison, "diagnostic_annotated": diagnostic_annotated, "nms_processing_time_ms": round(raw_time, 2)}
 
 
 def image_to_data_url(image: np.ndarray) -> str:

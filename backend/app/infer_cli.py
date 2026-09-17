@@ -31,14 +31,16 @@ def main() -> None:
         "class_names": inference_service.class_names(),
         "inference_configuration": {"confidence_threshold": settings.confidence_threshold, "iou_threshold": settings.iou_threshold, "image_size": settings.image_size, "preprocessing": "Ultralytics letterbox/normalization via model.predict"},
         "processing_time_ms": round(processing_time_ms, 2),
-        "raw_prediction_count": None,
+        "pre_nms_raw_prediction_count": None,
         "detections": [item.model_dump() for item in detections],
         "annotated_image_data_url": image_to_data_url(annotated),
     }
     if args.diagnostic:
         diagnostic = inference_service.diagnostics(image)
-        payload["raw_prediction_count"] = diagnostic["raw_prediction_count"]
-        payload["raw_prediction_threshold"] = diagnostic["raw_prediction_threshold"]
+        payload["pre_nms_raw_prediction_count"] = diagnostic["pre_nms_raw_prediction_count"]
+        payload["pre_nms_raw_prediction_status"] = diagnostic["pre_nms_raw_prediction_status"]
+        payload["nms_filtered_candidate_count"] = diagnostic["nms_filtered_candidate_count"]
+        payload["candidate_confidence"] = diagnostic["candidate_confidence"]
         payload["threshold_comparison"] = diagnostic["threshold_comparison"]
         if args.diagnostic_annotated:
             cv2.imwrite(args.diagnostic_annotated, diagnostic["diagnostic_annotated"])

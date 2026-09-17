@@ -8,6 +8,7 @@ class Detection(BaseModel):
     y1: float
     x2: float
     y2: float
+    near_image_boundary: bool | None = None
 
 
 class InspectionSummary(BaseModel):
@@ -33,8 +34,10 @@ class ThresholdDiagnostic(BaseModel):
 
 
 class InspectionDiagnostics(BaseModel):
-    raw_prediction_count: int
-    raw_prediction_threshold: float
+    pre_nms_raw_prediction_count: int | None
+    pre_nms_raw_prediction_status: str
+    nms_filtered_candidate_count: int
+    candidate_confidence: float
     threshold_comparison: list[ThresholdDiagnostic]
 
 

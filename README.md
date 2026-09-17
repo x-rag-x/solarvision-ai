@@ -97,6 +97,12 @@ If the configured checkpoint is missing, the FastAPI app fails startup with:
 
 The model class labels are read from the checkpoint at runtime. Independent precision, recall, mAP, and confusion-matrix values are not inferred from the checkpoint; provide a held-out evaluation report before adding those values to the model registry.
 
+### Training configuration status
+
+The delivered project contains the trained checkpoint but no dataset YAML, training script, augmentation configuration, training/validation manifest, or polarity-conversion record. The checkpoint metadata does embed `imgsz=640`, `iou=0.7`, `max_det=300`, `rect=false`, `augment=false`, `val=true`, `split=val`, `epochs=50`, `batch=16`, and the dataset reference `/content/solar_dataset/data.yaml`. It also records standard Ultralytics training arguments including HSV augmentation, horizontal flip, scale/translate, mosaic, RandAugment, and erasing settings. These are checkpoint metadata, not a substitute for the missing dataset or source script. The following remain **unavailable from project evidence**: training image sources, actual RGB versus grayscale input, image polarity, native EL dimensions, dataset YAML contents, and labeled train/validation file lists. The checkpoint metadata confirms the nine class labels, but it does not establish real-world accuracy or the dataset domain.
+
+At inference, the service passes the uploaded OpenCV image directly to Ultralytics `model.predict` with `imgsz=640`, `iou=0.70`, and the production `conf=0.25`. Ultralytics performs its standard resize/letterbox and tensor normalization. No application-level grayscale conversion, polarity inversion, contrast adjustment, or custom normalization is applied. This is compatible with a normal RGB/BGR image path, but compatibility with a grayscale or polarity-transformed training pipeline cannot be confirmed without the original training configuration.
+
 ## FastAPI backend
 
 Create a Python environment and install the inference dependencies:
@@ -136,7 +142,11 @@ backend/.venv/bin/python -m backend.app.infer_cli \
   --json /tmp/diagnostic-result.json
 ```
 
-The diagnostic JSON reports raw candidates at confidence `0.001`, results at `0.25`, `0.10`, and `0.05`, image dimensions, class names, image size, confidence threshold, and IoU/NMS threshold. The standard production threshold remains `0.25` unless `CONFIDENCE_THRESHOLD` is explicitly configured.
+The diagnostic JSON reports that pre-NMS raw tensors are unavailable through the public Ultralytics result used by this service, the NMS-filtered candidate count obtained at `conf=0.001`, final results at `0.25`, `0.10`, and `0.05`, image dimensions, class names, image size, confidence threshold, and IoU/NMS threshold. Candidate counts are not validated defects. The standard production threshold remains `0.25` unless `CONFIDENCE_THRESHOLD` is explicitly configured.
+
+### Suitable domain-validation image
+
+To validate this checkpoint for solar manufacturing, provide an original unannotated EL or NIR image from the intended camera and process, preferably with the native dimensions and bit depth preserved. Include known defect labels or bounding-box annotations when available, plus the cell orientation and any information about image polarity, grayscale/RGB encoding, exposure, cropping, and resizing. A single unlabeled image can test execution and qualitative alignment, but it cannot establish precision, recall, mAP, or defect-free status. Accuracy claims require a representative labeled held-out EL/NIR set that matches the training domain.
 
 ## Web application
 
