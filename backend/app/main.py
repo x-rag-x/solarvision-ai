@@ -76,7 +76,7 @@ async def run_inspection(file: UploadFile, diagnostic: bool = False) -> Inspecti
         annotated_image_data_url=image_to_data_url(annotated),
         persistence="local_filesystem_pending_supabase" if not settings.supabase_configured else "supabase_adapter_ready",
         inference_configuration=InferenceConfiguration(confidence_threshold=settings.confidence_threshold, iou_threshold=settings.iou_threshold, image_size=settings.image_size, width=int(image.shape[1]), height=int(image.shape[0]), class_names=inference_service.class_names()),
-        diagnostics=InspectionDiagnostics(pre_nms_raw_prediction_count=diagnostic_result["pre_nms_raw_prediction_count"], pre_nms_raw_prediction_status=diagnostic_result["pre_nms_raw_prediction_status"], nms_filtered_candidate_count=diagnostic_result["nms_filtered_candidate_count"], candidate_confidence=diagnostic_result["candidate_confidence"], threshold_comparison=[ThresholdDiagnostic(**item) for item in diagnostic_result["threshold_comparison"]]) if diagnostic_result else None,
+        diagnostics=InspectionDiagnostics(pre_nms_raw_prediction_count=diagnostic_result["pre_nms_raw_prediction_count"], pre_nms_raw_prediction_status=diagnostic_result["pre_nms_raw_prediction_status"], nms_filtered_candidate_count=diagnostic_result["nms_filtered_candidate_count"], candidate_confidence=diagnostic_result["candidate_confidence"], threshold_comparison=[ThresholdDiagnostic(**item) for item in diagnostic_result["threshold_comparison"]], image_properties=diagnostic_result["image_properties"]) if diagnostic_result else None,
     )
 
 

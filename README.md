@@ -138,11 +138,11 @@ backend/.venv/bin/python -m backend.app.infer_cli \
   --input /path/to/el-image.png \
   --annotated /tmp/standard-annotated.jpg \
   --diagnostic \
-  --diagnostic-annotated /tmp/diagnostic-annotated.jpg \
+  --diagnostic-dir /tmp/solarvision-diagnostics \
   --json /tmp/diagnostic-result.json
 ```
 
-The diagnostic JSON reports that pre-NMS raw tensors are unavailable through the public Ultralytics result used by this service, the NMS-filtered candidate count obtained at `conf=0.001`, final results at `0.25`, `0.10`, and `0.05`, image dimensions, class names, image size, confidence threshold, and IoU/NMS threshold. Candidate counts are not validated defects. The standard production threshold remains `0.25` unless `CONFIDENCE_THRESHOLD` is explicitly configured.
+The diagnostic JSON reports that pre-NMS raw tensors are unavailable through the public Ultralytics result used by this service, the NMS-filtered candidate count obtained at `conf=0.001`, final results at `0.25`, `0.10`, `0.05`, and `0.01`, image dimensions and pixel statistics, a polarity heuristic, class names, image size, confidence threshold, and IoU/NMS threshold. The CLI writes `annotated-conf-0.25.jpg`, `annotated-conf-0.10.jpg`, `annotated-conf-0.05.jpg`, and `annotated-conf-0.01.jpg` under the diagnostic directory. Candidate counts are not validated defects. The standard production threshold remains `0.25` unless `CONFIDENCE_THRESHOLD` is explicitly configured.
 
 ### Suitable domain-validation image
 

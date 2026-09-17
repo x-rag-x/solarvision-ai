@@ -39,6 +39,7 @@ class InspectionDiagnostics(BaseModel):
     nms_filtered_candidate_count: int
     candidate_confidence: float
     threshold_comparison: list[ThresholdDiagnostic]
+    image_properties: dict[str, object]
 
 
 class InspectionResponse(BaseModel):
