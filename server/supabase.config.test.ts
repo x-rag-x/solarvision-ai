@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 describe("supabase configuration", () => {
-  it("authenticates with the active publishable key and reads the inspections table", async () => {
+  it.skipIf(!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY)(
+    "authenticates with the active publishable key and reads the inspections table",
+    async () => {
     const url = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_ANON_KEY;
     expect(url).toBeTruthy();

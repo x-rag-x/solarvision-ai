@@ -2,6 +2,8 @@
 // Uploads via Forge Server presigned URL to S3 (PUT direct).
 // Downloads return /manus-storage/{key} paths served via 307 redirect.
 
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { ENV } from "./_core/env";
 
 function getForgeConfig() {
@@ -9,9 +11,7 @@ function getForgeConfig() {
   const forgeKey = ENV.forgeApiKey;
 
   if (!forgeUrl || !forgeKey) {
-    throw new Error(
-      "Storage config missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY",
-    );
+    return null;
   }
 
   return { forgeUrl: forgeUrl.replace(/\/+$/, ""), forgeKey };
@@ -33,7 +33,18 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
+  const forgeConfig = getForgeConfig();
+  if (!forgeConfig) {
+    const key = appendHashSuffix(normalizeKey(relKey));
+    const uploadsDir = resolve(process.cwd(), "uploads");
+    const filePath = join(uploadsDir, key);
+    await mkdir(dirname(filePath), { recursive: true });
+    const buffer = typeof data === "string" ? Buffer.from(data) : Buffer.from(data as any);
+    await writeFile(filePath, buffer);
+    return { key, url: `/uploads/${key.replace(/\\/g, "/")}` };
+  }
+
+  const { forgeUrl, forgeKey } = forgeConfig;
   const key = appendHashSuffix(normalizeKey(relKey));
 
   // 1. Get presigned PUT URL from Forge
@@ -72,13 +83,21 @@ export async function storagePut(
 }
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
+  const forgeConfig = getForgeConfig();
   const key = normalizeKey(relKey);
+  if (!forgeConfig) {
+    return { key, url: `/uploads/${key.replace(/\\/g, "/")}` };
+  }
   return { key, url: `/manus-storage/${key}` };
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
+  const forgeConfig = getForgeConfig();
   const key = normalizeKey(relKey);
+  if (!forgeConfig) {
+    return `/uploads/${key.replace(/\\/g, "/")}`;
+  }
+  const { forgeUrl, forgeKey } = forgeConfig;
 
   const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
   getUrl.searchParams.set("path", key);
@@ -95,3 +114,4 @@ export async function storageGetSignedUrl(relKey: string): Promise<string> {
   const { url } = (await resp.json()) as { url: string };
   return url;
 }
+

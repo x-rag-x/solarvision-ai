@@ -3,6 +3,13 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { detections, inspections, InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { getSupabaseDashboardStats, getSupabaseDefectAnalytics, getSupabaseRecentInspections } from "./inspection/supabase";
+import {
+  getSqliteDashboardStats,
+  getSqliteDefectAnalytics,
+  getSqliteInspectionById,
+  getSqliteRecentInspections,
+  saveSqliteInspection,
+} from "./sqlite";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -56,7 +63,7 @@ export async function getUserByOpenId(openId: string) {
 
 export async function saveInspection(input: typeof inspections.$inferInsert, items: Array<typeof detections.$inferInsert>) {
   const db = await getDb();
-  if (!db) return false;
+  if (!db) return saveSqliteInspection(input, items);
   await db.insert(inspections).values(input);
   if (items.length > 0) await db.insert(detections).values(items);
   return true;
@@ -72,13 +79,13 @@ export async function getRecentInspections(limit = 25) {
     }
   }
   const db = await getDb();
-  if (!db) return [];
+  if (!db) return getSqliteRecentInspections(limit);
   return db.select().from(inspections).orderBy(desc(inspections.createdAt)).limit(limit);
 }
 
 export async function getInspectionById(inspectionId: string) {
   const db = await getDb();
-  if (!db) return null;
+  if (!db) return getSqliteInspectionById(inspectionId);
   const inspection = (await db.select().from(inspections).where(eq(inspections.inspectionId, inspectionId)).limit(1))[0];
   if (!inspection) return null;
   const items = await db.select().from(detections).where(eq(detections.inspectionId, inspectionId)).limit(200);
@@ -95,7 +102,7 @@ export async function getDashboardStats() {
     }
   }
   const db = await getDb();
-  if (!db) return { configured: false, inspections: 0, detections: 0, avgProcessingTimeMs: null as number | null, defectTypes: 0 };
+  if (!db) return getSqliteDashboardStats();
   const [inspectionCount] = await db.select({ value: sql<number>`count(*)` }).from(inspections);
   const [detectionCount] = await db.select({ value: sql<number>`count(*)` }).from(detections);
   const [avgTime] = await db.select({ value: sql<number | null>`avg(${inspections.processingTimeMs})` }).from(inspections);
@@ -113,7 +120,7 @@ export async function getDefectAnalytics() {
     }
   }
   const db = await getDb();
-  if (!db) return { configured: false, byType: [], recentTrend: [] };
+  if (!db) return getSqliteDefectAnalytics();
   const detectionRows = await db.select({ defectType: detections.defectType, confidence: detections.confidence }).from(detections).limit(5000);
   const byTypeMap = new Map<string, { count: number; confidenceTotal: number }>();
   for (const row of detectionRows) {
