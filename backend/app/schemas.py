@@ -9,6 +9,7 @@ class Detection(BaseModel):
     x2: float
     y2: float
     near_image_boundary: bool | None = None
+    class_id: int | None = None
 
 
 class InspectionSummary(BaseModel):
@@ -68,3 +69,9 @@ class ModelInfo(BaseModel):
     iou_threshold: float
     image_size: int
     independent_metrics_status: str
+    checkpoint_sha256: str | None = None
+    parameter_count: int | None = None
+    training_epochs: int | None = None
+    training_date: str | None = None
+    training_dataset_ref: str | None = None
+    training_val_metrics: dict[str, float] | None = None

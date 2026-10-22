@@ -2,9 +2,12 @@
 // Uploads via Forge Server presigned URL to S3 (PUT direct).
 // Downloads return /manus-storage/{key} paths served via 307 redirect.
 
+import { existsSync, realpathSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve, isAbsolute } from "node:path";
 import { ENV } from "./_core/env";
+
+const UPLOADS_DIR = resolve(process.cwd(), "uploads");
 
 function getForgeConfig() {
   const forgeUrl = ENV.forgeApiUrl;
@@ -17,8 +20,86 @@ function getForgeConfig() {
   return { forgeUrl: forgeUrl.replace(/\/+$/, ""), forgeKey };
 }
 
+/**
+ * Validates and canonicalizes a relative storage key against directory traversal,
+ * absolute paths, null-byte injection, URL-encoded escapes, and symlink breakouts.
+ */
+export function safeCanonicalKey(relKey: string): { key: string; absolutePath: string } {
+  if (!relKey || typeof relKey !== "string") {
+    throw new Error("Invalid storage key: key must be a non-empty string.");
+  }
+
+  // 1. Poison Null Byte Check
+  if (relKey.includes("\0") || relKey.includes("%00")) {
+    throw new Error("Invalid storage key: null byte injection detected.");
+  }
+
+  // 2. Multi-pass URI Decoding to prevent %2e%2e%2f and double-encoding bypasses
+  let decoded = relKey;
+  let prev = "";
+  let passes = 0;
+  while (decoded !== prev && passes < 3) {
+    prev = decoded;
+    try {
+      if (decoded.includes("%")) {
+        decoded = decodeURIComponent(decoded);
+      }
+    } catch {
+      break;
+    }
+    passes++;
+  }
+
+  if (decoded.includes("\0")) {
+    throw new Error("Invalid storage key: null byte injection detected.");
+  }
+
+  // 3. Strip Windows drive letters (C:) and UNC network prefixes (\\)
+  let clean = decoded.replace(/^[a-zA-Z]:[/\\]+/, "").replace(/^[/\\]+/, "");
+
+  // 4. Normalize all slashes to forward slashes
+  clean = clean.replace(/\\/g, "/");
+
+  // 5. Sanitize and eliminate relative traversal segments (.., .)
+  const segments = clean
+    .split("/")
+    .map(s => s.trim())
+    .filter(seg => seg.length > 0 && seg !== "." && seg !== "..");
+
+  if (segments.length === 0) {
+    throw new Error("Invalid storage key: path resolves to empty or root path.");
+  }
+
+  const sanitizedKey = segments.join("/");
+  const candidatePath = resolve(UPLOADS_DIR, sanitizedKey);
+
+  // 6. Canonical path containment check against trusted root
+  const relFromRoot = relative(UPLOADS_DIR, candidatePath);
+  if (relFromRoot.startsWith("..") || isAbsolute(relFromRoot)) {
+    throw new Error("Storage security violation: key escapes authorized storage root.");
+  }
+
+  // 7. Symlink Escape Verification for existing paths
+  if (existsSync(candidatePath)) {
+    try {
+      const realCandidate = realpathSync(candidatePath);
+      const realRoot = realpathSync(UPLOADS_DIR);
+      const realRel = relative(realRoot, realCandidate);
+      if (realRel.startsWith("..") || isAbsolute(realRel)) {
+        throw new Error("Storage security violation: symlink escapes authorized storage root.");
+      }
+    } catch (symlinkErr: any) {
+      if (symlinkErr.message?.includes("Storage security violation")) {
+        throw symlinkErr;
+      }
+    }
+  }
+
+  return { key: sanitizedKey, absolutePath: candidatePath };
+}
+
 function normalizeKey(relKey: string): string {
-  return relKey.replace(/^\/+/, "");
+  return safeCanonicalKey(relKey).key;
 }
 
 function appendHashSuffix(relKey: string): string {
@@ -33,23 +114,29 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
+  const { key: safeKey } = safeCanonicalKey(relKey);
+  const hashedKey = appendHashSuffix(safeKey);
+
+  // Re-verify the hashed key to ensure no boundary escapes
+  const filePath = resolve(UPLOADS_DIR, hashedKey);
+  const relFromRoot = relative(UPLOADS_DIR, filePath);
+  if (relFromRoot.startsWith("..") || isAbsolute(relFromRoot)) {
+    throw new Error("Storage security violation: destination path escapes authorized storage root.");
+  }
+
   const forgeConfig = getForgeConfig();
   if (!forgeConfig) {
-    const key = appendHashSuffix(normalizeKey(relKey));
-    const uploadsDir = resolve(process.cwd(), "uploads");
-    const filePath = join(uploadsDir, key);
     await mkdir(dirname(filePath), { recursive: true });
     const buffer = typeof data === "string" ? Buffer.from(data) : Buffer.from(data as any);
     await writeFile(filePath, buffer);
-    return { key, url: `/uploads/${key.replace(/\\/g, "/")}` };
+    return { key: hashedKey, url: `/uploads/${hashedKey.replace(/\\/g, "/")}` };
   }
 
   const { forgeUrl, forgeKey } = forgeConfig;
-  const key = appendHashSuffix(normalizeKey(relKey));
 
   // 1. Get presigned PUT URL from Forge
   const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
-  presignUrl.searchParams.set("path", key);
+  presignUrl.searchParams.set("path", hashedKey);
 
   const presignResp = await fetch(presignUrl, {
     headers: { Authorization: `Bearer ${forgeKey}` },
@@ -79,28 +166,28 @@ export async function storagePut(
     throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
   }
 
-  return { key, url: `/manus-storage/${key}` };
+  return { key: hashedKey, url: `/manus-storage/${hashedKey}` };
 }
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
+  const { key: safeKey } = safeCanonicalKey(relKey);
   const forgeConfig = getForgeConfig();
-  const key = normalizeKey(relKey);
   if (!forgeConfig) {
-    return { key, url: `/uploads/${key.replace(/\\/g, "/")}` };
+    return { key: safeKey, url: `/uploads/${safeKey.replace(/\\/g, "/")}` };
   }
-  return { key, url: `/manus-storage/${key}` };
+  return { key: safeKey, url: `/manus-storage/${safeKey}` };
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
+  const { key: safeKey } = safeCanonicalKey(relKey);
   const forgeConfig = getForgeConfig();
-  const key = normalizeKey(relKey);
   if (!forgeConfig) {
-    return `/uploads/${key.replace(/\\/g, "/")}`;
+    return `/uploads/${safeKey.replace(/\\/g, "/")}`;
   }
   const { forgeUrl, forgeKey } = forgeConfig;
 
   const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
-  getUrl.searchParams.set("path", key);
+  getUrl.searchParams.set("path", safeKey);
 
   const resp = await fetch(getUrl, {
     headers: { Authorization: `Bearer ${forgeKey}` },
@@ -114,4 +201,3 @@ export async function storageGetSignedUrl(relKey: string): Promise<string> {
   const { url } = (await resp.json()) as { url: string };
   return url;
 }
-

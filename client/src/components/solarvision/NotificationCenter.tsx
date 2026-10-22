@@ -8,7 +8,7 @@ type NotificationItem = { id: string; title: string; message: string; tone: Noti
 const seed: NotificationItem[] = [
   { id: "pipeline-ready", title: "Inference pipeline ready", message: "YOLO26n checkpoint is available for a new inspection.", tone: "success", timestamp: Date.now() - 1000 * 60 * 4, href: "/inspection" },
   { id: "database-connected", title: "Supabase connected", message: "Inspection history and analytics are reading from live project data.", tone: "info", timestamp: Date.now() - 1000 * 60 * 12, href: "/history" },
-  { id: "metrics-pending", title: "Evaluation metrics pending", message: "Add a held-out report before showing precision, recall, or mAP.", tone: "warning", timestamp: Date.now() - 1000 * 60 * 38, href: "/model" },
+  { id: "benchmark-ready", title: "Historical evaluation benchmark", message: "mAP@50: 69.75% recorded on 792 held-out images. Note: not live production certification.", tone: "info", timestamp: Date.now() - 1000 * 60 * 38, href: "/model" },
 ];
 
 const toneStyles: Record<NotificationTone, { icon: typeof Check; iconClass: string; dot: string }> = {

@@ -12,12 +12,44 @@ import Roadmap from "./pages/Roadmap";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
 import InspectionDetail from "./pages/InspectionDetail";
+import { RootCauseOverview } from "./features/rootCause";
+import { PredictiveQualityOverview } from "./features/predictiveQuality";
+import { PredictiveMaintenanceOverview } from "./features/predictiveMaintenance";
 import { Route, Switch } from "wouter";
 
 function Router() {
-  return <DashboardLayout><Switch><Route path="/" component={Home} /><Route path="/inspection" component={Inspection} /><Route path="/inspect" component={Inspection} /><Route path="/inspection/:inspectionId" component={InspectionDetail} /><Route path="/history" component={History} /><Route path="/analytics" component={Analytics} /><Route path="/model" component={ModelPerformance} /><Route path="/settings" component={Settings} /><Route path="/roadmap" component={Roadmap} /><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch></DashboardLayout>;
+  return (
+    <DashboardLayout>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/inspection" component={Inspection} />
+        <Route path="/inspect" component={Inspection} />
+        <Route path="/inspection/:inspectionId" component={InspectionDetail} />
+        <Route path="/root-cause" component={RootCauseOverview} />
+        <Route path="/root-cause/:inspectionId" component={RootCauseOverview} />
+        <Route path="/predictive-quality" component={PredictiveQualityOverview} />
+        <Route path="/predictive-maintenance" component={PredictiveMaintenanceOverview} />
+        <Route path="/history" component={History} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/model" component={ModelPerformance} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/roadmap" component={Roadmap} />
+        <Route path="/404" component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </DashboardLayout>
+  );
 }
 
 export default function App() {
-  return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="light">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
 }

@@ -1,0 +1,618 @@
+{
+  "contract_version": "1.0.0",
+  "domain_disclaimer": "SYNTHETIC BENCHMARK DISCLAIMER: The UCI AI4I 2020 dataset was generated via physical milling simulation reflecting synthetic operational failure rules. NOT CERTIFIED FOR DIRECT SOLAR PHOTOVOLTAIC FACTORY MACHINERY (TABBERS, LAMINATORS, FURNACES) WITHOUT AUTHENTIC IN-SITU PHYSICAL TELEMETRY.",
+  "metadata": {
+    "model_name": "SolarVision_Gradient_Boosting",
+    "model_version": "4.0.0-benchmark",
+    "created_at": "2026-10-22T13:34:29.175883+00:00",
+    "domain": "ai4i_synthetic_benchmark",
+    "framework": "PyTorch_NumPy_SciPy",
+    "dataset_name": "UCI AI4I 2020 Predictive Maintenance Dataset",
+    "dataset_doi": "10.24432/C5HS5C",
+    "dataset_license": "Creative Commons Attribution 4.0 International (CC-BY 4.0)",
+    "dataset_sha256": "dc6630cd9b1f0f853922fad78a1b6436570d3f1ec863f1dd5c4340ac56bc8a8e",
+    "training_samples": 6999,
+    "val_samples": 1499,
+    "test_samples": 1502,
+    "input_feature_count": 6,
+    "feature_names": [
+      "type",
+      "air_temperature_k",
+      "process_temperature_k",
+      "rotational_speed_rpm",
+      "torque_nm",
+      "tool_wear_min"
+    ],
+    "ordered_feature_schema": [
+      {
+        "index": "0",
+        "name": "type",
+        "type": "categorical",
+        "values": "L, M, H",
+        "description": "Product quality tier (Low 50%, Med 30%, High 20%)"
+      },
+      {
+        "index": "1",
+        "name": "air_temperature_k",
+        "type": "float",
+        "unit": "Kelvin",
+        "description": "Ambient air temperature (295.3 - 304.5 K)"
+      },
+      {
+        "index": "2",
+        "name": "process_temperature_k",
+        "type": "float",
+        "unit": "Kelvin",
+        "description": "Component process temperature (305.7 - 313.8 K)"
+      },
+      {
+        "index": "3",
+        "name": "rotational_speed_rpm",
+        "type": "float",
+        "unit": "RPM",
+        "description": "Spindle rotational speed (1168 - 2886 rpm)"
+      },
+      {
+        "index": "4",
+        "name": "torque_nm",
+        "type": "float",
+        "unit": "Nm",
+        "description": "Spindle torque output (3.8 - 76.6 Nm)"
+      },
+      {
+        "index": "5",
+        "name": "tool_wear_min",
+        "type": "float",
+        "unit": "Minutes",
+        "description": "Cumulative tool wear time (0 - 253 min)"
+      }
+    ],
+    "split_strategy": "stratified_random",
+    "target_labels": {
+      "healthy": 0,
+      "failure": 1
+    },
+    "optimal_threshold": 0.1981,
+    "test_metrics": {
+      "accuracy": 0.9667,
+      "balanced_accuracy": 0.7325,
+      "precision_failure": 0.5208,
+      "recall_failure": 0.4808,
+      "specificity_normal": 0.9841,
+      "f1_failure": 0.5,
+      "f1_normal": 0.9828,
+      "macro_f1": 0.7414,
+      "weighted_f1": 0.9661,
+      "roc_auc": 0.9307,
+      "pr_auc": 0.4796,
+      "true_positives": 25,
+      "false_positives": 23,
+      "true_negatives": 1427,
+      "false_negatives": 27,
+      "total_samples": 1502,
+      "threshold_used": 0.1981
+    },
+    "calibration_metrics": {
+      "expected_calibration_error_ece": 0.0113,
+      "max_calibration_error_mce": 0.8439,
+      "brier_score": 0.0236,
+      "is_calibrated": true,
+      "bins": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "count": 1369,
+          "accuracy": 0.0088,
+          "confidence": 0.0116,
+          "gap": 0.0028
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "count": 34,
+          "accuracy": 0.2059,
+          "confidence": 0.1484,
+          "gap": 0.0574
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.3,
+          "count": 49,
+          "accuracy": 0.1429,
+          "confidence": 0.2567,
+          "gap": 0.1138
+        },
+        {
+          "bin_low": 0.3,
+          "bin_high": 0.4,
+          "count": 3,
+          "accuracy": 0.3333,
+          "confidence": 0.3521,
+          "gap": 0.0188
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "count": 11,
+          "accuracy": 0.1818,
+          "confidence": 0.438,
+          "gap": 0.2561
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6,
+          "count": 21,
+          "accuracy": 0.5714,
+          "confidence": 0.5612,
+          "gap": 0.0102
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.7,
+          "count": 9,
+          "accuracy": 0.7778,
+          "confidence": 0.62,
+          "gap": 0.1578
+        },
+        {
+          "bin_low": 0.7,
+          "bin_high": 0.8,
+          "count": 4,
+          "accuracy": 0.75,
+          "confidence": 0.727,
+          "gap": 0.023
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "count": 1,
+          "accuracy": 0.0,
+          "confidence": 0.8439,
+          "gap": 0.8439
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "count": 1,
+          "accuracy": 1.0,
+          "confidence": 0.9151,
+          "gap": 0.0849
+        }
+      ]
+    },
+    "reproducibility": {
+      "random_state": 42,
+      "features_used": 6,
+      "features_excluded": [
+        "UDI",
+        "Product ID",
+        "Machine failure",
+        "TWF",
+        "HDF",
+        "PWF",
+        "OSF",
+        "RNF"
+      ]
+    },
+    "status": "BENCHMARK_EVALUATED_READY",
+    "is_synthetic_benchmark": true,
+    "synthetic_disclaimer": "SYNTHETIC BENCHMARK DISCLAIMER: The UCI AI4I 2020 dataset was generated via physical milling simulation reflecting synthetic operational failure rules. NOT CERTIFIED FOR DIRECT SOLAR PHOTOVOLTAIC FACTORY MACHINERY (TABBERS, LAMINATORS, FURNACES) WITHOUT AUTHENTIC IN-SITU PHYSICAL TELEMETRY."
+  },
+  "model_payload": {
+    "model_type": "GradientBoostedMaintenanceClassifier",
+    "n_estimators": 60,
+    "learning_rate": 0.08,
+    "initial_log_odds": -3.3510138421327,
+    "stumps": [
+      {
+        "feature_idx": 4,
+        "threshold": 1.6288645267486572,
+        "left_val": -0.3761202129315416,
+        "right_val": 6.638387172368577
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.8501133918762207,
+        "left_val": 2.7262135748072565,
+        "right_val": -0.5942272058344154
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.2690547704696655,
+        "left_val": -0.46687705582683753,
+        "right_val": 2.587295976461933
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.2636241277404099,
+        "right_val": 4.57448798628884
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.8501133918762207,
+        "left_val": 1.7750222758042815,
+        "right_val": -0.560590854905116
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.8501133918762207,
+        "left_val": 1.4403289710306635,
+        "right_val": -0.5390119654550941
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.2507479217652008,
+        "right_val": 3.0866906264850993
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.2690547704696655,
+        "left_val": -0.4217237016377137,
+        "right_val": 1.5206056395949878
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.8501133918762207,
+        "left_val": 1.0843256166033899,
+        "right_val": -0.5043400344970502
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.3683586120605469,
+        "left_val": -0.30034659478446957,
+        "right_val": 1.8765054396453529
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.0291815996170044,
+        "left_val": -0.45825571139794274,
+        "right_val": 1.0070492224747198
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.2271967144778804,
+        "right_val": 1.9777623354409652
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.3768757599247498,
+        "right_val": 1.0756502889425916
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.8501133918762207,
+        "left_val": 0.8514864411508299,
+        "right_val": -0.469450750092397
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.196108341217041,
+        "left_val": -0.32161091698213906,
+        "right_val": 1.1480357410508293
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.7446852326393127,
+        "left_val": 0.6852911629258799,
+        "right_val": -0.494748829188562
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.3589511965924193,
+        "right_val": 0.9249544295630716
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.6288645267486572,
+        "left_val": -0.26987287919136493,
+        "right_val": 1.1621332438371272
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.3683586120605469,
+        "left_val": -0.259513737997809,
+        "right_val": 1.1895740500483185
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.0291815996170044,
+        "left_val": -0.39848792870756056,
+        "right_val": 0.6855377487364505
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.3412235393288632,
+        "right_val": 0.8087880710807719
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.196108341217041,
+        "left_val": -0.2911350078536662,
+        "right_val": 0.8914405461613958
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.7446852326393127,
+        "left_val": 0.5372411032830695,
+        "right_val": -0.44991167938945265
+      },
+      {
+        "feature_idx": 4,
+        "threshold": -1.6404071092605588,
+        "left_val": 2.441071766005206,
+        "right_val": -0.10615034531038854
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.321750862154097,
+        "right_val": 0.7088373493801403
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.7446852326393127,
+        "left_val": 0.4918022126170106,
+        "right_val": -0.43257934068239895
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.18788118749751032,
+        "right_val": 1.2046144914995935
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.6288645267486572,
+        "left_val": -0.2340349201217879,
+        "right_val": 0.862022316360294
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.196108341217041,
+        "left_val": -0.2653291794507939,
+        "right_val": 0.7384713575237781
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.30549492237497633,
+        "right_val": 0.6341368062778545
+      },
+      {
+        "feature_idx": 4,
+        "threshold": -1.6404071092605588,
+        "left_val": 2.0311337444559556,
+        "right_val": -0.09936164547406243
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 0.39951446652412415,
+        "left_val": -0.5056166325660203,
+        "right_val": 0.3736232771098052
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 0.39951446652412415,
+        "left_val": -0.48421254447228523,
+        "right_val": 0.33587656081218237
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.196108341217041,
+        "left_val": -0.2510724520078456,
+        "right_val": 0.6659937882719817
+      },
+      {
+        "feature_idx": 4,
+        "threshold": -1.6404071092605588,
+        "left_val": 1.8188757147284387,
+        "right_val": -0.09574503942667116
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.2872403400620404,
+        "right_val": 0.5647196224612445
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.6288645267486572,
+        "left_val": -0.2128997204628814,
+        "right_val": 0.732561813247445
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.16384817304907096,
+        "right_val": 0.9296922095838663
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 0.39951446652412415,
+        "left_val": -0.46405060248751406,
+        "right_val": 0.30888552930577673
+      },
+      {
+        "feature_idx": 4,
+        "threshold": -1.6404071092605588,
+        "left_val": 1.6006855633300792,
+        "right_val": -0.09111273673218574
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.2714814722063557,
+        "right_val": 0.5096299163522889
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.8501133918762207,
+        "left_val": 0.4011753870648011,
+        "right_val": -0.3323185418804417
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.196108341217041,
+        "left_val": -0.22843068263461244,
+        "right_val": 0.5693295339362956
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.0291815996170044,
+        "left_val": -0.3013388481194417,
+        "right_val": 0.4015433303099354
+      },
+      {
+        "feature_idx": 3,
+        "threshold": 1.824432611465454,
+        "left_val": -0.08511626225581823,
+        "right_val": 1.4689871505573102
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.25685654103537997,
+        "right_val": 0.4626606872288242
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.14899492562591996,
+        "right_val": 0.7957367497270622
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 0.39951446652412415,
+        "left_val": -0.4323428031705837,
+        "right_val": 0.26942269924465617
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.6288645267486572,
+        "left_val": -0.18379657296279067,
+        "right_val": 0.5750080565236092
+      },
+      {
+        "feature_idx": 4,
+        "threshold": -1.6404071092605588,
+        "left_val": 1.3099841499861238,
+        "right_val": -0.08404409626676768
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.3683586120605469,
+        "left_val": -0.1771149146874728,
+        "right_val": 0.5876485108636559
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 0.39951446652412415,
+        "left_val": -0.41202422594276084,
+        "right_val": 0.24649413830575997
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.2438467755756744,
+        "right_val": 0.4242573873859007
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.5406087636947632,
+        "left_val": -0.13549725037005395,
+        "right_val": 0.6833303876102952
+      },
+      {
+        "feature_idx": 3,
+        "threshold": -0.644805908203125,
+        "left_val": 0.26599174125300956,
+        "right_val": -0.346320376872589
+      },
+      {
+        "feature_idx": 4,
+        "threshold": -1.6404071092605588,
+        "left_val": 1.2191506193612363,
+        "right_val": -0.08156128700640225
+      },
+      {
+        "feature_idx": 1,
+        "threshold": 0.7421309947967529,
+        "left_val": -0.22907356489084113,
+        "right_val": 0.3842545651832084
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 1.6288645267486572,
+        "left_val": -0.17019658258178263,
+        "right_val": 0.5138942029848281
+      },
+      {
+        "feature_idx": 5,
+        "threshold": 1.196108341217041,
+        "left_val": -0.19327386090811743,
+        "right_val": 0.4416996475035132
+      },
+      {
+        "feature_idx": 4,
+        "threshold": 0.39951446652412415,
+        "left_val": -0.38179099209692774,
+        "right_val": 0.2156098207298518
+      }
+    ],
+    "is_fitted": true,
+    "calibrator": {
+      "method": "platt",
+      "is_fitted": true,
+      "platt_a": 1.6794401543636652,
+      "platt_b": 1.7687945074117444
+    }
+  },
+  "preprocessor": {
+    "n_input_features": 6,
+    "n_output_features": 6,
+    "feature_names": [
+      "type",
+      "air_temperature_k",
+      "process_temperature_k",
+      "rotational_speed_rpm",
+      "torque_nm",
+      "tool_wear_min"
+    ],
+    "type_mapping": {
+      "L": 0.0,
+      "M": 1.0,
+      "H": 2.0
+    },
+    "clip_zscore": 5.0,
+    "medians": [
+      0.0,
+      300.1,
+      310.1,
+      1504.0,
+      40.1,
+      107.0
+    ],
+    "means": [
+      0.4983569081297328,
+      300.0139591370201,
+      310.0063009001292,
+      1539.2053150450065,
+      40.00274324903567,
+      107.61580225746535
+    ],
+    "stds": [
+      0.6719037515144912,
+      2.0023969845447254,
+      1.4813838428208232,
+      180.21750204775338,
+      10.005286553250842,
+      63.86059825709669
+    ]
+  }
+}

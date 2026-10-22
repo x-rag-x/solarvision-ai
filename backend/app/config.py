@@ -25,6 +25,12 @@ class Settings:
         "SUPABASE_STORAGE_BUCKET",
         "solarvision-images",
     )
+    max_upload_size_bytes: int = int(
+        os.getenv("MAX_UPLOAD_SIZE_BYTES", str(50 * 1024 * 1024))
+    )
+    request_timeout_seconds: float = float(
+        os.getenv("REQUEST_TIMEOUT_SECONDS", "60.0")
+    )
 
     def ensure_paths(self) -> None:
         self.storage_dir.mkdir(parents=True, exist_ok=True)

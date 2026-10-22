@@ -1,0 +1,28 @@
+{
+  "model_id": "model-2-root-cause-demo",
+  "model_name": "SolarVision Model 2 (Demonstration Prototype)",
+  "version": "2.0.0-demo",
+  "status": "DATASET_BLOCKED_DEMONSTRATION_ONLY",
+  "is_production_ready": false,
+  "framework": "numpy_vectorized_random_forest",
+  "feature_schema_version": "2.0.0",
+  "input_dimensions": 48,
+  "target_classes": [
+    "thermal_stress_soldering",
+    "squeegee_pressure_drift",
+    "screen_mesh_clogging",
+    "firing_thermal_profile_excursion",
+    "mechanical_handling_impact",
+    "lamination_pressure_imbalance",
+    "ingot_thermal_gradient",
+    "chemical_texturing_contamination",
+    "nominal_process_variation"
+  ],
+  "test_metrics": {
+    "synthetic_macro_f1": 0.4056,
+    "synthetic_accuracy": 0.5,
+    "synthetic_ece": 0.3227
+  },
+  "disclaimer": "SYNTHETIC FIXTURE DEMONSTRATION ONLY. NOT VALID FOR PRODUCTION INFERENCE.",
+  "generated_at": "2026-10-22T05:31:11.085880+00:00"
+}

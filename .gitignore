@@ -1,120 +1,104 @@
-# Dependencies
-**/node_modules
+# Dependencies & Virtual Environments
+node_modules/
 .pnpm-store/
-**/.venv/
-**/__pycache__/
-*.pyc
-backend/storage/*
-!backend/storage/.gitkeep
+.venv/
+venv/
+ENV/
+env/
 
-# Build outputs
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Build outputs & bundler caches
 dist/
 build/
-*.dist
+*.tsbuildinfo
+.cache/
+.parcel-cache/
+.vite/
+.eslintcache
+coverage/
+test-results/
+playwright-report/
 
-# Environment variables
+# Environment variables & secrets
 .env
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.backup
+*.pem
+*.key
 
-# IDE and editor files
+# IDE and OS generated files
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Logs
-logs
+# Logs, Runtime & Agent Sessions
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-
-# Runtime data
-pids
+.manus-logs/
 *.pid
 *.seed
 *.pid.lock
-*.bak
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-
-# Gatsby files
-.cache/
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
 tmp/
 temp/
 
-# Database
+# Large Datasets, Raw Data, Storage & Runs
+data/
+backend/predictive_quality_data/
+backend/predictive_maintenance_data/
+backend/root_cause_data/
+backend/evaluation/
+backend/storage/
+backend/models/candidates/
+uploads/
+downloads/
+runs/
+
+# Large binaries, models & checkpoints (keep production best.pt)
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.ckpt
+!backend/models/best.pt
+
+# Databases
 *.db
+*.db-journal
 *.sqlite
 *.sqlite3
+*.sqlite3-journal
 
-# Webdev artifacts (checkpoint zips, migrations, etc.)
+# Archives & compressed files
+*.rar
+*.zip
+*.tar
+*.gz
+*.7z
+*.bz2
+
+# Webdev / Manus tooling artifacts
 .webdev/
-
-# Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
-backend/storage/
+
+# Documentation directory
+docs/

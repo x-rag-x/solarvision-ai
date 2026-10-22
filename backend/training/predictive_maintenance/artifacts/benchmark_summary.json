@@ -1,0 +1,1896 @@
+{
+  "stratified_70_15_15": {
+    "dataset_metadata": {
+      "dataset_name": "UCI AI4I 2020 Predictive Maintenance Dataset",
+      "source_url": "https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset",
+      "doi": "10.24432/C5HS5C",
+      "license": "Creative Commons Attribution 4.0 International (CC-BY 4.0)",
+      "citation": "Matzka, S. (2020). Explainable Artificial Intelligence for Predictive Maintenance: A General Approach with Automated Feature Engineering. IEEE International Conference on Emerging Technologies and Factory Automation (ETFA 2020).",
+      "total_instances": 10000,
+      "raw_feature_count": 14,
+      "input_feature_count": 6,
+      "normal_instances": 9661,
+      "failure_instances": 339,
+      "failure_rate_pct": 3.39,
+      "imbalance_ratio": 28.5,
+      "is_synthetic": true,
+      "synthetic_generation_details": "Physically modeled simulation reflecting real milling process logs with mathematical failure rules for Tool Wear Failure (TWF), Heat Dissipation Failure (HDF), Power Failure (PWF), Overstrain Failure (OSF), and Random Failure (RNF).",
+      "sha256_hash": "dc6630cd9b1f0f853922fad78a1b6436570d3f1ec863f1dd5c4340ac56bc8a8e",
+      "target_name": "Machine failure (binary: 0 = Normal, 1 = Failure)",
+      "feature_names": [
+        "type",
+        "air_temperature_k",
+        "process_temperature_k",
+        "rotational_speed_rpm",
+        "torque_nm",
+        "tool_wear_min"
+      ],
+      "failure_modes": [
+        "TWF",
+        "HDF",
+        "PWF",
+        "OSF",
+        "RNF"
+      ]
+    },
+    "splits": {
+      "train": {
+        "name": "train",
+        "total_samples": 6999,
+        "normal_count": 6762,
+        "failure_count": 237,
+        "failure_rate_pct": 3.39
+      },
+      "val": {
+        "name": "val",
+        "total_samples": 1499,
+        "normal_count": 1449,
+        "failure_count": 50,
+        "failure_rate_pct": 3.34
+      },
+      "test": {
+        "name": "test",
+        "total_samples": 1502,
+        "normal_count": 1450,
+        "failure_count": 52,
+        "failure_rate_pct": 3.46
+      }
+    },
+    "preprocessing": {
+      "input_features": 6,
+      "output_features": 6,
+      "feature_names": [
+        "type",
+        "air_temperature_k",
+        "process_temperature_k",
+        "rotational_speed_rpm",
+        "torque_nm",
+        "tool_wear_min"
+      ]
+    },
+    "models_evaluated": {
+      "Majority_Baseline": {
+        "default_threshold_0_50": {
+          "accuracy": 0.9654,
+          "balanced_accuracy": 0.5,
+          "precision_failure": 0.0,
+          "recall_failure": 0.0,
+          "specificity_normal": 1.0,
+          "f1_failure": 0.0,
+          "f1_normal": 0.9824,
+          "macro_f1": 0.4912,
+          "weighted_f1": 0.9484,
+          "roc_auc": 0.5,
+          "pr_auc": 0.5173,
+          "true_positives": 0,
+          "false_positives": 0,
+          "true_negatives": 1450,
+          "false_negatives": 52,
+          "total_samples": 1502,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9654,
+          "balanced_accuracy": 0.5,
+          "precision_failure": 0.0,
+          "recall_failure": 0.0,
+          "specificity_normal": 1.0,
+          "f1_failure": 0.0,
+          "f1_normal": 0.9824,
+          "macro_f1": 0.4912,
+          "weighted_f1": 0.9484,
+          "roc_auc": 0.5,
+          "pr_auc": 0.5173,
+          "true_positives": 0,
+          "false_positives": 0,
+          "true_negatives": 1450,
+          "false_negatives": 52,
+          "total_samples": 1502,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold_value": 0.5,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.0008,
+          "max_calibration_error_mce": 0.0008,
+          "brier_score": 0.0334,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1502,
+              "accuracy": 0.0346,
+              "confidence": 0.0339,
+              "gap": 0.0008
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0008,
+          "max_calibration_error_mce": 0.0008,
+          "brier_score": 0.0334,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1502,
+              "accuracy": 0.0346,
+              "confidence": 0.0339,
+              "gap": 0.0008
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        }
+      },
+      "CostSensitive_LogisticRegression": {
+        "default_threshold_0_50": {
+          "accuracy": 0.8076,
+          "balanced_accuracy": 0.8447,
+          "precision_failure": 0.1398,
+          "recall_failure": 0.8846,
+          "specificity_normal": 0.8048,
+          "f1_failure": 0.2415,
+          "f1_normal": 0.8898,
+          "macro_f1": 0.5656,
+          "weighted_f1": 0.8674,
+          "roc_auc": 0.9132,
+          "pr_auc": 0.3628,
+          "true_positives": 46,
+          "false_positives": 283,
+          "true_negatives": 1167,
+          "false_negatives": 6,
+          "total_samples": 1502,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9534,
+          "balanced_accuracy": 0.6885,
+          "precision_failure": 0.35,
+          "recall_failure": 0.4038,
+          "specificity_normal": 0.9731,
+          "f1_failure": 0.375,
+          "f1_normal": 0.9758,
+          "macro_f1": 0.6754,
+          "weighted_f1": 0.955,
+          "roc_auc": 0.9132,
+          "pr_auc": 0.3628,
+          "true_positives": 21,
+          "false_positives": 39,
+          "true_negatives": 1411,
+          "false_negatives": 31,
+          "total_samples": 1502,
+          "threshold_used": 0.8712
+        },
+        "optimal_threshold_value": 0.8712,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.2506,
+          "max_calibration_error_mce": 0.6279,
+          "brier_score": 0.1326,
+          "is_calibrated": false,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 509,
+              "accuracy": 0.002,
+              "confidence": 0.0463,
+              "gap": 0.0444
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 267,
+              "accuracy": 0.0037,
+              "confidence": 0.1461,
+              "gap": 0.1423
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 165,
+              "accuracy": 0.0,
+              "confidence": 0.2457,
+              "gap": 0.2457
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 128,
+              "accuracy": 0.0156,
+              "confidence": 0.3517,
+              "gap": 0.3361
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 104,
+              "accuracy": 0.0192,
+              "confidence": 0.447,
+              "gap": 0.4277
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 93,
+              "accuracy": 0.0323,
+              "confidence": 0.5455,
+              "gap": 0.5132
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 73,
+              "accuracy": 0.0548,
+              "confidence": 0.653,
+              "gap": 0.5982
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 70,
+              "accuracy": 0.1143,
+              "confidence": 0.7422,
+              "gap": 0.6279
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 46,
+              "accuracy": 0.2826,
+              "confidence": 0.8529,
+              "gap": 0.5703
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 47,
+              "accuracy": 0.383,
+              "confidence": 0.9399,
+              "gap": 0.5569
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0098,
+          "max_calibration_error_mce": 0.3638,
+          "brier_score": 0.0267,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1374,
+              "accuracy": 0.0153,
+              "confidence": 0.0193,
+              "gap": 0.004
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 71,
+              "accuracy": 0.1549,
+              "confidence": 0.1377,
+              "gap": 0.0173
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 30,
+              "accuracy": 0.3333,
+              "confidence": 0.2542,
+              "gap": 0.0791
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 17,
+              "accuracy": 0.1765,
+              "confidence": 0.3468,
+              "gap": 0.1703
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 2,
+              "accuracy": 0.5,
+              "confidence": 0.4672,
+              "gap": 0.0328
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 3,
+              "accuracy": 0.3333,
+              "confidence": 0.5704,
+              "gap": 0.2371
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 5,
+              "accuracy": 1.0,
+              "confidence": 0.6362,
+              "gap": 0.3638
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        }
+      },
+      "Balanced_RandomForest": {
+        "default_threshold_0_50": {
+          "accuracy": 0.9447,
+          "balanced_accuracy": 0.9436,
+          "precision_failure": 0.3798,
+          "recall_failure": 0.9423,
+          "specificity_normal": 0.9448,
+          "f1_failure": 0.5414,
+          "f1_normal": 0.9706,
+          "macro_f1": 0.756,
+          "weighted_f1": 0.9557,
+          "roc_auc": 0.9855,
+          "pr_auc": 0.8429,
+          "true_positives": 49,
+          "false_positives": 80,
+          "true_negatives": 1370,
+          "false_negatives": 3,
+          "total_samples": 1502,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9854,
+          "balanced_accuracy": 0.8997,
+          "precision_failure": 0.7778,
+          "recall_failure": 0.8077,
+          "specificity_normal": 0.9917,
+          "f1_failure": 0.7925,
+          "f1_normal": 0.9924,
+          "macro_f1": 0.8924,
+          "weighted_f1": 0.9855,
+          "roc_auc": 0.9855,
+          "pr_auc": 0.8429,
+          "true_positives": 42,
+          "false_positives": 12,
+          "true_negatives": 1438,
+          "false_negatives": 10,
+          "total_samples": 1502,
+          "threshold_used": 0.7326
+        },
+        "optimal_threshold_value": 0.7326,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.0742,
+          "max_calibration_error_mce": 0.5758,
+          "brier_score": 0.0346,
+          "is_calibrated": false,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1186,
+              "accuracy": 0.0017,
+              "confidence": 0.0208,
+              "gap": 0.0191
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 83,
+              "accuracy": 0.0,
+              "confidence": 0.1414,
+              "gap": 0.1414
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 37,
+              "accuracy": 0.0,
+              "confidence": 0.2401,
+              "gap": 0.2401
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 39,
+              "accuracy": 0.0256,
+              "confidence": 0.3499,
+              "gap": 0.3242
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 28,
+              "accuracy": 0.0,
+              "confidence": 0.4576,
+              "gap": 0.4576
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 38,
+              "accuracy": 0.0526,
+              "confidence": 0.5454,
+              "gap": 0.4928
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 27,
+              "accuracy": 0.0741,
+              "confidence": 0.6499,
+              "gap": 0.5758
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 25,
+              "accuracy": 0.44,
+              "confidence": 0.7447,
+              "gap": 0.3047
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 19,
+              "accuracy": 0.8421,
+              "confidence": 0.8458,
+              "gap": 0.0037
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 20,
+              "accuracy": 0.9,
+              "confidence": 0.9383,
+              "gap": 0.0383
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.012,
+          "max_calibration_error_mce": 0.3239,
+          "brier_score": 0.0126,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1363,
+              "accuracy": 0.0022,
+              "confidence": 0.0043,
+              "gap": 0.0021
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 53,
+              "accuracy": 0.0377,
+              "confidence": 0.1411,
+              "gap": 0.1034
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 20,
+              "accuracy": 0.1,
+              "confidence": 0.2463,
+              "gap": 0.1463
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 21,
+              "accuracy": 0.3333,
+              "confidence": 0.352,
+              "gap": 0.0187
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 8,
+              "accuracy": 0.625,
+              "confidence": 0.462,
+              "gap": 0.163
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 8,
+              "accuracy": 0.875,
+              "confidence": 0.5511,
+              "gap": 0.3239
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 6,
+              "accuracy": 0.8333,
+              "confidence": 0.6496,
+              "gap": 0.1837
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 6,
+              "accuracy": 0.8333,
+              "confidence": 0.765,
+              "gap": 0.0683
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 10,
+              "accuracy": 0.9,
+              "confidence": 0.8406,
+              "gap": 0.0594
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 7,
+              "accuracy": 1.0,
+              "confidence": 0.942,
+              "gap": 0.058
+            }
+          ]
+        }
+      },
+      "Gradient_Boosting": {
+        "default_threshold_0_50": {
+          "accuracy": 0.966,
+          "balanced_accuracy": 0.5096,
+          "precision_failure": 1.0,
+          "recall_failure": 0.0192,
+          "specificity_normal": 1.0,
+          "f1_failure": 0.0377,
+          "f1_normal": 0.9827,
+          "macro_f1": 0.5102,
+          "weighted_f1": 0.95,
+          "roc_auc": 0.9307,
+          "pr_auc": 0.4796,
+          "true_positives": 1,
+          "false_positives": 0,
+          "true_negatives": 1450,
+          "false_negatives": 51,
+          "total_samples": 1502,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9667,
+          "balanced_accuracy": 0.7325,
+          "precision_failure": 0.5208,
+          "recall_failure": 0.4808,
+          "specificity_normal": 0.9841,
+          "f1_failure": 0.5,
+          "f1_normal": 0.9828,
+          "macro_f1": 0.7414,
+          "weighted_f1": 0.9661,
+          "roc_auc": 0.9307,
+          "pr_auc": 0.4796,
+          "true_positives": 25,
+          "false_positives": 23,
+          "true_negatives": 1427,
+          "false_negatives": 27,
+          "total_samples": 1502,
+          "threshold_used": 0.1981
+        },
+        "optimal_threshold_value": 0.1981,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.0164,
+          "max_calibration_error_mce": 0.4159,
+          "brier_score": 0.0254,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1378,
+              "accuracy": 0.0109,
+              "confidence": 0.0201,
+              "gap": 0.0092
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 76,
+              "accuracy": 0.1579,
+              "confidence": 0.1432,
+              "gap": 0.0147
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 33,
+              "accuracy": 0.4242,
+              "confidence": 0.2665,
+              "gap": 0.1578
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 12,
+              "accuracy": 0.75,
+              "confidence": 0.3341,
+              "gap": 0.4159
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 2,
+              "accuracy": 0.5,
+              "confidence": 0.4446,
+              "gap": 0.0554
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 1,
+              "accuracy": 1.0,
+              "confidence": 0.5897,
+              "gap": 0.4103
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0113,
+          "max_calibration_error_mce": 0.8439,
+          "brier_score": 0.0236,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1369,
+              "accuracy": 0.0088,
+              "confidence": 0.0116,
+              "gap": 0.0028
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 34,
+              "accuracy": 0.2059,
+              "confidence": 0.1484,
+              "gap": 0.0574
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 49,
+              "accuracy": 0.1429,
+              "confidence": 0.2567,
+              "gap": 0.1138
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 3,
+              "accuracy": 0.3333,
+              "confidence": 0.3521,
+              "gap": 0.0188
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 11,
+              "accuracy": 0.1818,
+              "confidence": 0.438,
+              "gap": 0.2561
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 21,
+              "accuracy": 0.5714,
+              "confidence": 0.5612,
+              "gap": 0.0102
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 9,
+              "accuracy": 0.7778,
+              "confidence": 0.62,
+              "gap": 0.1578
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 4,
+              "accuracy": 0.75,
+              "confidence": 0.727,
+              "gap": 0.023
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 1,
+              "accuracy": 0.0,
+              "confidence": 0.8439,
+              "gap": 0.8439
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 1,
+              "accuracy": 1.0,
+              "confidence": 0.9151,
+              "gap": 0.0849
+            }
+          ]
+        }
+      }
+    },
+    "best_model_name": "Balanced_RandomForest",
+    "exported_model_name": "Gradient_Boosting",
+    "artifact_path": "D:\\Apps\\Programs\\SolarVisionAI\\solarvision-ai\\backend\\training\\predictive_maintenance\\artifacts\\model4_predictive_maintenance.json",
+    "sha256_hash": "0077b83c2db23f2157592fe38015d45e9bf4aaa4ae81358402096718f3e5265a"
+  },
+  "stratified_80_20": {
+    "dataset_metadata": {
+      "dataset_name": "UCI AI4I 2020 Predictive Maintenance Dataset",
+      "source_url": "https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset",
+      "doi": "10.24432/C5HS5C",
+      "license": "Creative Commons Attribution 4.0 International (CC-BY 4.0)",
+      "citation": "Matzka, S. (2020). Explainable Artificial Intelligence for Predictive Maintenance: A General Approach with Automated Feature Engineering. IEEE International Conference on Emerging Technologies and Factory Automation (ETFA 2020).",
+      "total_instances": 10000,
+      "raw_feature_count": 14,
+      "input_feature_count": 6,
+      "normal_instances": 9661,
+      "failure_instances": 339,
+      "failure_rate_pct": 3.39,
+      "imbalance_ratio": 28.5,
+      "is_synthetic": true,
+      "synthetic_generation_details": "Physically modeled simulation reflecting real milling process logs with mathematical failure rules for Tool Wear Failure (TWF), Heat Dissipation Failure (HDF), Power Failure (PWF), Overstrain Failure (OSF), and Random Failure (RNF).",
+      "sha256_hash": "dc6630cd9b1f0f853922fad78a1b6436570d3f1ec863f1dd5c4340ac56bc8a8e",
+      "target_name": "Machine failure (binary: 0 = Normal, 1 = Failure)",
+      "feature_names": [
+        "type",
+        "air_temperature_k",
+        "process_temperature_k",
+        "rotational_speed_rpm",
+        "torque_nm",
+        "tool_wear_min"
+      ],
+      "failure_modes": [
+        "TWF",
+        "HDF",
+        "PWF",
+        "OSF",
+        "RNF"
+      ]
+    },
+    "splits": {
+      "train": {
+        "name": "train",
+        "total_samples": 6399,
+        "normal_count": 6183,
+        "failure_count": 216,
+        "failure_rate_pct": 3.38
+      },
+      "val": {
+        "name": "val",
+        "total_samples": 1599,
+        "normal_count": 1545,
+        "failure_count": 54,
+        "failure_rate_pct": 3.38
+      },
+      "test": {
+        "name": "test",
+        "total_samples": 2002,
+        "normal_count": 1933,
+        "failure_count": 69,
+        "failure_rate_pct": 3.45
+      }
+    },
+    "preprocessing": {
+      "input_features": 6,
+      "output_features": 6,
+      "feature_names": [
+        "type",
+        "air_temperature_k",
+        "process_temperature_k",
+        "rotational_speed_rpm",
+        "torque_nm",
+        "tool_wear_min"
+      ]
+    },
+    "models_evaluated": {
+      "Majority_Baseline": {
+        "default_threshold_0_50": {
+          "accuracy": 0.9655,
+          "balanced_accuracy": 0.5,
+          "precision_failure": 0.0,
+          "recall_failure": 0.0,
+          "specificity_normal": 1.0,
+          "f1_failure": 0.0,
+          "f1_normal": 0.9825,
+          "macro_f1": 0.4912,
+          "weighted_f1": 0.9486,
+          "roc_auc": 0.5,
+          "pr_auc": 0.5172,
+          "true_positives": 0,
+          "false_positives": 0,
+          "true_negatives": 1933,
+          "false_negatives": 69,
+          "total_samples": 2002,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9655,
+          "balanced_accuracy": 0.5,
+          "precision_failure": 0.0,
+          "recall_failure": 0.0,
+          "specificity_normal": 1.0,
+          "f1_failure": 0.0,
+          "f1_normal": 0.9825,
+          "macro_f1": 0.4912,
+          "weighted_f1": 0.9486,
+          "roc_auc": 0.5,
+          "pr_auc": 0.5172,
+          "true_positives": 0,
+          "false_positives": 0,
+          "true_negatives": 1933,
+          "false_negatives": 69,
+          "total_samples": 2002,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold_value": 0.5,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.0007,
+          "max_calibration_error_mce": 0.0007,
+          "brier_score": 0.0333,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 2002,
+              "accuracy": 0.0345,
+              "confidence": 0.0338,
+              "gap": 0.0007
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0007,
+          "max_calibration_error_mce": 0.0007,
+          "brier_score": 0.0333,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 2002,
+              "accuracy": 0.0345,
+              "confidence": 0.0338,
+              "gap": 0.0007
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        }
+      },
+      "CostSensitive_LogisticRegression": {
+        "default_threshold_0_50": {
+          "accuracy": 0.8207,
+          "balanced_accuracy": 0.8093,
+          "precision_failure": 0.1375,
+          "recall_failure": 0.7971,
+          "specificity_normal": 0.8215,
+          "f1_failure": 0.2345,
+          "f1_normal": 0.8984,
+          "macro_f1": 0.5665,
+          "weighted_f1": 0.8756,
+          "roc_auc": 0.8965,
+          "pr_auc": 0.3473,
+          "true_positives": 55,
+          "false_positives": 345,
+          "true_negatives": 1588,
+          "false_negatives": 14,
+          "total_samples": 2002,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9565,
+          "balanced_accuracy": 0.698,
+          "precision_failure": 0.3816,
+          "recall_failure": 0.4203,
+          "specificity_normal": 0.9757,
+          "f1_failure": 0.4,
+          "f1_normal": 0.9775,
+          "macro_f1": 0.6887,
+          "weighted_f1": 0.9576,
+          "roc_auc": 0.8965,
+          "pr_auc": 0.3473,
+          "true_positives": 29,
+          "false_positives": 47,
+          "true_negatives": 1886,
+          "false_negatives": 40,
+          "total_samples": 2002,
+          "threshold_used": 0.8514
+        },
+        "optimal_threshold_value": 0.8514,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.242,
+          "max_calibration_error_mce": 0.6196,
+          "brier_score": 0.1248,
+          "is_calibrated": false,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 660,
+              "accuracy": 0.0015,
+              "confidence": 0.0486,
+              "gap": 0.0471
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 372,
+              "accuracy": 0.0054,
+              "confidence": 0.1455,
+              "gap": 0.1401
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 260,
+              "accuracy": 0.0115,
+              "confidence": 0.2453,
+              "gap": 0.2338
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 172,
+              "accuracy": 0.0233,
+              "confidence": 0.3513,
+              "gap": 0.3281
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 138,
+              "accuracy": 0.029,
+              "confidence": 0.4486,
+              "gap": 0.4196
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 115,
+              "accuracy": 0.0261,
+              "confidence": 0.5465,
+              "gap": 0.5204
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 97,
+              "accuracy": 0.0825,
+              "confidence": 0.6526,
+              "gap": 0.5701
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 82,
+              "accuracy": 0.122,
+              "confidence": 0.7415,
+              "gap": 0.6196
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 57,
+              "accuracy": 0.2632,
+              "confidence": 0.8469,
+              "gap": 0.5838
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 49,
+              "accuracy": 0.3878,
+              "confidence": 0.9355,
+              "gap": 0.5477
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0037,
+          "max_calibration_error_mce": 0.2911,
+          "brier_score": 0.0271,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1854,
+              "accuracy": 0.0167,
+              "confidence": 0.0172,
+              "gap": 0.0005
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 80,
+              "accuracy": 0.1625,
+              "confidence": 0.1401,
+              "gap": 0.0224
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 36,
+              "accuracy": 0.2778,
+              "confidence": 0.2517,
+              "gap": 0.0261
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 14,
+              "accuracy": 0.4286,
+              "confidence": 0.3434,
+              "gap": 0.0851
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 7,
+              "accuracy": 0.2857,
+              "confidence": 0.4166,
+              "gap": 0.1309
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 5,
+              "accuracy": 0.4,
+              "confidence": 0.5394,
+              "gap": 0.1394
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 4,
+              "accuracy": 0.75,
+              "confidence": 0.6529,
+              "gap": 0.0971
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 2,
+              "accuracy": 1.0,
+              "confidence": 0.7089,
+              "gap": 0.2911
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        }
+      },
+      "Balanced_RandomForest": {
+        "default_threshold_0_50": {
+          "accuracy": 0.9436,
+          "balanced_accuracy": 0.9009,
+          "precision_failure": 0.3642,
+          "recall_failure": 0.8551,
+          "specificity_normal": 0.9467,
+          "f1_failure": 0.5108,
+          "f1_normal": 0.9701,
+          "macro_f1": 0.7404,
+          "weighted_f1": 0.9542,
+          "roc_auc": 0.9744,
+          "pr_auc": 0.7217,
+          "true_positives": 59,
+          "false_positives": 103,
+          "true_negatives": 1830,
+          "false_negatives": 10,
+          "total_samples": 2002,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9795,
+          "balanced_accuracy": 0.8357,
+          "precision_failure": 0.7121,
+          "recall_failure": 0.6812,
+          "specificity_normal": 0.9902,
+          "f1_failure": 0.6963,
+          "f1_normal": 0.9894,
+          "macro_f1": 0.8428,
+          "weighted_f1": 0.9793,
+          "roc_auc": 0.9744,
+          "pr_auc": 0.7217,
+          "true_positives": 47,
+          "false_positives": 19,
+          "true_negatives": 1914,
+          "false_negatives": 22,
+          "total_samples": 2002,
+          "threshold_used": 0.7722
+        },
+        "optimal_threshold_value": 0.7722,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.0708,
+          "max_calibration_error_mce": 0.5704,
+          "brier_score": 0.037,
+          "is_calibrated": false,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1612,
+              "accuracy": 0.0019,
+              "confidence": 0.0197,
+              "gap": 0.0178
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 89,
+              "accuracy": 0.0,
+              "confidence": 0.143,
+              "gap": 0.143
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 52,
+              "accuracy": 0.0192,
+              "confidence": 0.2444,
+              "gap": 0.2252
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 38,
+              "accuracy": 0.0526,
+              "confidence": 0.354,
+              "gap": 0.3013
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 49,
+              "accuracy": 0.0816,
+              "confidence": 0.4551,
+              "gap": 0.3735
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 38,
+              "accuracy": 0.0789,
+              "confidence": 0.5442,
+              "gap": 0.4653
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 39,
+              "accuracy": 0.0769,
+              "confidence": 0.6473,
+              "gap": 0.5704
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 30,
+              "accuracy": 0.4,
+              "confidence": 0.7606,
+              "gap": 0.3606
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 30,
+              "accuracy": 0.7,
+              "confidence": 0.8541,
+              "gap": 0.1541
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 25,
+              "accuracy": 0.8,
+              "confidence": 0.9405,
+              "gap": 0.1405
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0104,
+          "max_calibration_error_mce": 0.1796,
+          "brier_score": 0.0164,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1827,
+              "accuracy": 0.0055,
+              "confidence": 0.0044,
+              "gap": 0.0011
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 59,
+              "accuracy": 0.0508,
+              "confidence": 0.1411,
+              "gap": 0.0902
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 30,
+              "accuracy": 0.1,
+              "confidence": 0.2448,
+              "gap": 0.1448
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 18,
+              "accuracy": 0.2778,
+              "confidence": 0.3694,
+              "gap": 0.0916
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 16,
+              "accuracy": 0.5625,
+              "confidence": 0.4554,
+              "gap": 0.1071
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 8,
+              "accuracy": 0.5,
+              "confidence": 0.548,
+              "gap": 0.048
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 11,
+              "accuracy": 0.8182,
+              "confidence": 0.6386,
+              "gap": 0.1796
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 14,
+              "accuracy": 0.5714,
+              "confidence": 0.7468,
+              "gap": 0.1753
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 11,
+              "accuracy": 0.9091,
+              "confidence": 0.8441,
+              "gap": 0.065
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 8,
+              "accuracy": 1.0,
+              "confidence": 0.9652,
+              "gap": 0.0348
+            }
+          ]
+        }
+      },
+      "Gradient_Boosting": {
+        "default_threshold_0_50": {
+          "accuracy": 0.966,
+          "balanced_accuracy": 0.5072,
+          "precision_failure": 1.0,
+          "recall_failure": 0.0145,
+          "specificity_normal": 1.0,
+          "f1_failure": 0.0286,
+          "f1_normal": 0.9827,
+          "macro_f1": 0.5056,
+          "weighted_f1": 0.9498,
+          "roc_auc": 0.931,
+          "pr_auc": 0.4362,
+          "true_positives": 1,
+          "false_positives": 0,
+          "true_negatives": 1933,
+          "false_negatives": 68,
+          "total_samples": 2002,
+          "threshold_used": 0.5
+        },
+        "optimal_threshold": {
+          "accuracy": 0.9685,
+          "balanced_accuracy": 0.7042,
+          "precision_failure": 0.5577,
+          "recall_failure": 0.4203,
+          "specificity_normal": 0.9881,
+          "f1_failure": 0.4793,
+          "f1_normal": 0.9838,
+          "macro_f1": 0.7316,
+          "weighted_f1": 0.9664,
+          "roc_auc": 0.931,
+          "pr_auc": 0.4362,
+          "true_positives": 29,
+          "false_positives": 23,
+          "true_negatives": 1910,
+          "false_negatives": 40,
+          "total_samples": 2002,
+          "threshold_used": 0.1981
+        },
+        "optimal_threshold_value": 0.1981,
+        "calibration_raw": {
+          "expected_calibration_error_ece": 0.0174,
+          "max_calibration_error_mce": 0.504,
+          "brier_score": 0.0261,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1834,
+              "accuracy": 0.0109,
+              "confidence": 0.0196,
+              "gap": 0.0087
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 116,
+              "accuracy": 0.1724,
+              "confidence": 0.1395,
+              "gap": 0.0329
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 43,
+              "accuracy": 0.5116,
+              "confidence": 0.2656,
+              "gap": 0.246
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 7,
+              "accuracy": 0.8571,
+              "confidence": 0.3531,
+              "gap": 0.504
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 1,
+              "accuracy": 0.0,
+              "confidence": 0.4632,
+              "gap": 0.4632
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 1,
+              "accuracy": 1.0,
+              "confidence": 0.5632,
+              "gap": 0.4368
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 0,
+              "accuracy": null,
+              "confidence": null,
+              "gap": 0.0
+            }
+          ]
+        },
+        "calibration_calibrated": {
+          "expected_calibration_error_ece": 0.0069,
+          "max_calibration_error_mce": 0.8298,
+          "brier_score": 0.0242,
+          "is_calibrated": true,
+          "bins": [
+            {
+              "bin_low": 0.0,
+              "bin_high": 0.1,
+              "count": 1833,
+              "accuracy": 0.0109,
+              "confidence": 0.0097,
+              "gap": 0.0012
+            },
+            {
+              "bin_low": 0.1,
+              "bin_high": 0.2,
+              "count": 45,
+              "accuracy": 0.1778,
+              "confidence": 0.1342,
+              "gap": 0.0436
+            },
+            {
+              "bin_low": 0.2,
+              "bin_high": 0.3,
+              "count": 68,
+              "accuracy": 0.1618,
+              "confidence": 0.2471,
+              "gap": 0.0853
+            },
+            {
+              "bin_low": 0.3,
+              "bin_high": 0.4,
+              "count": 16,
+              "accuracy": 0.3125,
+              "confidence": 0.3628,
+              "gap": 0.0503
+            },
+            {
+              "bin_low": 0.4,
+              "bin_high": 0.5,
+              "count": 2,
+              "accuracy": 0.5,
+              "confidence": 0.4547,
+              "gap": 0.0453
+            },
+            {
+              "bin_low": 0.5,
+              "bin_high": 0.6,
+              "count": 29,
+              "accuracy": 0.5862,
+              "confidence": 0.5678,
+              "gap": 0.0184
+            },
+            {
+              "bin_low": 0.6,
+              "bin_high": 0.7,
+              "count": 4,
+              "accuracy": 1.0,
+              "confidence": 0.6674,
+              "gap": 0.3326
+            },
+            {
+              "bin_low": 0.7,
+              "bin_high": 0.8,
+              "count": 3,
+              "accuracy": 0.6667,
+              "confidence": 0.7078,
+              "gap": 0.0412
+            },
+            {
+              "bin_low": 0.8,
+              "bin_high": 0.9,
+              "count": 1,
+              "accuracy": 0.0,
+              "confidence": 0.8298,
+              "gap": 0.8298
+            },
+            {
+              "bin_low": 0.9,
+              "bin_high": 1.0,
+              "count": 1,
+              "accuracy": 1.0,
+              "confidence": 0.9081,
+              "gap": 0.0919
+            }
+          ]
+        }
+      }
+    },
+    "best_model_name": "Balanced_RandomForest",
+    "exported_model_name": "Gradient_Boosting",
+    "artifact_path": "D:\\Apps\\Programs\\SolarVisionAI\\solarvision-ai\\backend\\training\\predictive_maintenance\\artifacts\\model4_predictive_maintenance.json",
+    "sha256_hash": "e78c52f6ee95197a059cc58aad41e97a48d3585a139edfe8141307b1a419f1d2"
+  },
+  "canonical_artifact": {
+    "artifact_path": "D:\\Apps\\Programs\\SolarVisionAI\\solarvision-ai\\backend\\training\\predictive_maintenance\\artifacts\\model4_predictive_maintenance.json",
+    "sha256_hash": "ccd95565498e3cdc49cf79d6489877bb7df1e3ed23a6f973f359e750b56cd7e2",
+    "optimal_threshold": 0.1981,
+    "output_feature_count": 6
+  }
+}
