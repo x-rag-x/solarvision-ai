@@ -3,7 +3,7 @@
  * Frontend Feature & Integration Test Suite
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fetchBenchmarkStatus,
   fetchSolarFactoryReadiness,
@@ -64,15 +64,26 @@ describe("Model 3: Benchmark Metadata & Provenance Verification", () => {
     expect(m.truePositives).toBe(4);
   });
 
+  it("verifies verified SHA-256 artifact checksum", () => {
+    const meta = VERIFIED_BENCHMARK_METADATA;
+    expect(meta.sha256Hash).toBe("392d26cd80b37bd3600e49124099b9ba17cbff05be404ca8d0e35bebda196beb");
+  });
+
   it("verifies domain quarantine disclaimers strictly isolate benchmark from solar manufacturing", () => {
     const meta = VERIFIED_BENCHMARK_METADATA;
-    const disclaimer = meta.limitations.find(l => l.includes("operational solar cell"));
+    const disclaimer = meta.limitations.find((l) => l.includes("operational solar cell"));
     expect(disclaimer).toBeDefined();
     expect(disclaimer).toContain("STRICTLY FORBIDDEN");
   });
 });
 
 describe("Model 3: Prediction Workflow & Input Validation", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   it("strictly rejects input vectors with dimension mismatch (not 590)", async () => {
     const invalidShortVector = new Array(50).fill(0.5);
 
@@ -102,7 +113,35 @@ describe("Model 3: Prediction Workflow & Input Validation", () => {
     }
   });
 
-  it("executes prediction on preset Sample #001 (In-Spec Pass)", async () => {
+  it("executes prediction on preset Sample #001 (In-Spec Pass) via tRPC endpoint", async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("benchmarkPredict")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            result: {
+              data: {
+                status: "ready",
+                domain: "semiconductor_benchmark",
+                predictedOutcome: "pass",
+                probabilities: { pass: 0.9618, fail: 0.0382 },
+                confidenceScore: 0.9618,
+                yieldLossProbability: 0.0382,
+                riskLevel: "LOW",
+                confidenceInterval: { low: 0.015, high: 0.065 },
+                topRiskFactors: [],
+                modelVersion: "3.0.0-benchmark",
+                recommendedAction: "In-spec wafer: Process parameters within nominal operational limits.",
+                processingTimeMs: 12,
+              },
+            },
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    });
+
     const sample = PRESET_SAMPLE_VECTORS[0];
     expect(sample.features).toHaveLength(590);
 
@@ -117,7 +156,44 @@ describe("Model 3: Prediction Workflow & Input Validation", () => {
     expect(result.thresholdUsed).toBe(0.07);
   });
 
-  it("executes prediction on preset Sample #003 (Yield Excursion Fail)", async () => {
+  it("executes prediction on preset Sample #003 (Yield Excursion Fail) via tRPC endpoint", async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("benchmarkPredict")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            result: {
+              data: {
+                status: "ready",
+                domain: "semiconductor_benchmark",
+                predictedOutcome: "fail",
+                probabilities: { pass: 0.8126, fail: 0.1874 },
+                confidenceScore: 0.8126,
+                yieldLossProbability: 0.1874,
+                riskLevel: "HIGH",
+                confidenceInterval: { low: 0.12, high: 0.25 },
+                topRiskFactors: [
+                  {
+                    featureIndex: 275,
+                    factorName: "Signal #275",
+                    measuredValue: 4.145,
+                    impactScore: 0.222,
+                    deviationDirection: "high",
+                    description: "Signal deviation (+1.85 sigma from nominal)",
+                  },
+                ],
+                modelVersion: "3.0.0-benchmark",
+                recommendedAction: "High scrap risk: Wafer excursion detected. Quarantine batch and inspect dry-etch plasma chamber.",
+                processingTimeMs: 15,
+              },
+            },
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    });
+
     const sample = PRESET_SAMPLE_VECTORS[2];
     expect(sample.features).toHaveLength(590);
 
@@ -129,7 +205,6 @@ describe("Model 3: Prediction Workflow & Input Validation", () => {
   });
 
   it("handles authorization expiration gracefully with UNAUTHORIZED error", async () => {
-    const originalFetch = global.fetch;
     global.fetch = vi.fn().mockResolvedValue({
       status: 401,
       ok: false,
@@ -142,14 +217,64 @@ describe("Model 3: Prediction Workflow & Input Validation", () => {
     } catch (err: any) {
       expect(err.code).toBe("UNAUTHORIZED");
       expect(err.message).toContain("authorization expired");
-    } finally {
-      global.fetch = originalFetch;
+    }
+  });
+
+  it("truthfully throws MODEL_UNAVAILABLE when backend service is offline without fake heuristics fallback", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      status: 503,
+      ok: false,
+      statusText: "Service Unavailable",
+    });
+
+    await expect(runBenchmarkPrediction(new Array(590).fill(0.1))).rejects.toThrow(
+      PredictiveQualityApiError
+    );
+
+    try {
+      await runBenchmarkPrediction(new Array(590).fill(0.1));
+    } catch (err: any) {
+      expect(err.code).toBe("MODEL_UNAVAILABLE");
+      expect(err.message).toContain("Model Engine Unavailable — Real Inference Execution Required");
     }
   });
 });
 
 describe("Model 3: Solar Manufacturing Readiness Gate", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   it("keeps Solar Model 3 strictly marked NOT_TRAINED / DATASET_BLOCKED", async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("readiness")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            result: {
+              data: {
+                datasetStatus: "DATASET_BLOCKED",
+                tableCounts: {
+                  batches: 0,
+                  sensorReadings: 0,
+                  qualityOutcomeLabels: 0,
+                  linkedInspections: 0,
+                  eligibleTrainingExamples: 0,
+                },
+                blockingReasons: [
+                  "Zero confirmed factory quality outcome labels in production database.",
+                ],
+              },
+            },
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    });
+
     const readiness = await fetchSolarFactoryReadiness();
     expect(readiness.status).toBe("DATASET_BLOCKED");
     expect(readiness.canonicalFeatureCount).toBe(32);
@@ -161,10 +286,43 @@ describe("Model 3: Solar Manufacturing Readiness Gate", () => {
   });
 
   it("probes benchmark status and truthfully returns ready for SECOM", async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("status")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            result: {
+              data: {
+                modelName: "SolarVision_Gradient_Boosting_SECOM",
+                isReady: true,
+                modelVersion: "3.0.0-benchmark",
+                expectedDim: 590,
+                schemaVersion: "3.0.0",
+              },
+            },
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    });
+
     const status = await fetchBenchmarkStatus();
     expect(status.status).toBe("BENCHMARK_EVALUATED_READY");
     expect(status.isReady).toBe(true);
     expect(status.expectedDim).toBe(590);
     expect(status.modelVersion).toBe("3.0.0-benchmark");
+  });
+
+  it("truthfully returns offline when status probe fails", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      status: 503,
+      ok: false,
+      statusText: "Service Unavailable",
+    });
+
+    const status = await fetchBenchmarkStatus();
+    expect(status.status).toBe("offline");
+    expect(status.isReady).toBe(false);
   });
 });

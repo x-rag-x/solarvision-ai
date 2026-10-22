@@ -1,0 +1,8 @@
+# SolarVision AI — Model 2 Data Import Template: Confirmed Root-Cause Annotations
+# Contract Version: 2.0.0
+# Description: Failure analysis laboratory and quality engineering confirmed root-cause labels.
+# Required Fields: id, inspection_id, confirmed_cause, confidence_level, verified_by, verified_at
+# Permitted confirmed_cause values: Must match ROOT_CAUSE_TAXONOMY (see documentation)
+# Confidence Values: confirmed | probable | investigative
+# Timestamp format: ISO-8601 UTC (e.g., 2026-10-22T08:30:00.000Z)
+id,inspection_id,defect_id,confirmed_cause,confidence_level,verified_by,verified_at,investigation_notes

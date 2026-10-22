@@ -3,7 +3,7 @@
  * Database Persistence Specification and Contract
  */
 
-import { getSqliteDb } from "../sqlite";
+import { getSqliteDb, type RequesterContext } from "../sqlite";
 import type { RootCauseResponse, ProbableCause } from "./types";
 
 /**
@@ -251,7 +251,7 @@ export async function getProductionEvents(filters?: {
   return db.prepare(query).all(...params);
 }
 
-function ensureRootCauseAnnotationsTable(): void {
+export function ensureRootCauseAnnotationsTable(): void {
   const db = getSqliteDb();
   db.exec(`
     CREATE TABLE IF NOT EXISTS root_cause_annotations (
@@ -279,27 +279,50 @@ export async function getConfirmedRootCauseAnnotations(inspectionId: string): Pr
 }
 
 /**
- * Retrieves all confirmed root cause annotations with optional filters and pagination.
+ * Retrieves all confirmed root cause annotations with optional filters, pagination,
+ * and authenticated requester ownership scoping (Admin: all, Operator: only owned inspections).
  */
 export async function getAllConfirmedRootCauseAnnotations(filters?: {
   limit?: number;
   offset?: number;
   cause?: string;
   confidenceLevel?: string;
+  requester?: RequesterContext;
 }): Promise<any[]> {
   ensureRootCauseAnnotationsTable();
   const db = getSqliteDb();
-  let query = "SELECT * FROM root_cause_annotations WHERE 1=1";
   const params: any[] = [];
+  let query = "";
+
+  if (filters?.requester?.role === "admin") {
+    // Admin global visibility
+    query = "SELECT rca.* FROM root_cause_annotations rca WHERE 1=1";
+  } else if (filters?.requester?.userId) {
+    // Non-admin operator: strictly scope to annotations on inspections owned by this operator
+    query = `
+      SELECT rca.* FROM root_cause_annotations rca
+      INNER JOIN inspections i ON rca.inspectionId = i.inspectionId
+      WHERE (i.userId = ? OR i.operatorId = ?)
+    `;
+    params.push(filters.requester.userId, filters.requester.userId);
+  } else {
+    // Unauthenticated caller: only unowned / legacy inspections
+    query = `
+      SELECT rca.* FROM root_cause_annotations rca
+      INNER JOIN inspections i ON rca.inspectionId = i.inspectionId
+      WHERE i.userId IS NULL AND i.operatorId IS NULL
+    `;
+  }
+
   if (filters?.cause) {
-    query += " AND confirmedCause = ?";
+    query += " AND rca.confirmedCause = ?";
     params.push(filters.cause);
   }
   if (filters?.confidenceLevel) {
-    query += " AND confidenceLevel = ?";
+    query += " AND rca.confidenceLevel = ?";
     params.push(filters.confidenceLevel);
   }
-  query += " ORDER BY verifiedAt DESC LIMIT ? OFFSET ?";
+  query += " ORDER BY rca.verifiedAt DESC LIMIT ? OFFSET ?";
   params.push(filters?.limit ?? 100, filters?.offset ?? 0);
   return db.prepare(query).all(...params);
 }
@@ -307,6 +330,7 @@ export async function getAllConfirmedRootCauseAnnotations(filters?: {
 /**
  * Saves a quality engineer confirmed root-cause annotation.
  * Explicitly segregates human-verified annotations from model-generated predictions.
+ * Validates referenced inspection existence to prevent orphan annotations.
  */
 export async function saveConfirmedRootCauseAnnotation(input: {
   inspectionId: string;
@@ -321,6 +345,13 @@ export async function saveConfirmedRootCauseAnnotation(input: {
 }): Promise<string> {
   ensureRootCauseAnnotationsTable();
   const db = getSqliteDb();
+
+  // Validate referenced inspection exists
+  const existingInsp = db.prepare("SELECT inspectionId FROM inspections WHERE inspectionId = ?").get(input.inspectionId);
+  if (!existingInsp) {
+    throw new Error(`Referenced inspection '${input.inspectionId}' does not exist.`);
+  }
+
   const id = `annot_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const now = new Date().toISOString();
 
@@ -337,6 +368,14 @@ export async function saveConfirmedRootCauseAnnotation(input: {
       id, inspectionId, defectId, confirmedCause, confidenceLevel,
       verifiedBy, verifiedAt, investigationNotes, createdAt
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      inspectionId = excluded.inspectionId,
+      defectId = excluded.defectId,
+      confirmedCause = excluded.confirmedCause,
+      confidenceLevel = excluded.confidenceLevel,
+      verifiedBy = excluded.verifiedBy,
+      verifiedAt = excluded.verifiedAt,
+      investigationNotes = excluded.investigationNotes
   `).run(
     id,
     input.inspectionId,

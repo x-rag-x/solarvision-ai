@@ -50,10 +50,10 @@ export default function ModelPerformance() {
                   Active Checkpoint
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-white">
-                  Ultralytics YOLO26n
+                  Ultralytics YOLO26n / YOLOv8n
                 </h2>
                 <p className="mt-1 text-xs text-slate-400">
-                  Single-stage anchor-free CNN (YOLOv8n DetectionModel)
+                  Single-stage anchor-free CNN (50 epochs, mAP@50=91.87% on internal validation)
                 </p>
               </div>
               <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-[#F2B941]">
@@ -191,9 +191,9 @@ export default function ModelPerformance() {
 
             <p className="mt-2 text-xs leading-relaxed text-amber-900/90">
               <strong>Mandatory Scientific Disclosure:</strong> The metrics displayed below represent{" "}
-              <em>historical evaluation benchmark results</em> evaluated on a held-out test sample of{" "}
-              <strong>792 EL images</strong> (stratified across 9 defect classes from the PVELAD dataset).
-              These metrics do <strong>not</strong> represent live production line performance.
+              <em>historical evaluation benchmark results</em> evaluated on an independent held-out test sample of{" "}
+              <strong>792 EL images</strong> (stratified across 9 defect classes from the PVELAD dataset at threshold 0.25).
+              These metrics reflect real-world generalization on unseen cells (mAP@50 = 69.75%), distinguished from the internal training/validation run (50 epochs, mAP@50 = 91.87%).
               In adherence to strict engineering integrity, this model is{" "}
               <strong>not presented as universally accurate or 100% production-certified</strong>.
             </p>

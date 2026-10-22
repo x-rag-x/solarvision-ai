@@ -56,7 +56,7 @@ export const VERIFIED_BENCHMARK_METADATA: BenchmarkMetadata = {
     { binLow: 0.25, binHigh: 0.5, count: 0, accuracy: null, confidence: null, gap: 0.0 },
     { binLow: 0.5, binHigh: 1.0, count: 0, accuracy: null, confidence: null, gap: 0.0 },
   ],
-  sha256Hash: "a1767d45805e6bfd58f39541833384df654681e5e664d9536a78545d22df4cb3",
+  sha256Hash: "392d26cd80b37bd3600e49124099b9ba17cbff05be404ca8d0e35bebda196beb",
   limitations: [
     "General semiconductor benchmark representing microelectronics wafer fabrication signals.",
     "Features are anonymized integer signals (0 to 589) without direct physical PV equipment mapping.",

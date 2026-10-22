@@ -6,3 +6,5 @@ numpy==2.2.6
 opencv-python-headless==4.12.0.88
 pillow==11.3.0
 ultralytics==8.3.198
+scipy>=1.13.0
+pytest>=8.0.0

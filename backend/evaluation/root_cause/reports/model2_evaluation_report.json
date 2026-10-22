@@ -1,0 +1,550 @@
+{
+  "evaluation_timestamp": "2026-10-22T04:18:56.148142+00:00",
+  "model_name": "SolarVision_RootCause_RF",
+  "model_version": "2.0.0-rc1",
+  "artifact_path": "backend\\training\\root_cause\\artifacts\\model2_root_cause_rf.json",
+  "test_sample_count": 15,
+  "is_synthetic_dataset": true,
+  "release_gate_status": "CONDITIONALLY_BLOCKED",
+  "summary_metrics": {
+    "accuracy": 0.2,
+    "balanced_accuracy": 0.1667,
+    "macro_precision": 0.1296,
+    "macro_recall": 0.1667,
+    "macro_f1": 0.1444,
+    "weighted_f1": 0.1733,
+    "expected_calibration_error": 0.1607,
+    "brier_score": 0.8497
+  },
+  "per_class_metrics": {
+    "thermal_stress_soldering": {
+      "class_name": "thermal_stress_soldering",
+      "class_id": 0,
+      "support": 1,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "squeegee_pressure_drift": {
+      "class_name": "squeegee_pressure_drift",
+      "class_id": 1,
+      "support": 1,
+      "true_positives": 0,
+      "false_positives": 8,
+      "false_negatives": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "screen_mesh_clogging": {
+      "class_name": "screen_mesh_clogging",
+      "class_id": 2,
+      "support": 2,
+      "true_positives": 0,
+      "false_positives": 1,
+      "false_negatives": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "firing_thermal_profile_excursion": {
+      "class_name": "firing_thermal_profile_excursion",
+      "class_id": 3,
+      "support": 2,
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 1,
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1_score": 0.5
+    },
+    "mechanical_handling_impact": {
+      "class_name": "mechanical_handling_impact",
+      "class_id": 4,
+      "support": 2,
+      "true_positives": 2,
+      "false_positives": 1,
+      "false_negatives": 0,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "f1_score": 0.8
+    },
+    "lamination_pressure_imbalance": {
+      "class_name": "lamination_pressure_imbalance",
+      "class_id": 5,
+      "support": 2,
+      "true_positives": 0,
+      "false_positives": 1,
+      "false_negatives": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "ingot_thermal_gradient": {
+      "class_name": "ingot_thermal_gradient",
+      "class_id": 6,
+      "support": 2,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "chemical_texturing_contamination": {
+      "class_name": "chemical_texturing_contamination",
+      "class_id": 7,
+      "support": 2,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "nominal_process_variation": {
+      "class_name": "nominal_process_variation",
+      "class_id": 8,
+      "support": 1,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    }
+  },
+  "confusion_matrix": {
+    "class_names": [
+      "thermal_stress_soldering",
+      "squeegee_pressure_drift",
+      "screen_mesh_clogging",
+      "firing_thermal_profile_excursion",
+      "mechanical_handling_impact",
+      "lamination_pressure_imbalance",
+      "ingot_thermal_gradient",
+      "chemical_texturing_contamination",
+      "nominal_process_variation"
+    ],
+    "raw_matrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "normalized_matrix": [
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.5,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.5,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "top_confusion_pairs": [
+      {
+        "true_class": "screen_mesh_clogging",
+        "predicted_class": "squeegee_pressure_drift",
+        "error_count": 2,
+        "normalized_rate": 1.0
+      },
+      {
+        "true_class": "lamination_pressure_imbalance",
+        "predicted_class": "squeegee_pressure_drift",
+        "error_count": 2,
+        "normalized_rate": 1.0
+      },
+      {
+        "true_class": "thermal_stress_soldering",
+        "predicted_class": "mechanical_handling_impact",
+        "error_count": 1,
+        "normalized_rate": 1.0
+      },
+      {
+        "true_class": "squeegee_pressure_drift",
+        "predicted_class": "firing_thermal_profile_excursion",
+        "error_count": 1,
+        "normalized_rate": 1.0
+      },
+      {
+        "true_class": "firing_thermal_profile_excursion",
+        "predicted_class": "squeegee_pressure_drift",
+        "error_count": 1,
+        "normalized_rate": 0.5
+      },
+      {
+        "true_class": "ingot_thermal_gradient",
+        "predicted_class": "squeegee_pressure_drift",
+        "error_count": 1,
+        "normalized_rate": 0.5
+      },
+      {
+        "true_class": "ingot_thermal_gradient",
+        "predicted_class": "screen_mesh_clogging",
+        "error_count": 1,
+        "normalized_rate": 0.5
+      },
+      {
+        "true_class": "chemical_texturing_contamination",
+        "predicted_class": "squeegee_pressure_drift",
+        "error_count": 1,
+        "normalized_rate": 0.5
+      },
+      {
+        "true_class": "chemical_texturing_contamination",
+        "predicted_class": "lamination_pressure_imbalance",
+        "error_count": 1,
+        "normalized_rate": 0.5
+      },
+      {
+        "true_class": "nominal_process_variation",
+        "predicted_class": "squeegee_pressure_drift",
+        "error_count": 1,
+        "normalized_rate": 1.0
+      }
+    ]
+  },
+  "calibration": {
+    "expected_calibration_error_ece": 0.1607,
+    "max_calibration_error_mce": 0.6,
+    "brier_score": 0.8497,
+    "is_calibrated": false,
+    "calibration_assessment": "Confidence values exhibit over/under-confidence drift (ECE > 0.08). Temperature scaling or Platt scaling recommended.",
+    "bins": [
+      {
+        "bin_range": [
+          0.0,
+          0.1
+        ],
+        "count": 0,
+        "accuracy": null,
+        "confidence": null,
+        "calibration_gap": 0.0
+      },
+      {
+        "bin_range": [
+          0.1,
+          0.2
+        ],
+        "count": 2,
+        "accuracy": 0.0,
+        "confidence": 0.1845,
+        "calibration_gap": 0.1845
+      },
+      {
+        "bin_range": [
+          0.2,
+          0.3
+        ],
+        "count": 8,
+        "accuracy": 0.125,
+        "confidence": 0.2552,
+        "calibration_gap": 0.1302
+      },
+      {
+        "bin_range": [
+          0.3,
+          0.4
+        ],
+        "count": 4,
+        "accuracy": 0.25,
+        "confidence": 0.35,
+        "calibration_gap": 0.1
+      },
+      {
+        "bin_range": [
+          0.4,
+          0.5
+        ],
+        "count": 1,
+        "accuracy": 1.0,
+        "confidence": 0.4,
+        "calibration_gap": 0.6
+      },
+      {
+        "bin_range": [
+          0.5,
+          0.6
+        ],
+        "count": 0,
+        "accuracy": null,
+        "confidence": null,
+        "calibration_gap": 0.0
+      },
+      {
+        "bin_range": [
+          0.6,
+          0.7
+        ],
+        "count": 0,
+        "accuracy": null,
+        "confidence": null,
+        "calibration_gap": 0.0
+      },
+      {
+        "bin_range": [
+          0.7,
+          0.8
+        ],
+        "count": 0,
+        "accuracy": null,
+        "confidence": null,
+        "calibration_gap": 0.0
+      },
+      {
+        "bin_range": [
+          0.8,
+          0.9
+        ],
+        "count": 0,
+        "accuracy": null,
+        "confidence": null,
+        "calibration_gap": 0.0
+      },
+      {
+        "bin_range": [
+          0.9,
+          1.0
+        ],
+        "count": 0,
+        "accuracy": null,
+        "confidence": null,
+        "calibration_gap": 0.0
+      }
+    ]
+  },
+  "sample_explanation": {
+    "predicted_cause": "squeegee_pressure_drift",
+    "confidence": 0.2889,
+    "top_contributing_factors": [
+      {
+        "feature": "feat_max_detection_conf",
+        "measured_value": 0.834,
+        "unit": "",
+        "impact_score": 0.1379
+      },
+      {
+        "feature": "feat_defect_area_ratio",
+        "measured_value": 0.017,
+        "unit": "",
+        "impact_score": 0.1187
+      },
+      {
+        "feature": "feat_mean_detection_conf",
+        "measured_value": 0.699,
+        "unit": "",
+        "impact_score": 0.0942
+      },
+      {
+        "feature": "feat_is_crack",
+        "measured_value": 0.0,
+        "unit": "",
+        "impact_score": 0.069
+      },
+      {
+        "feature": "fill_factor_pct",
+        "measured_value": 81.594,
+        "unit": "%",
+        "impact_score": 0.0502
+      }
+    ],
+    "feature_importance_summary": {
+      "feat_max_detection_conf": 0.1379,
+      "feat_defect_area_ratio": 0.1187,
+      "feat_mean_detection_conf": 0.0942,
+      "feat_is_crack": 0.069,
+      "fill_factor_pct": 0.0502
+    },
+    "recommended_action": "Perform squeegee leveling audit. Measure blade durometer hardness; replace squeegee if wear exceeds 0.2mm. Recalibrate pneumatic force sensor."
+  }
+}

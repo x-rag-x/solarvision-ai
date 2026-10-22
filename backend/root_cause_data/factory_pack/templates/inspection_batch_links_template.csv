@@ -1,0 +1,8 @@
+# SolarVision AI — Model 2 Data Import Template: Inspection-to-Batch Links
+# Contract Version: 2.0.0
+# Description: Maps wafer optical inspection UUIDs to manufacturing lots and production machines.
+# Required Fields: inspection_id, batch_id
+# Optional Fields: machine_id, wafer_sequence_in_batch
+inspection_id,batch_id,machine_id,wafer_sequence_in_batch
+00675a4b-2d6e-41f8-8756-3a02b1d61218,BATCH_2026_1001,M_STR_01,42
+12345678-abcd-ef01-2345-6789abcdef01,BATCH_2026_1001,M_PRN_01,88

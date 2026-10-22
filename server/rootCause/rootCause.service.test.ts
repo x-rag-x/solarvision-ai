@@ -162,6 +162,12 @@ describe("Model 2: Manufacturing Data Query APIs", () => {
       | undefined;
     const testInspectionId = existing?.inspectionId || "00675a4b-2d6e-41f8-8756-3a02b1d61218";
 
+    // Ensure test inspection record exists in the database
+    db.prepare(`
+      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, status, createdAt)
+      VALUES (?, 'fixture_test.jpg', 'completed', datetime('now'))
+    `).run(testInspectionId);
+
     const annotId = await saveConfirmedRootCauseAnnotation({
       inspectionId: testInspectionId,
       defectId: null,
@@ -368,6 +374,12 @@ describe("Model 2: Inspection Linking & Dynamic Readiness", () => {
       | { inspectionId: string }
       | undefined;
     const testInspectionId = existing?.inspectionId || "00675a4b-2d6e-41f8-8756-3a02b1d61218";
+
+    // Ensure test inspection record exists in the database
+    db.prepare(`
+      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, status, createdAt)
+      VALUES (?, 'fixture_test.jpg', 'completed', datetime('now'))
+    `).run(testInspectionId);
 
     const linkRes = await linkInspectionToBatch({
       inspectionId: testInspectionId,

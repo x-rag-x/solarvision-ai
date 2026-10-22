@@ -197,12 +197,12 @@ export default function Settings() {
             )}
           </div>
 
-          {/* Image & Upload Guardrails */}
+          {/* Image & Upload Guardrails (Local Preferences) */}
           <div className="space-y-4">
             <label className="block">
-              <span className="text-xs font-semibold text-slate-700">Inference Image Resolution</span>
+              <span className="text-xs font-semibold text-slate-700">Inference Image Resolution (Local Display Preference)</span>
               <span className="mt-0.5 block text-[11px] text-slate-400">
-                Model letterbox resolution configured for YOLO26n (Ultralytics).
+                Local operator display preference. Note: Server inference executes with the verified 640×640 letterbox pipeline and does not retrain or re-architect the backend YOLO checkpoint.
               </span>
               <select
                 value={formValues.imageSize}
@@ -212,15 +212,15 @@ export default function Settings() {
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-[#F4F0D7] px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:border-[#F2B941]"
               >
                 <option value={640}>640 × 640 (Standard Model Input - Verified)</option>
-                <option value={960}>960 × 960 (Experimental High-Res)</option>
-                <option value={1024}>1024 × 1024 (Native PVELAD Sensor Dim)</option>
+                <option value={960}>960 × 960 (Experimental High-Res Display)</option>
+                <option value={1024}>1024 × 1024 (Native PVELAD Sensor Dim Display)</option>
               </select>
             </label>
 
             <label className="block">
-              <span className="text-xs font-semibold text-slate-700">Maximum Upload File Size</span>
+              <span className="text-xs font-semibold text-slate-700">Maximum Upload File Size (Client-Side Safeguard)</span>
               <span className="mt-0.5 block text-[11px] text-slate-400">
-                Client-side payload safeguard reconciled with server transport ceiling (35 MB binary / 50 MB express body).
+                Client-side browser pre-upload safeguard. Server transport ceiling is strictly enforced at 35 MB binary / 50 MB Express payload limit.
               </span>
               <select
                 value={formValues.maxUploadMb}

@@ -1,0 +1,7 @@
+# SolarVision AI — Model 2 Data Import Template: Production Events & Alarms
+# Contract Version: 2.0.0
+# Description: Equipment alarms, parameter excursions, mechanical jams, and operator overrides.
+# Required Fields: id, machine_id, event_type, severity, message, started_at
+# Severity Values: info | warning | high | critical
+# Timestamp format: ISO-8601 UTC (e.g., 2026-10-22T08:30:00.000Z)
+id,machine_id,batch_id,event_type,severity,message,started_at,resolved_at

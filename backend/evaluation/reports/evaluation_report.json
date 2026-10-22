@@ -1,0 +1,612 @@
+{
+  "evaluation_timestamp": "2026-10-21T13:36:07Z",
+  "dataset_name": "PVELAD (Photovoltaic Electroluminescence Anomaly Detection) / EL2021",
+  "dataset_split": "Official Held-Out Test Set (Disjoint from Train/Val)",
+  "total_test_images_in_archive": 19150,
+  "evaluated_images_count": 792,
+  "sampling_method": "Stratified random sampling across all 9 defect classes with 100% rare-class coverage",
+  "model_checkpoint": "backend/models/best.pt",
+  "model_architecture": "Ultralytics YOLO26n (YOLOv8n DetectionModel)",
+  "parameter_count": 2507310,
+  "official_ultralytics_metrics_at_025": {
+    "mAP50": 0.6975,
+    "mAP50_95": 0.4456,
+    "precision": 0.7428,
+    "recall": 0.6516
+  },
+  "threshold_evaluation": {
+    "0.25": {
+      "threshold": 0.25,
+      "true_positives": 1379,
+      "false_positives": 515,
+      "false_negatives": 512,
+      "precision": 0.7281,
+      "recall": 0.7292,
+      "f1": 0.7287,
+      "per_class": {
+        "crack": {
+          "class_id": 0,
+          "ground_truth_count": 218,
+          "true_positives": 135,
+          "false_positives": 85,
+          "false_negatives": 83,
+          "precision": 0.6136,
+          "recall": 0.6193,
+          "f1": 0.6164
+        },
+        "finger": {
+          "class_id": 1,
+          "ground_truth_count": 499,
+          "true_positives": 448,
+          "false_positives": 164,
+          "false_negatives": 51,
+          "precision": 0.732,
+          "recall": 0.8978,
+          "f1": 0.8065
+        },
+        "black_core": {
+          "class_id": 2,
+          "ground_truth_count": 110,
+          "true_positives": 3,
+          "false_positives": 0,
+          "false_negatives": 107,
+          "precision": 1.0,
+          "recall": 0.0273,
+          "f1": 0.0531
+        },
+        "thick_line": {
+          "class_id": 3,
+          "ground_truth_count": 198,
+          "true_positives": 125,
+          "false_positives": 61,
+          "false_negatives": 73,
+          "precision": 0.672,
+          "recall": 0.6313,
+          "f1": 0.651
+        },
+        "star_crack": {
+          "class_id": 4,
+          "ground_truth_count": 83,
+          "true_positives": 63,
+          "false_positives": 17,
+          "false_negatives": 20,
+          "precision": 0.7875,
+          "recall": 0.759,
+          "f1": 0.773
+        },
+        "horizontal_dislocation": {
+          "class_id": 5,
+          "ground_truth_count": 321,
+          "true_positives": 319,
+          "false_positives": 34,
+          "false_negatives": 2,
+          "precision": 0.9037,
+          "recall": 0.9938,
+          "f1": 0.9466
+        },
+        "vertical_dislocation": {
+          "class_id": 6,
+          "ground_truth_count": 271,
+          "true_positives": 204,
+          "false_positives": 91,
+          "false_negatives": 67,
+          "precision": 0.6915,
+          "recall": 0.7528,
+          "f1": 0.7208
+        },
+        "printing_error": {
+          "class_id": 7,
+          "ground_truth_count": 48,
+          "true_positives": 34,
+          "false_positives": 2,
+          "false_negatives": 14,
+          "precision": 0.9444,
+          "recall": 0.7083,
+          "f1": 0.8095
+        },
+        "short_circuit": {
+          "class_id": 8,
+          "ground_truth_count": 143,
+          "true_positives": 48,
+          "false_positives": 61,
+          "false_negatives": 95,
+          "precision": 0.4404,
+          "recall": 0.3357,
+          "f1": 0.381
+        }
+      }
+    },
+    "0.1": {
+      "threshold": 0.1,
+      "true_positives": 1554,
+      "false_positives": 1072,
+      "false_negatives": 337,
+      "precision": 0.5918,
+      "recall": 0.8218,
+      "f1": 0.6881,
+      "per_class": {
+        "crack": {
+          "class_id": 0,
+          "ground_truth_count": 218,
+          "true_positives": 163,
+          "false_positives": 195,
+          "false_negatives": 55,
+          "precision": 0.4553,
+          "recall": 0.7477,
+          "f1": 0.566
+        },
+        "finger": {
+          "class_id": 1,
+          "ground_truth_count": 499,
+          "true_positives": 463,
+          "false_positives": 272,
+          "false_negatives": 36,
+          "precision": 0.6299,
+          "recall": 0.9279,
+          "f1": 0.7504
+        },
+        "black_core": {
+          "class_id": 2,
+          "ground_truth_count": 110,
+          "true_positives": 15,
+          "false_positives": 0,
+          "false_negatives": 95,
+          "precision": 1.0,
+          "recall": 0.1364,
+          "f1": 0.24
+        },
+        "thick_line": {
+          "class_id": 3,
+          "ground_truth_count": 198,
+          "true_positives": 150,
+          "false_positives": 135,
+          "false_negatives": 48,
+          "precision": 0.5263,
+          "recall": 0.7576,
+          "f1": 0.6211
+        },
+        "star_crack": {
+          "class_id": 4,
+          "ground_truth_count": 83,
+          "true_positives": 67,
+          "false_positives": 29,
+          "false_negatives": 16,
+          "precision": 0.6979,
+          "recall": 0.8072,
+          "f1": 0.7486
+        },
+        "horizontal_dislocation": {
+          "class_id": 5,
+          "ground_truth_count": 321,
+          "true_positives": 321,
+          "false_positives": 57,
+          "false_negatives": 0,
+          "precision": 0.8492,
+          "recall": 1.0,
+          "f1": 0.9185
+        },
+        "vertical_dislocation": {
+          "class_id": 6,
+          "ground_truth_count": 271,
+          "true_positives": 250,
+          "false_positives": 290,
+          "false_negatives": 21,
+          "precision": 0.463,
+          "recall": 0.9225,
+          "f1": 0.6165
+        },
+        "printing_error": {
+          "class_id": 7,
+          "ground_truth_count": 48,
+          "true_positives": 38,
+          "false_positives": 25,
+          "false_negatives": 10,
+          "precision": 0.6032,
+          "recall": 0.7917,
+          "f1": 0.6847
+        },
+        "short_circuit": {
+          "class_id": 8,
+          "ground_truth_count": 143,
+          "true_positives": 87,
+          "false_positives": 69,
+          "false_negatives": 56,
+          "precision": 0.5577,
+          "recall": 0.6084,
+          "f1": 0.5819
+        }
+      }
+    },
+    "0.05": {
+      "threshold": 0.05,
+      "true_positives": 1631,
+      "false_positives": 1529,
+      "false_negatives": 260,
+      "precision": 0.5161,
+      "recall": 0.8625,
+      "f1": 0.6458,
+      "per_class": {
+        "crack": {
+          "class_id": 0,
+          "ground_truth_count": 218,
+          "true_positives": 174,
+          "false_positives": 283,
+          "false_negatives": 44,
+          "precision": 0.3807,
+          "recall": 0.7982,
+          "f1": 0.5156
+        },
+        "finger": {
+          "class_id": 1,
+          "ground_truth_count": 499,
+          "true_positives": 473,
+          "false_positives": 387,
+          "false_negatives": 26,
+          "precision": 0.55,
+          "recall": 0.9479,
+          "f1": 0.6961
+        },
+        "black_core": {
+          "class_id": 2,
+          "ground_truth_count": 110,
+          "true_positives": 19,
+          "false_positives": 4,
+          "false_negatives": 91,
+          "precision": 0.8261,
+          "recall": 0.1727,
+          "f1": 0.2857
+        },
+        "thick_line": {
+          "class_id": 3,
+          "ground_truth_count": 198,
+          "true_positives": 161,
+          "false_positives": 194,
+          "false_negatives": 37,
+          "precision": 0.4535,
+          "recall": 0.8131,
+          "f1": 0.5823
+        },
+        "star_crack": {
+          "class_id": 4,
+          "ground_truth_count": 83,
+          "true_positives": 69,
+          "false_positives": 34,
+          "false_negatives": 14,
+          "precision": 0.6699,
+          "recall": 0.8313,
+          "f1": 0.7419
+        },
+        "horizontal_dislocation": {
+          "class_id": 5,
+          "ground_truth_count": 321,
+          "true_positives": 321,
+          "false_positives": 74,
+          "false_negatives": 0,
+          "precision": 0.8127,
+          "recall": 1.0,
+          "f1": 0.8966
+        },
+        "vertical_dislocation": {
+          "class_id": 6,
+          "ground_truth_count": 271,
+          "true_positives": 261,
+          "false_positives": 427,
+          "false_negatives": 10,
+          "precision": 0.3794,
+          "recall": 0.9631,
+          "f1": 0.5443
+        },
+        "printing_error": {
+          "class_id": 7,
+          "ground_truth_count": 48,
+          "true_positives": 40,
+          "false_positives": 52,
+          "false_negatives": 8,
+          "precision": 0.4348,
+          "recall": 0.8333,
+          "f1": 0.5714
+        },
+        "short_circuit": {
+          "class_id": 8,
+          "ground_truth_count": 143,
+          "true_positives": 113,
+          "false_positives": 74,
+          "false_negatives": 30,
+          "precision": 0.6043,
+          "recall": 0.7902,
+          "f1": 0.6848
+        }
+      }
+    },
+    "0.01": {
+      "threshold": 0.01,
+      "true_positives": 1707,
+      "false_positives": 3171,
+      "false_negatives": 184,
+      "precision": 0.3499,
+      "recall": 0.9027,
+      "f1": 0.5044,
+      "per_class": {
+        "crack": {
+          "class_id": 0,
+          "ground_truth_count": 218,
+          "true_positives": 191,
+          "false_positives": 727,
+          "false_negatives": 27,
+          "precision": 0.2081,
+          "recall": 0.8761,
+          "f1": 0.3363
+        },
+        "finger": {
+          "class_id": 1,
+          "ground_truth_count": 499,
+          "true_positives": 480,
+          "false_positives": 867,
+          "false_negatives": 19,
+          "precision": 0.3563,
+          "recall": 0.9619,
+          "f1": 0.52
+        },
+        "black_core": {
+          "class_id": 2,
+          "ground_truth_count": 110,
+          "true_positives": 30,
+          "false_positives": 28,
+          "false_negatives": 80,
+          "precision": 0.5172,
+          "recall": 0.2727,
+          "f1": 0.3571
+        },
+        "thick_line": {
+          "class_id": 3,
+          "ground_truth_count": 198,
+          "true_positives": 171,
+          "false_positives": 422,
+          "false_negatives": 27,
+          "precision": 0.2884,
+          "recall": 0.8636,
+          "f1": 0.4324
+        },
+        "star_crack": {
+          "class_id": 4,
+          "ground_truth_count": 83,
+          "true_positives": 70,
+          "false_positives": 63,
+          "false_negatives": 13,
+          "precision": 0.5263,
+          "recall": 0.8434,
+          "f1": 0.6481
+        },
+        "horizontal_dislocation": {
+          "class_id": 5,
+          "ground_truth_count": 321,
+          "true_positives": 321,
+          "false_positives": 134,
+          "false_negatives": 0,
+          "precision": 0.7055,
+          "recall": 1.0,
+          "f1": 0.8273
+        },
+        "vertical_dislocation": {
+          "class_id": 6,
+          "ground_truth_count": 271,
+          "true_positives": 264,
+          "false_positives": 721,
+          "false_negatives": 7,
+          "precision": 0.268,
+          "recall": 0.9742,
+          "f1": 0.4204
+        },
+        "printing_error": {
+          "class_id": 7,
+          "ground_truth_count": 48,
+          "true_positives": 43,
+          "false_positives": 130,
+          "false_negatives": 5,
+          "precision": 0.2486,
+          "recall": 0.8958,
+          "f1": 0.3891
+        },
+        "short_circuit": {
+          "class_id": 8,
+          "ground_truth_count": 143,
+          "true_positives": 137,
+          "false_positives": 79,
+          "false_negatives": 6,
+          "precision": 0.6343,
+          "recall": 0.958,
+          "f1": 0.7632
+        }
+      }
+    }
+  },
+  "confusion_matrix_at_025": [
+    [
+      135,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      83
+    ],
+    [
+      0,
+      448,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      51
+    ],
+    [
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      107
+    ],
+    [
+      0,
+      0,
+      0,
+      125,
+      0,
+      0,
+      0,
+      0,
+      0,
+      73
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      63,
+      0,
+      0,
+      0,
+      0,
+      20
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      319,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      204,
+      0,
+      0,
+      67
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      34,
+      0,
+      14
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      48,
+      95
+    ],
+    [
+      85,
+      164,
+      0,
+      61,
+      17,
+      34,
+      91,
+      2,
+      61,
+      0
+    ]
+  ],
+  "class_mapping": {
+    "0": "crack",
+    "1": "finger",
+    "2": "black_core",
+    "3": "thick_line",
+    "4": "star_crack",
+    "5": "horizontal_dislocation",
+    "6": "vertical_dislocation",
+    "7": "printing_error",
+    "8": "short_circuit"
+  },
+  "visual_artifacts": [
+    {
+      "category": "True Positive",
+      "filename": "img003707.jpg",
+      "path": "docs\\results\\visualizations\\tp_case_1_img003707.jpg",
+      "description": "Verified detection of star_crack at production threshold 0.25 (conf 0.64)."
+    },
+    {
+      "category": "True Positive",
+      "filename": "img003708.jpg",
+      "path": "docs\\results\\visualizations\\tp_case_2_img003708.jpg",
+      "description": "Verified detection of crack at production threshold 0.25 (conf 0.89)."
+    },
+    {
+      "category": "Missed at 0.25 / Recovered at 0.10",
+      "filename": "img003711.jpg",
+      "path": "docs\\results\\visualizations\\fn_recovered_case_1_img003711.jpg",
+      "description": "Faint crack, star_crack missed by 0.25 floor but accurately localized at 0.10 threshold."
+    },
+    {
+      "category": "Missed at 0.25 / Recovered at 0.10",
+      "filename": "img003799.jpg",
+      "path": "docs\\results\\visualizations\\fn_recovered_case_2_img003799.jpg",
+      "description": "Faint crack, star_crack missed by 0.25 floor but accurately localized at 0.10 threshold."
+    },
+    {
+      "category": "Missed at 0.25 / Recovered at 0.10",
+      "filename": "img003801.jpg",
+      "path": "docs\\results\\visualizations\\fn_recovered_case_3_img003801.jpg",
+      "description": "Faint star_crack missed by 0.25 floor but accurately localized at 0.10 threshold."
+    },
+    {
+      "category": "Hard Negative / Generalization Gap",
+      "filename": "img003741.jpg",
+      "path": "docs\\results\\visualizations\\fn_missed_case_1_img003741.jpg",
+      "description": "Atypical defect signature of crack, star_crack missed across all thresholds."
+    },
+    {
+      "category": "Hard Negative / Generalization Gap",
+      "filename": "img003765.jpg",
+      "path": "docs\\results\\visualizations\\fn_missed_case_2_img003765.jpg",
+      "description": "Atypical defect signature of crack, star_crack missed across all thresholds."
+    },
+    {
+      "category": "False Positive Suppression",
+      "filename": "img003708.jpg",
+      "path": "docs\\results\\visualizations\\fp_flood_case_1_img003708.jpg",
+      "description": "Demonstrates why production threshold must remain 0.25: 4 false alarms generated at 0.01."
+    },
+    {
+      "category": "False Positive Suppression",
+      "filename": "img003714.jpg",
+      "path": "docs\\results\\visualizations\\fp_flood_case_2_img003714.jpg",
+      "description": "Demonstrates why production threshold must remain 0.25: 8 false alarms generated at 0.01."
+    }
+  ]
+}

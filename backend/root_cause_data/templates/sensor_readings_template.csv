@@ -1,0 +1,7 @@
+# SolarVision AI — Model 2 Data Import Template: Sensor Telemetry
+# Contract Version: 2.0.0
+# Description: Timeseries physical sensor readings recorded across fabrication equipment.
+# Required Fields: id, machine_id, sensor_type, measurement_value, unit, recorded_at
+# Permitted sensor_type and unit values: Must match SENSOR_UNIT_REGISTRY (see documentation)
+# Timestamp format: ISO-8601 UTC (e.g., 2026-10-22T08:30:00.000Z)
+id,machine_id,batch_id,sensor_type,measurement_value,unit,is_anomaly,anomaly_score,recorded_at

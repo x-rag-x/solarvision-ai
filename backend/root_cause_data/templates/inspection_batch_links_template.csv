@@ -1,0 +1,6 @@
+# SolarVision AI — Model 2 Data Import Template: Inspection-to-Batch Lineage Links
+# Contract Version: 2.0.0
+# Description: Maps Model 1 optical inspection UUIDs to physical manufacturing batches and stations.
+# Required Fields: inspection_id, batch_id, machine_id, recorded_at
+# Timestamp format: ISO-8601 UTC (e.g., 2026-10-22T08:30:00.000Z)
+inspection_id,batch_id,machine_id,wafer_position,recorded_at

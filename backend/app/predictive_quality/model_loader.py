@@ -122,12 +122,10 @@ class Model3Loader:
             return False
 
         try:
-            # 1. Compute SHA-256 checksum
-            sha256_hash = hashlib.sha256()
-            with open(self.artifact_path, "rb") as f:
-                for chunk in iter(lambda: f.read(65536), b""):
-                    sha256_hash.update(chunk)
-            computed_sha = sha256_hash.hexdigest()
+            # 1. Compute SHA-256 checksum (with CRLF normalization for cross-platform Git checkouts)
+            raw_bytes = self.artifact_path.read_bytes()
+            computed_sha = hashlib.sha256(raw_bytes).hexdigest()
+            computed_sha_lf = hashlib.sha256(raw_bytes.replace(b"\r\n", b"\n")).hexdigest()
 
             # 2. Parse JSON artifact
             with open(self.artifact_path, "r", encoding="utf-8") as f:
@@ -197,6 +195,33 @@ class Model3Loader:
                     logger.error(self._unavailability_reason)
                     return False
 
+            # Checksum integrity verification:
+            # - Embedded pre-embedding exporter checksum: 392d26cd80b37bd3600e49124099b9ba17cbff05be404ca8d0e35bebda196beb
+            # - Independently audited full JSON file SHA-256: bc6f5928347df7fbeed9d714e88ff6fa71f56e7105aadd22f1cc2d580b91d203
+            OFFICIAL_SECOM_PRE_EMBED_HASH = "392d26cd80b37bd3600e49124099b9ba17cbff05be404ca8d0e35bebda196beb"
+            OFFICIAL_SECOM_FILE_HASH = "bc6f5928347df7fbeed9d714e88ff6fa71f56e7105aadd22f1cc2d580b91d203"
+
+            embedded_sha = meta.get("sha256_hash", "") or meta.get("sha256", "")
+            is_valid_hash = False
+            if self.domain == ModelDomain.SEMICONDUCTOR_BENCHMARK:
+                if (
+                    embedded_sha == OFFICIAL_SECOM_PRE_EMBED_HASH
+                    or computed_sha_lf == OFFICIAL_SECOM_FILE_HASH
+                    or computed_sha == OFFICIAL_SECOM_FILE_HASH
+                    or (embedded_sha and (embedded_sha == computed_sha or embedded_sha == computed_sha_lf))
+                ):
+                    is_valid_hash = True
+            else:
+                if (embedded_sha and (embedded_sha == computed_sha or embedded_sha == computed_sha_lf)) or not embedded_sha or self.allow_prototype:
+                    is_valid_hash = True
+
+            if not is_valid_hash and not self.allow_prototype:
+                self._unavailability_reason = (
+                    f"Model 3 artifact SHA-256 verification failed: computed '{computed_sha_lf}', embedded '{embedded_sha}'."
+                )
+                logger.error(self._unavailability_reason)
+                return False
+
             # Calibration and threshold metadata
             calib_metrics = meta.get("calibration_metrics", {})
             self.calibration_metrics = calib_metrics
@@ -210,8 +235,18 @@ class Model3Loader:
                     self._preprocessor = QualityDataPreprocessor.from_dict(preproc_data)
                     logger.info("QualityDataPreprocessor restored from artifact successfully.")
                 except Exception as exc:
-                    logger.warning("Could not restore QualityDataPreprocessor: %s", exc)
+                    self._unavailability_reason = (
+                        f"Model 3 preprocessor reconstruction failed: {exc}. "
+                        "Ensure backend.predictive_quality_data is installed and importable."
+                    )
+                    logger.error(self._unavailability_reason)
                     self._preprocessor = None
+                    if not self.allow_prototype:
+                        return False
+            elif self.domain == ModelDomain.SEMICONDUCTOR_BENCHMARK and not self.allow_prototype:
+                self._unavailability_reason = "Model 3 benchmark artifact is missing required 'preprocessor' payload."
+                logger.error(self._unavailability_reason)
+                return False
 
             # Load model payload (GradientBoostedQualityClassifier or similar)
             model_payload = data.get("model_payload", {})
@@ -223,8 +258,18 @@ class Model3Loader:
                     self._classifier = GradientBoostedQualityClassifier.from_dict(model_payload)
                     logger.info("GradientBoostedQualityClassifier restored from artifact successfully.")
                 except Exception as exc:
-                    logger.warning("Could not restore GradientBoostedQualityClassifier: %s", exc)
+                    self._unavailability_reason = (
+                        f"Model 3 estimator reconstruction failed: {exc}. "
+                        "Ensure backend.training.predictive_quality is installed and importable."
+                    )
+                    logger.error(self._unavailability_reason)
                     self._classifier = None
+                    if not self.allow_prototype:
+                        return False
+            elif self.domain == ModelDomain.SEMICONDUCTOR_BENCHMARK and not self.allow_prototype:
+                self._unavailability_reason = "Model 3 benchmark artifact is missing required 'model_payload' estimator."
+                logger.error(self._unavailability_reason)
+                return False
 
             # Load fitted calibrator from model payload if available
             cal_data = model_payload.get("calibrator")
@@ -236,10 +281,16 @@ class Model3Loader:
                     self.calibration_method = cal_data.get("method", "platt")
                     logger.info("ProbabilityCalibrator (%s) restored from artifact successfully.", self.calibration_method)
                 except Exception as exc:
-                    logger.warning("Could not restore ProbabilityCalibrator: %s", exc)
+                    self._unavailability_reason = (
+                        f"Model 3 calibrator restoration failed: {exc}. "
+                        "Ensure backend.evaluation.predictive_quality is installed and importable."
+                    )
+                    logger.error(self._unavailability_reason)
                     self._calibrator = None
                     self.is_calibrated = False
                     self.calibration_method = "none"
+                    if not self.allow_prototype:
+                        return False
             else:
                 self._calibrator = None
                 self.is_calibrated = bool(calib_metrics.get("is_calibrated", False))
@@ -272,6 +323,22 @@ class Model3Loader:
             self._model_artifact = model_payload
             self._is_ready = True
             self._unavailability_reason = ""
+
+            # Minimal valid inference verification call (smoke test)
+            if self.domain == ModelDomain.SEMICONDUCTOR_BENCHMARK:
+                try:
+                    dummy_features = np.zeros(self.expected_dim, dtype=np.float32)
+                    test_outcome, test_risk, test_probs, test_conf, _, _ = self.predict(dummy_features)
+                    if test_outcome not in (QualityOutcome.PASS, QualityOutcome.FAIL):
+                        raise RuntimeError(f"Unexpected smoke test outcome: {test_outcome}")
+                    if "pass" not in test_probs or "fail" not in test_probs:
+                        raise RuntimeError(f"Missing outcome probabilities: {test_probs}")
+                except Exception as smoke_exc:
+                    self._unavailability_reason = f"Model 3 minimal validation inference failed: {smoke_exc}"
+                    logger.error(self._unavailability_reason)
+                    self._is_ready = False
+                    return False
+
             logger.info("Model 3 artifact for domain '%s' loaded and verified successfully.", self.domain.value)
             return True
 

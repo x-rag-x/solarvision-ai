@@ -1,0 +1,249 @@
+{
+  "schema_version": "2.0.0",
+  "title": "SolarVision AI — Photovoltaic Manufacturing Sensor Dictionary",
+  "description": "Standardized registry of continuous SCADA telemetry channels, physical units, acceptable validation boundaries, and nominal operating baselines.",
+  "sensors": [
+    {
+      "sensor_type": "soldering_temp_top_c",
+      "machine_type": "stringer",
+      "physical_unit": "°C",
+      "min_valid": 150.0,
+      "max_valid": 350.0,
+      "nominal_target": 230.0,
+      "nominal_std": 15.0,
+      "recommended_sampling_hz": 1.0,
+      "description": "Tabber stringer upper soldering head ribbon heating temperature."
+    },
+    {
+      "sensor_type": "soldering_temp_bottom_c",
+      "machine_type": "stringer",
+      "physical_unit": "°C",
+      "min_valid": 150.0,
+      "max_valid": 350.0,
+      "nominal_target": 230.0,
+      "nominal_std": 15.0,
+      "recommended_sampling_hz": 1.0,
+      "description": "Tabber stringer lower preheating bed temperature."
+    },
+    {
+      "sensor_type": "soldering_pressure_n",
+      "machine_type": "stringer",
+      "physical_unit": "N",
+      "min_valid": 1.0,
+      "max_valid": 50.0,
+      "nominal_target": 15.0,
+      "nominal_std": 2.5,
+      "recommended_sampling_hz": 2.0,
+      "description": "Ribbon soldering head mechanical clamping force."
+    },
+    {
+      "sensor_type": "soldering_speed_mm_s",
+      "machine_type": "stringer",
+      "physical_unit": "mm/s",
+      "min_valid": 50.0,
+      "max_valid": 300.0,
+      "nominal_target": 150.0,
+      "nominal_std": 10.0,
+      "recommended_sampling_hz": 1.0,
+      "description": "Stringer conveyor ribbon feed rate."
+    },
+    {
+      "sensor_type": "ribbon_tension_n",
+      "machine_type": "stringer",
+      "physical_unit": "N",
+      "min_valid": 0.1,
+      "max_valid": 5.0,
+      "nominal_target": 1.2,
+      "nominal_std": 0.3,
+      "recommended_sampling_hz": 2.0,
+      "description": "Copper interconnect ribbon spool mechanical feed tension."
+    },
+    {
+      "sensor_type": "squeegee_pressure_n_cm2",
+      "machine_type": "screen_printer",
+      "physical_unit": "N/cm²",
+      "min_valid": 1.0,
+      "max_valid": 35.0,
+      "nominal_target": 18.0,
+      "nominal_std": 3.0,
+      "recommended_sampling_hz": 5.0,
+      "description": "Screen printing squeegee blade downward contact pressure."
+    },
+    {
+      "sensor_type": "squeegee_speed_mm_s",
+      "machine_type": "screen_printer",
+      "physical_unit": "mm/s",
+      "min_valid": 50.0,
+      "max_valid": 500.0,
+      "nominal_target": 250.0,
+      "nominal_std": 20.0,
+      "recommended_sampling_hz": 5.0,
+      "description": "Metallization paste print stroke velocity across screen."
+    },
+    {
+      "sensor_type": "screen_separation_dist_mm",
+      "machine_type": "screen_printer",
+      "physical_unit": "mm",
+      "min_valid": 0.5,
+      "max_valid": 5.0,
+      "nominal_target": 1.8,
+      "nominal_std": 0.2,
+      "recommended_sampling_hz": 0.5,
+      "description": "Snap-off distance between screen mesh and wafer surface."
+    },
+    {
+      "sensor_type": "screen_paste_viscosity_pa_s",
+      "machine_type": "screen_printer",
+      "physical_unit": "Pa·s",
+      "min_valid": 50.0,
+      "max_valid": 350.0,
+      "nominal_target": 180.0,
+      "nominal_std": 15.0,
+      "recommended_sampling_hz": 0.1,
+      "description": "Silver/aluminum metallization paste shear viscosity."
+    },
+    {
+      "sensor_type": "firing_zone1_temp_c",
+      "machine_type": "firing_furnace",
+      "physical_unit": "°C",
+      "min_valid": 300.0,
+      "max_valid": 600.0,
+      "nominal_target": 450.0,
+      "nominal_std": 10.0,
+      "recommended_sampling_hz": 1.0,
+      "description": "Contact firing furnace organic binder burnout zone."
+    },
+    {
+      "sensor_type": "firing_zone2_temp_c",
+      "machine_type": "firing_furnace",
+      "physical_unit": "°C",
+      "min_valid": 500.0,
+      "max_valid": 800.0,
+      "nominal_target": 650.0,
+      "nominal_std": 12.0,
+      "recommended_sampling_hz": 1.0,
+      "description": "Contact firing furnace ramp-up thermal zone."
+    },
+    {
+      "sensor_type": "firing_zone3_temp_c",
+      "machine_type": "firing_furnace",
+      "physical_unit": "°C",
+      "min_valid": 700.0,
+      "max_valid": 950.0,
+      "nominal_target": 850.0,
+      "nominal_std": 15.0,
+      "recommended_sampling_hz": 2.0,
+      "description": "Peak contact firing zone for silver-silicon eutectic formation."
+    },
+    {
+      "sensor_type": "firing_belt_speed_cm_min",
+      "machine_type": "firing_furnace",
+      "physical_unit": "cm/min",
+      "min_valid": 200.0,
+      "max_valid": 800.0,
+      "nominal_target": 550.0,
+      "nominal_std": 15.0,
+      "recommended_sampling_hz": 1.0,
+      "description": "Continuous mesh belt conveyor speed through furnace zones."
+    },
+    {
+      "sensor_type": "handling_robot_accel_g",
+      "machine_type": "handling_robot",
+      "physical_unit": "G",
+      "min_valid": 0.1,
+      "max_valid": 5.0,
+      "nominal_target": 0.8,
+      "nominal_std": 0.15,
+      "recommended_sampling_hz": 10.0,
+      "description": "Wafer transfer pick-and-place end-effector peak acceleration."
+    },
+    {
+      "sensor_type": "handling_vacuum_kpa",
+      "machine_type": "handling_robot",
+      "physical_unit": "kPa",
+      "min_valid": 20.0,
+      "max_valid": 95.0,
+      "nominal_target": 65.0,
+      "nominal_std": 5.0,
+      "recommended_sampling_hz": 5.0,
+      "description": "Wafer transfer suction cup vacuum differential holding pressure."
+    },
+    {
+      "sensor_type": "lamination_temp_c",
+      "machine_type": "laminator",
+      "physical_unit": "°C",
+      "min_valid": 120.0,
+      "max_valid": 180.0,
+      "nominal_target": 145.0,
+      "nominal_std": 5.0,
+      "recommended_sampling_hz": 0.5,
+      "description": "Vacuum laminator heating platen temperature for EVA/POE cross-linking."
+    },
+    {
+      "sensor_type": "lamination_pressure_mbar",
+      "machine_type": "laminator",
+      "physical_unit": "mbar",
+      "min_valid": 100.0,
+      "max_valid": 1100.0,
+      "nominal_target": 800.0,
+      "nominal_std": 40.0,
+      "recommended_sampling_hz": 0.5,
+      "description": "Laminator flexible diaphragm pressing chamber pressure."
+    },
+    {
+      "sensor_type": "lamination_vacuum_mbar",
+      "machine_type": "laminator",
+      "physical_unit": "mbar",
+      "min_valid": 0.1,
+      "max_valid": 50.0,
+      "nominal_target": 1.0,
+      "nominal_std": 0.3,
+      "recommended_sampling_hz": 1.0,
+      "description": "Pre-press evacuation vacuum level to eliminate bubble entrapment."
+    },
+    {
+      "sensor_type": "texturing_bath_temp_c",
+      "machine_type": "chemical_bath",
+      "physical_unit": "°C",
+      "min_valid": 60.0,
+      "max_valid": 95.0,
+      "nominal_target": 80.0,
+      "nominal_std": 3.0,
+      "recommended_sampling_hz": 0.2,
+      "description": "KOH/IPA alkaline texturing bath temperature for random pyramid formation."
+    },
+    {
+      "sensor_type": "texturing_hcl_conc_pct",
+      "machine_type": "chemical_bath",
+      "physical_unit": "%",
+      "min_valid": 0.5,
+      "max_valid": 10.0,
+      "nominal_target": 2.5,
+      "nominal_std": 0.3,
+      "recommended_sampling_hz": 0.1,
+      "description": "Post-texturing acidic neutralization / metal clean bath concentration."
+    },
+    {
+      "sensor_type": "cleanroom_temp_c",
+      "machine_type": "environmental",
+      "physical_unit": "°C",
+      "min_valid": 15.0,
+      "max_valid": 30.0,
+      "nominal_target": 22.0,
+      "nominal_std": 1.5,
+      "recommended_sampling_hz": 0.05,
+      "description": "Cleanroom ambient temperature at inspection station."
+    },
+    {
+      "sensor_type": "cleanroom_humidity_pct",
+      "machine_type": "environmental",
+      "physical_unit": "%",
+      "min_valid": 20.0,
+      "max_valid": 80.0,
+      "nominal_target": 45.0,
+      "nominal_std": 5.0,
+      "recommended_sampling_hz": 0.05,
+      "description": "Cleanroom ambient relative humidity."
+    }
+  ]
+}

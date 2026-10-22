@@ -220,15 +220,36 @@ function initSqliteSchema(db: DatabaseSync) {
 
     CREATE TABLE IF NOT EXISTS predictive_quality_forecasts (
       id TEXT PRIMARY KEY,
-      batchId TEXT NOT NULL REFERENCES manufacturing_batches(id) ON DELETE CASCADE,
+      batchId TEXT REFERENCES manufacturing_batches(id) ON DELETE CASCADE,
+      machineId TEXT REFERENCES manufacturing_machines(id) ON DELETE SET NULL,
+      waferId TEXT,
+      userId TEXT,
       modelVersionId TEXT REFERENCES model_versions(id) ON DELETE SET NULL,
-      predictedDefectRate REAL NOT NULL,
+      modelVersion TEXT,
+      domain TEXT NOT NULL DEFAULT 'solar_cell_manufacturing',
+      isBenchmark INTEGER NOT NULL DEFAULT 0,
+      dataSource TEXT,
+      provenance TEXT,
+      qualityOutcome TEXT NOT NULL DEFAULT 'unknown',
       riskLevel TEXT NOT NULL DEFAULT 'low',
-      predictedLossPercentage REAL,
-      dominantRiskDefect TEXT,
+      failureProbability REAL,
+      predictedDefectRate REAL,
+      predictedYield REAL,
+      confidence REAL,
+      confidenceIntervalLow REAL,
+      confidenceIntervalHigh REAL,
       confidenceInterval TEXT,
+      forecastHorizonHours INTEGER DEFAULT 24,
       forecastHorizon TEXT,
-      generatedAt TEXT NOT NULL
+      dominantRiskDefect TEXT,
+      predictedLossPercentage REAL,
+      topRiskFactors TEXT,
+      factors TEXT,
+      probabilities TEXT,
+      inputReference TEXT,
+      recommendedAction TEXT,
+      createdAt TEXT NOT NULL,
+      generatedAt TEXT
     );
 
     CREATE TABLE IF NOT EXISTS maintenance_predictions (
@@ -265,12 +286,237 @@ function initSqliteSchema(db: DatabaseSync) {
     CREATE INDEX IF NOT EXISTS idx_production_events_machine ON production_events(machineId, startedAt DESC);
     CREATE INDEX IF NOT EXISTS idx_root_cause_inspection ON root_cause_predictions(inspectionId);
     CREATE INDEX IF NOT EXISTS idx_maintenance_machine ON maintenance_predictions(machineId, urgency);
-    CREATE INDEX IF NOT EXISTS idx_quality_forecast_batch ON predictive_quality_forecasts(batchId);
     CREATE INDEX IF NOT EXISTS idx_alerts_unack ON alert_records(acknowledged, severity, createdAt DESC);
+  `);
+
+  // Ensure Model 3 Predictive Quality schema and migrations are active
+  ensureQualitySchema(db);
+}
+
+export const MODEL3_ADDITIVE_COLUMNS = [
+  { name: "userId", type: "TEXT" },
+  { name: "machineId", type: "TEXT REFERENCES manufacturing_machines(id) ON DELETE SET NULL" },
+  { name: "waferId", type: "TEXT" },
+  { name: "modelVersion", type: "TEXT" },
+  { name: "domain", type: "TEXT NOT NULL DEFAULT 'solar_cell_manufacturing'" },
+  { name: "isBenchmark", type: "INTEGER NOT NULL DEFAULT 0" },
+  { name: "dataSource", type: "TEXT" },
+  { name: "provenance", type: "TEXT" },
+  { name: "qualityOutcome", type: "TEXT NOT NULL DEFAULT 'unknown'" },
+  { name: "failureProbability", type: "REAL" },
+  { name: "predictedYield", type: "REAL" },
+  { name: "confidence", type: "REAL" },
+  { name: "confidenceIntervalLow", type: "REAL" },
+  { name: "confidenceIntervalHigh", type: "REAL" },
+  { name: "confidenceInterval", type: "TEXT" },
+  { name: "forecastHorizonHours", type: "INTEGER DEFAULT 24" },
+  { name: "forecastHorizon", type: "TEXT" },
+  { name: "dominantRiskDefect", type: "TEXT" },
+  { name: "predictedLossPercentage", type: "REAL" },
+  { name: "topRiskFactors", type: "TEXT" },
+  { name: "factors", type: "TEXT" },
+  { name: "probabilities", type: "TEXT" },
+  { name: "inputReference", type: "TEXT" },
+  { name: "recommendedAction", type: "TEXT" },
+  { name: "createdAt", type: "TEXT" },
+  { name: "generatedAt", type: "TEXT" },
+];
+
+export function ensureQualitySchema(db: DatabaseSync): void {
+  // 1. Ensure foreign key parent tables exist
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS model_versions (
+      id TEXT PRIMARY KEY,
+      modelName TEXT NOT NULL,
+      version TEXT NOT NULL,
+      framework TEXT NOT NULL,
+      artifactUri TEXT,
+      metrics TEXT,
+      status TEXT NOT NULL DEFAULT 'active',
+      description TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS manufacturing_batches (
+      id TEXT PRIMARY KEY,
+      batchNumber TEXT UNIQUE NOT NULL,
+      waferType TEXT NOT NULL,
+      cellLine TEXT NOT NULL,
+      targetQuantity INTEGER NOT NULL,
+      actualQuantity INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'in_progress',
+      startTime TEXT NOT NULL,
+      endTime TEXT,
+      metadata TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS manufacturing_machines (
+      id TEXT PRIMARY KEY,
+      machineCode TEXT UNIQUE NOT NULL,
+      machineType TEXT NOT NULL,
+      lineId TEXT NOT NULL,
+      location TEXT,
+      status TEXT NOT NULL DEFAULT 'operational',
+      lastMaintenanceAt TEXT,
+      nextMaintenanceDue TEXT,
+      metadata TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+  `);
+
+  // 2. Base predictive_quality_forecasts table creation
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS predictive_quality_forecasts (
+      id TEXT PRIMARY KEY,
+      batchId TEXT REFERENCES manufacturing_batches(id) ON DELETE CASCADE,
+      machineId TEXT REFERENCES manufacturing_machines(id) ON DELETE SET NULL,
+      waferId TEXT,
+      userId TEXT,
+      modelVersionId TEXT REFERENCES model_versions(id) ON DELETE SET NULL,
+      modelVersion TEXT,
+      domain TEXT NOT NULL DEFAULT 'solar_cell_manufacturing',
+      isBenchmark INTEGER NOT NULL DEFAULT 0,
+      dataSource TEXT,
+      provenance TEXT,
+      qualityOutcome TEXT NOT NULL DEFAULT 'unknown',
+      riskLevel TEXT NOT NULL DEFAULT 'low',
+      failureProbability REAL,
+      predictedDefectRate REAL,
+      predictedYield REAL,
+      confidence REAL,
+      confidenceIntervalLow REAL,
+      confidenceIntervalHigh REAL,
+      confidenceInterval TEXT,
+      forecastHorizonHours INTEGER DEFAULT 24,
+      forecastHorizon TEXT,
+      dominantRiskDefect TEXT,
+      predictedLossPercentage REAL,
+      topRiskFactors TEXT,
+      factors TEXT,
+      probabilities TEXT,
+      inputReference TEXT,
+      recommendedAction TEXT,
+      createdAt TEXT NOT NULL,
+      generatedAt TEXT
+    );
+  `);
+
+  // Idempotently apply additive columns
+  migrateTableColumns(db, "predictive_quality_forecasts", MODEL3_ADDITIVE_COLUMNS);
+
+  // Safely lift legacy NOT NULL constraints without data loss
+  try {
+    const tableInfo = db
+      .prepare("PRAGMA table_info(predictive_quality_forecasts)")
+      .all() as Array<{ name: string; notnull: number }>;
+    const hasLegacyNotNull = tableInfo.some(
+      (c) =>
+        (c.name === "predictedYield" ||
+          c.name === "batchId" ||
+          c.name === "predictedDefectRate") &&
+        c.notnull === 1
+    );
+
+    if (hasLegacyNotNull) {
+      db.exec("PRAGMA foreign_keys = OFF;");
+      try {
+        db.exec("BEGIN IMMEDIATE;");
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS predictive_quality_forecasts_canonical (
+            id TEXT PRIMARY KEY,
+            batchId TEXT REFERENCES manufacturing_batches(id) ON DELETE CASCADE,
+            machineId TEXT REFERENCES manufacturing_machines(id) ON DELETE SET NULL,
+            waferId TEXT,
+            userId TEXT,
+            modelVersionId TEXT REFERENCES model_versions(id) ON DELETE SET NULL,
+            modelVersion TEXT,
+            domain TEXT NOT NULL DEFAULT 'solar_cell_manufacturing',
+            isBenchmark INTEGER NOT NULL DEFAULT 0,
+            dataSource TEXT,
+            provenance TEXT,
+            qualityOutcome TEXT NOT NULL DEFAULT 'unknown',
+            riskLevel TEXT NOT NULL DEFAULT 'low',
+            failureProbability REAL,
+            predictedDefectRate REAL,
+            predictedYield REAL,
+            confidence REAL,
+            confidenceIntervalLow REAL,
+            confidenceIntervalHigh REAL,
+            confidenceInterval TEXT,
+            forecastHorizonHours INTEGER DEFAULT 24,
+            forecastHorizon TEXT,
+            dominantRiskDefect TEXT,
+            predictedLossPercentage REAL,
+            topRiskFactors TEXT,
+            factors TEXT,
+            probabilities TEXT,
+            inputReference TEXT,
+            recommendedAction TEXT,
+            createdAt TEXT,
+            generatedAt TEXT
+          );
+        `);
+
+        const allColNames = [
+          "id", "batchId", "machineId", "waferId", "userId", "modelVersionId",
+          "modelVersion", "domain", "isBenchmark", "dataSource", "provenance",
+          "qualityOutcome", "riskLevel", "failureProbability", "predictedDefectRate",
+          "predictedYield", "confidence", "confidenceIntervalLow", "confidenceIntervalHigh",
+          "confidenceInterval", "forecastHorizonHours", "forecastHorizon",
+          "dominantRiskDefect", "predictedLossPercentage", "topRiskFactors", "factors",
+          "probabilities", "inputReference", "recommendedAction", "createdAt", "generatedAt"
+        ];
+        const existingNames = new Set(tableInfo.map((c) => c.name));
+        const sharedCols = allColNames.filter((c) => existingNames.has(c));
+
+        if (sharedCols.length > 0) {
+          const sharedStr = sharedCols.join(", ");
+          db.exec(`INSERT INTO predictive_quality_forecasts_canonical (${sharedStr}) SELECT ${sharedStr} FROM predictive_quality_forecasts;`);
+        }
+        db.exec("DROP TABLE predictive_quality_forecasts;");
+        db.exec("ALTER TABLE predictive_quality_forecasts_canonical RENAME TO predictive_quality_forecasts;");
+        db.exec("COMMIT;");
+      } catch (err) {
+        db.exec("ROLLBACK;");
+        throw err;
+      } finally {
+        db.exec("PRAGMA foreign_keys = ON;");
+      }
+    }
+  } catch (migErr) {
+    console.warn("[Model 3 Migration] Nullable schema upgrade notice:", migErr);
+  }
+
+  // Ensure timestamps are synchronized between createdAt and generatedAt
+  try {
+    db.exec(`
+      UPDATE predictive_quality_forecasts 
+      SET createdAt = COALESCE(createdAt, generatedAt, datetime('now')),
+          generatedAt = COALESCE(generatedAt, createdAt, datetime('now'))
+      WHERE createdAt IS NULL OR generatedAt IS NULL;
+    `);
+  } catch {
+    // Ignore if column absent
+  }
+
+  // Indexes for user isolation, domain filtering, and timestamp ordering
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_quality_forecast_batch 
+      ON predictive_quality_forecasts(batchId);
+    CREATE INDEX IF NOT EXISTS idx_quality_forecast_user 
+      ON predictive_quality_forecasts(userId, createdAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_quality_forecast_domain 
+      ON predictive_quality_forecasts(domain, isBenchmark);
+    CREATE INDEX IF NOT EXISTS idx_quality_forecast_created 
+      ON predictive_quality_forecasts(createdAt DESC);
   `);
 }
 
-function migrateTableColumns(
+export function migrateTableColumns(
   db: DatabaseSync,
   tableName: string,
   columnsToAdd: Array<{ name: string; type: string }>,

@@ -1,3 +1,4 @@
+import { trpc } from "@/lib/trpc";
 import { Bell, Check, CheckCheck, ChevronRight, Database, ScanLine, ShieldAlert, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
@@ -5,9 +6,9 @@ import type { NotificationEvent, NotificationTone } from "./notification-model";
 
 type NotificationItem = { id: string; title: string; message: string; tone: NotificationTone; timestamp: number; href?: string; read?: boolean };
 
-const seed: NotificationItem[] = [
+const initialSeed: NotificationItem[] = [
   { id: "pipeline-ready", title: "Inference pipeline ready", message: "YOLO26n checkpoint is available for a new inspection.", tone: "success", timestamp: Date.now() - 1000 * 60 * 4, href: "/inspection" },
-  { id: "database-connected", title: "Supabase connected", message: "Inspection history and analytics are reading from live project data.", tone: "info", timestamp: Date.now() - 1000 * 60 * 12, href: "/history" },
+  { id: "database-connected", title: "Storage layer verified", message: "Checking local SQLite vs Supabase persistence status...", tone: "info", timestamp: Date.now() - 1000 * 60 * 12, href: "/history" },
   { id: "benchmark-ready", title: "Historical evaluation benchmark", message: "mAP@50: 69.75% recorded on 792 held-out images. Note: not live production certification.", tone: "info", timestamp: Date.now() - 1000 * 60 * 38, href: "/model" },
 ];
 
@@ -25,8 +26,33 @@ function relativeTime(timestamp: number) {
 export default function NotificationCenter() {
   const [, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState(seed);
+  const [items, setItems] = useState<NotificationItem[]>(initialSeed);
   const unread = useMemo(() => items.filter(item => !item.read).length, [items]);
+
+  const { data: modelStatus } = trpc.model.status.useQuery();
+
+  useEffect(() => {
+    if (modelStatus) {
+      setItems(current =>
+        current.map(item => {
+          if (item.id === "database-connected") {
+            return modelStatus.supabaseConfigured
+              ? {
+                  ...item,
+                  title: "Supabase connected",
+                  message: "Inspection history and analytics are reading from live Supabase cloud data.",
+                }
+              : {
+                  ...item,
+                  title: "Local SQLite storage active",
+                  message: "Inspection records and bounding boxes are persisting to local SQLite database (data/solarvision.db).",
+                };
+          }
+          return item;
+        })
+      );
+    }
+  }, [modelStatus]);
 
   useEffect(() => {
     const onNotification = (event: Event) => {

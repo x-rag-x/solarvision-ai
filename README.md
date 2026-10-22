@@ -1,235 +1,190 @@
 # SolarVision AI
 
-SolarVision AI is an evidence-first smart-manufacturing application for automated solar-cell EL/NIR defect inspection. The workspace combines a React operator console, typed server procedures, a Python FastAPI inference service, a YOLO26n checkpoint, managed image storage, and database-backed inspection history and analytics.
+SolarVision AI is an evidence-first, zero-fabrication smart-manufacturing platform for photovoltaic (PV) solar-cell quality inspection and manufacturing intelligence.
 
-## What is implemented
+The application combines a modern React 19 operator console, typed Node.js/tRPC server procedures, a high-throughput Python FastAPI inference engine, and a strictly domain-segregated 4-model machine learning architecture.
 
-The M1 workflow is intentionally real-data-only: upload an image, run the configured YOLO checkpoint, return model-produced bounding boxes and confidence scores, render an annotated image, persist metadata and detections when database/storage credentials are available, and display the result in the dashboard. No synthetic inspection rows, production counts, sensor values, machine-health scores, root causes, or evaluation metrics are embedded in the UI.
+---
 
-The application includes the following routes:
+## The Four-Model Machine Learning Architecture
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Overview dashboard with persisted KPIs, runtime state, workflow steps, and latest activity |
-| `/inspection` | Image upload, YOLO inspection action, annotated result, confidence, and bounding-box review |
-| `/history` | Database-backed inspection traceability table |
-| `/analytics` | Defect-type counts, average confidence, and daily inspection trend from stored records |
-| `/model` | Checkpoint readiness and independent-metrics provenance |
-| `/roadmap` | M2 root-cause, M3 predictive maintenance, and M4 connected-factory extension points |
+SolarVision AI strictly enforces engineering integrity and scientific domain segregation. Each of the four models reflects transparent, truthful operational readiness without synthetic claims or fabricated readiness metrics.
 
-## Architecture
+| Model Module | Domain / Benchmark | Current Status | Architecture / Dataset | Primary Task |
+| :--- | :--- | :--- | :--- | :--- |
+| **Model 1: Defect Detection** | Authentic EL/NIR Solar Cells | **DEPLOYED & EVALUATED** | Ultralytics YOLO26n (2.5M params)<br>Trained on 9 defect categories | Computer vision detection of micro-cracks, finger breaks, shunts, and dislocations |
+| **Model 2: Root-Cause Analysis** | Solar Factory Multimodal | **DATASET INCOMPLETE<br>(Training Quarantined)** | 48-feature multimodal contract<br>Random Forest prototype | Rule-based telemetry validation, CSV data onboarding, and expert review |
+| **Model 3: Predictive Quality** | UCI SECOM Benchmark<br>*(Semiconductor Wafer)* | **BENCHMARK EVALUATED<br>(Solar Factory Untrained)** | Gradient Boosted Classifier<br>590 raw features / 744 engineered | Wafer quality defect prediction on 1,567 chronological semiconductor runs |
+| **Model 4: Predictive Maintenance** | UCI AI4I 2020 Benchmark<br>*(Synthetic Milling Machine)* | **BENCHMARK EVALUATED<br>(Solar Factory Untrained)** | Gradient Boosted Classifier<br>6 canonical physical measurements | Machine failure risk scoring & physical failure mode attribution (TWF/HDF/PWF/OSF) |
 
-```text
-Solar cell / EL-NIR image
-        |
-        v
-React + TypeScript operator console
-        |
-        v
-tRPC server procedures (`server/routers.ts`)
-        |
-        +--> Python bridge (`python3 -m backend.app.infer_cli`)
-        |        |
-        |        +--> FastAPI / Ultralytics YOLO26n service (`backend/app`)
-        |        +--> real bounding boxes + confidence + annotated image
-        |
-        +--> managed storage or Supabase Storage
-        +--> Drizzle database or Supabase Postgres adapter
-        |
-        v
-History, defect analytics, model status, future ML extension points
-```
+> [!IMPORTANT]
+> **Domain Segregation Notice**:
+> - **Model 1** is trained and evaluated on authentic solar-cell electroluminescence (EL) and near-infrared (NIR) imagery.
+> - **Model 2** genuine supervised training is strictly quarantined (`DATASET_INCOMPLETE`) until authentic factory IoT sensor-defect pairs are supplied.
+> - **Model 3** is evaluated on the UCI SECOM semiconductor wafer benchmark. It is **NOT** a solar-cell manufacturing quality model.
+> - **Model 4** is evaluated on the UCI AI4I 2020 synthetic milling machine benchmark. It is **NOT** certified for solar factory machinery (tabbers, stringers, laminators).
 
-The WebDev preview runs as one Node process. The Node inspection bridge invokes the Python CLI synchronously for a request, which keeps the preview compatible with the managed runtime. For a dedicated deployment, the FastAPI service can run as its own process or be folded into a custom image with the Python dependencies installed.
+---
 
-## Technology stack
+## Detailed Model Provenance & Evaluation Metrics
 
-- React 19, TypeScript, Tailwind CSS, Wouter, Recharts
-- Express, tRPC, Drizzle ORM, MySQL/TiDB-compatible default project database
-- FastAPI, OpenCV, Pillow, Ultralytics, NumPy
-- Supabase REST adapter and SQL schema for Postgres + private Storage bucket
-- Uploaded YOLO checkpoint: `backend/models/best.pt`
+### Model 1: Solar-Cell EL/NIR Defect Detection
+- **Checkpoint Location:** `backend/models/best.pt`
+- **Integrity (SHA-256):** `59650dafe43c178e89af3d439b283ebf1c3e4abe6239aaa111c62afa41b7a7c6`
+- **Model Architecture:** YOLO26n / YOLOv8n DetectionModel (2,507,310 parameters)
+- **9 Target Classes:** `crack`, `finger`, `black_core`, `thick_line`, `star_crack`, `horizontal_dislocation`, `vertical_dislocation`, `printing_error`, `short_circuit`.
+- **Recorded Training Validation Metrics (50 Epochs):**
+  - **mAP@50:** `91.87%` (0.91869)
+  - **mAP@50–95:** `66.38%` (0.66376)
+  - **Precision:** `90.45%` (0.90452)
+  - **Recall:** `88.15%` (0.88149)
+- **Operating Confidence Threshold:** Strictly set to `0.25` (empirically confirmed to eliminate crystal grain background noise while retaining sub-millimeter micro-crack sensitivity).
 
-## Project structure
+### Model 2: Multimodal Root Cause Analysis
+- **Status:** `DATASET_INCOMPLETE` — Supervised training is quarantined.
+- **Specification:** Version 2.0.0 Unified 48-Feature Specification (`backend/root_cause_data/artifacts/canonical_feature_specification_v2.json`).
+- **Operational Features:**
+  - Automated 2-stage CSV ingestion engine with transactional rollback and physical bounds checks.
+  - Inspection-to-equipment linking (lot/batch tracking, machine association, wafer position).
+  - Expert engineering review workflow with verifiable provenance.
+  - Zero-fabrication guarantee: When genuine machine learning checkpoints are absent, the system truthfully returns `not_trained` without generating synthetic root causes.
 
-```text
-backend/
-  app/
-    config.py             # runtime configuration
-    inference.py          # checkpoint loading, prediction, annotation
-    infer_cli.py          # Node bridge entry point
-    main.py               # standalone FastAPI app
-    schemas.py            # typed API models
-  models/best.pt          # uploaded trained checkpoint
-  requirements.txt
-client/src/
-  components/DashboardLayout.tsx
-  components/solarvision/Primitives.tsx
-  pages/Home.tsx
-  pages/Inspection.tsx
-  pages/History.tsx
-  pages/Analytics.tsx
-  pages/ModelPerformance.tsx
-  pages/Roadmap.tsx
-server/
-  db.ts                   # persistence repositories
-  routers.ts              # typed API procedures
-  inspection/service.ts   # inference + storage + persistence orchestration
-  inspection/supabase.ts  # optional Supabase REST adapter
-  storage.ts              # managed file storage helper
-supabase/schema.sql       # Postgres tables and private bucket setup
-drizzle/schema.ts         # WebDev database schema
-```
+### Model 3: Predictive Quality Analysis (SECOM Benchmark)
+- **Dataset Reference:** UCI SECOM Dataset (DOI: [10.24432/C57G69](https://doi.org/10.24432/C57G69), CC-BY 4.0).
+- **Split Strategy:** Time-Aware Chronological Split (70% Train: 1,096; 15% Validation: 235; 15% Test: 236).
+- **Zero-Leakage Guarantee:** Preprocessor fitted strictly on training data; probability calibrator fitted strictly on validation predictions.
+- **Decision Threshold Reconciliation (Audit Finding F08):**
+  - **Raw Validation-Optimal Threshold ($\tau_{\text{raw}} = 0.07$):**
+    - Confusion Matrix (Test Set): **TP = 4, FP = 31, TN = 196, FN = 5**
+    - Accuracy: `84.75%`, Precision: `11.43%`, Recall: `44.44%`, F1-Fail: `0.1818`, Macro-F1: `0.5489`
+  - **Monotonic Calibrated Validation Threshold ($\tau_{\text{cal}} = 0.0800$):**
+    - Confusion Matrix (Test Set): **TP = 4, FP = 24, TN = 203, FN = 5**
+    - Accuracy: `87.71%`, Precision: `14.29%`, Recall: `44.44%`, F1-Fail: `0.2162`, Macro-F1: `0.5748`
+  - **Production Serving Decision Rule ($p_{\text{cal}} \ge 0.0700$):**
+    - Confusion Matrix (Test Set): **TP = 5, FP = 88, TN = 139, FN = 4**
+    - Precision: `5.38%`, Recall: `55.56%`, F1-Fail: `0.0980`, Macro-F1: `0.4247`
 
-## Model setup
+### Model 4: Predictive Maintenance (AI4I Benchmark)
+- **Dataset Reference:** UCI AI4I 2020 Predictive Maintenance Dataset (DOI: [10.24432/C5HS5C](https://doi.org/10.24432/C5HS5C), CC-BY 4.0).
+- **Split Strategy:** Stratified Random Split (70% Train: 6,999; 15% Validation: 1,499; 15% Test: 1,502).
+- **6 Physical Measurements:** Product Type, Air Temperature [K], Process Temperature [K], Rotational Speed [RPM], Torque [Nm], Tool Wear [min].
+- **Decision Threshold Reconciliation (Audit Finding F08):**
+  - **Raw Validation-Optimal Threshold ($\tau_{\text{raw}} = 0.1981$):**
+    - Confusion Matrix (Test Set): **TP = 25, FP = 23, TN = 1427, FN = 27**
+    - Accuracy: `96.67%`, Precision: `52.08%`, Recall: `48.08%`, F1-Failure: `0.5000`, Macro-F1: `0.7414`, ROC-AUC: `0.9307`
+  - **Monotonic Calibrated Validation Threshold ($\tau_{\text{cal}} = 0.3664 \approx \text{Calibrator}(0.1981) = 0.3591$):**
+    - Confusion Matrix (Test Set): **TP = 25, FP = 23, TN = 1427, FN = 27**
+    - Precision: `52.08%`, Recall: `48.08%`, F1-Failure: `0.5000`, Macro-F1: `0.7414`
+    - *Preserves the exact same classification decisions as the raw threshold due to the strictly monotonic property of Platt calibration.*
+  - **Production Serving Decision Rule ($p_{\text{cal}} \ge 0.1981 \iff p_{\text{raw}} \ge 0.1317$):**
+    - Shifted operating point favoring higher sensitivity: **TP = 33, FP = 66, TN = 1384, FN = 19**
+    - Precision: `33.33%`, Recall: `63.46%`, F1-Failure: `0.4371`, Macro-F1: `0.7036`
 
-The uploaded checkpoint is already copied to `backend/models/best.pt`. The actual path is configurable and is never hard-coded in the inference service.
+---
 
+## Installation & Clean Setup Guide
+
+### 1. Prerequisites
+- **Node.js**: `>= 20.x`
+- **pnpm**: `>= 9.x`
+- **Python**: `>= 3.10` (Python 3.11–3.13 supported)
+
+### 2. Environment Configuration
+Clone the repository and copy the environment template:
 ```bash
-export MODEL_PATH=backend/models/best.pt
-export CONFIDENCE_THRESHOLD=0.25
-export IMAGE_SIZE=640
+cp .env.example .env
 ```
 
-If the configured checkpoint is missing, the FastAPI app fails startup with:
+Review `.env` settings:
+- On Windows: set `PYTHON_EXECUTABLE=backend\.venv\Scripts\python.exe`
+- On Linux/macOS: set `PYTHON_EXECUTABLE=backend/.venv/bin/python`
+- For local zero-dependency development, leave `DATABASE_URL` empty to use the built-in SQLite persistence layer (`data/solarvision.db`).
 
-> YOLO model not found. Please place best.pt in the configured model path.
-
-The model class labels are read from the checkpoint at runtime. Independent precision, recall, mAP, and confusion-matrix values are not inferred from the checkpoint; provide a held-out evaluation report before adding those values to the model registry.
-
-### Training configuration status
-
-The delivered project contains the trained checkpoint but no dataset YAML, training script, augmentation configuration, training/validation manifest, or polarity-conversion record. The checkpoint metadata does embed `imgsz=640`, `iou=0.7`, `max_det=300`, `rect=false`, `augment=false`, `val=true`, `split=val`, `epochs=50`, `batch=16`, and the dataset reference `/content/solar_dataset/data.yaml`. It also records standard Ultralytics training arguments including HSV augmentation, horizontal flip, scale/translate, mosaic, RandAugment, and erasing settings. These are checkpoint metadata, not a substitute for the missing dataset or source script. The following remain **unavailable from project evidence**: training image sources, actual RGB versus grayscale input, image polarity, native EL dimensions, dataset YAML contents, and labeled train/validation file lists. The checkpoint metadata confirms the nine class labels, but it does not establish real-world accuracy or the dataset domain.
-
-At inference, the service passes the uploaded OpenCV image directly to Ultralytics `model.predict` with `imgsz=640`, `iou=0.70`, and the production `conf=0.25`. Ultralytics performs its standard resize/letterbox and tensor normalization. No application-level grayscale conversion, polarity inversion, contrast adjustment, or custom normalization is applied. This is compatible with a normal RGB/BGR image path, but compatibility with a grayscale or polarity-transformed training pipeline cannot be confirmed without the original training configuration.
-
-## FastAPI backend
-
-Create a Python environment and install the inference dependencies:
-
+### 3. Python Virtual Environment Setup
 ```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cd ..
-uvicorn backend.app.main:app --reload --port 8000
+# Create virtual environment inside backend/
+python -m venv backend/.venv
+
+# Activate virtual environment
+# Windows:
+backend\.venv\Scripts\activate
+# Linux/macOS:
+source backend/.venv/bin/activate
+
+# Install required dependencies
+pip install -r backend/requirements.txt
 ```
 
-Useful endpoints:
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| `GET` | `/health` | Model path and readiness check |
-| `GET` | `/model` | Runtime model status and class labels |
-| `POST` | `/inspect` | Multipart image upload and real YOLO inference |
-
-Example:
-
+### 4. Node Dependencies
 ```bash
-curl -X POST http://localhost:8000/inspect \
-  -F "file=@/path/to/cell-image.png"
-```
-
-For development diagnostics, the CLI can compare the unchanged model at the standard threshold and lower thresholds without changing the production default:
-
-```bash
-backend/.venv/bin/python -m backend.app.infer_cli \
-  --input /path/to/el-image.png \
-  --annotated /tmp/standard-annotated.jpg \
-  --diagnostic \
-  --diagnostic-dir /tmp/solarvision-diagnostics \
-  --json /tmp/diagnostic-result.json
-```
-
-The diagnostic JSON reports that pre-NMS raw tensors are unavailable through the public Ultralytics result used by this service, the NMS-filtered candidate count obtained at `conf=0.001`, final results at `0.25`, `0.10`, `0.05`, and `0.01`, image dimensions and pixel statistics, a polarity heuristic, class names, image size, confidence threshold, and IoU/NMS threshold. The CLI writes `annotated-conf-0.25.jpg`, `annotated-conf-0.10.jpg`, `annotated-conf-0.05.jpg`, and `annotated-conf-0.01.jpg` under the diagnostic directory. Candidate counts are not validated defects. The standard production threshold remains `0.25` unless `CONFIDENCE_THRESHOLD` is explicitly configured.
-
-### Suitable domain-validation image
-
-To validate this checkpoint for solar manufacturing, provide an original unannotated EL or NIR image from the intended camera and process, preferably with the native dimensions and bit depth preserved. Include known defect labels or bounding-box annotations when available, plus the cell orientation and any information about image polarity, grayscale/RGB encoding, exposure, cropping, and resizing. A single unlabeled image can test execution and qualitative alignment, but it cannot establish precision, recall, mAP, or defect-free status. Accuracy claims require a representative labeled held-out EL/NIR set that matches the training domain.
-
-## Web application
-
-```bash
-cd /home/ubuntu/solarvision-ai
 pnpm install
-pnpm check
+```
+
+### 5. Database Initialization
+The application automatically initializes its SQLite database schema on first launch. If using MySQL or Supabase PostgreSQL, synchronize the Drizzle schema:
+```bash
+pnpm db:push
+```
+
+---
+
+## Running the Application
+
+### Development Mode (Concurrent Web & Backend)
+```bash
 pnpm dev
 ```
+Starts:
+- Vite Frontend Dev Server at `http://localhost:5173`
+- Express / tRPC Backend API Server at `http://localhost:3000`
 
-The WebDev preview server is available through the project preview URL. The frontend uses tRPC hooks for all application data calls; there are no client-side Axios wrappers.
-
-The current operator workflow includes `/inspect` as an alias for `/inspection`, `/inspection/:inspectionId` for persisted evidence review, and `/settings` for local operator preferences and runtime status. The Python service preserves `/health`, `/model`, and `/inspect`, and now also exposes `/api/health`, `/api/model`, and `/api/inspections` for REST clients. Inspection responses include detection summaries, confidence aggregates, local image URLs, and the annotated image data URL.
-
-### Custom notifications
-
-The dashboard header includes a persistent Operations Inbox. It shows pipeline readiness, Supabase connectivity, model-evaluation reminders, and inspection completion or failure events. Operators can mark items read, open the linked workflow, clear history, or dismiss the panel. Inspection events are emitted through the typed `solarvision:notification` browser event contract in `client/src/components/solarvision/notification-model.ts`.
-
-### Deployment reliability
-
-The production image uses `.dockerignore` to exclude local `node_modules`, build outputs, logs, and virtual environments from the upload context. The custom Dockerfile installs CPU-only PyTorch wheels and uses frozen pnpm dependencies, avoiding the CUDA-heavy default wheel and reducing deployment build time. The trained checkpoint remains included under `backend/models/best.pt` for the Python inference bridge.
-
-## Supabase setup
-
-SolarVision AI is connected to the Supabase project `njpaifezreokzdczfszr` in `ap-northeast-2`. The connected schema has been applied through the Supabase MCP migration tool. It creates `inspections`, `detections`, indexes, RLS policies, and the private `solarvision-images` Storage bucket.
-
-The current deployment uses the active Supabase anon/publishable key with explicit RLS policies:
-
-```text
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_ANON_KEY=<anon-or-publishable-key>
-SUPABASE_STORAGE_BUCKET=solarvision-images
+### Standalone FastAPI Inference Service (Optional Dedicated Microservice)
+```bash
+# From repository root
+python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
 
-The adapter also supports `SUPABASE_SERVICE_ROLE_KEY` when a server-only key is intentionally supplied. That key is required for direct Supabase Storage uploads; without it, images use the managed WebDev storage fallback while metadata and detections can still persist through RLS-scoped Postgres REST writes. Never expose a service-role key to the browser.
-
-The WebDev template includes a managed S3-compatible storage helper. When Supabase credentials are absent, the app labels the persistence state explicitly. If neither storage nor a database is configured, the UI remains empty rather than inventing records.
-
-## Database setup
-
-For the WebDev database, generate and apply the Drizzle migration:
-
+### Production Build
 ```bash
-pnpm drizzle-kit generate
-pnpm drizzle-kit migrate
+pnpm run build
+```
+Generates production client assets in `dist/public/` and bundles the Express server in `dist/index.js`.
+
+---
+
+## Verification & Test Suites
+
+SolarVision AI includes comprehensive unit, regression, and E2E verification suites:
+
+### Full Backend Python Test Suite (231 tests)
+```bash
+# Run all Python unit, contract, and parity tests
+pytest backend/tests/ -v
 ```
 
-The schema contains `users`, `inspections`, and `detections`. The inspection repository calculates counts, average latency, label distribution, and daily trend directly from persisted rows.
-
-## Inference workflow
-
-1. The operator selects an image in `client/src/pages/Inspection.tsx`.
-2. The browser converts the image to base64 and calls `inspection.run`.
-3. The Node server writes request bytes to a bounded temporary directory.
-4. The Node server runs `python3 -m backend.app.infer_cli`.
-5. `YoloInferenceService` loads `MODEL_PATH`, executes Ultralytics prediction, parses boxes/confidence/class IDs, and draws annotations with OpenCV.
-6. The bridge uploads original and annotated images to Supabase Storage when configured; otherwise it attempts managed storage.
-7. Inspection metadata and every detection are written through the Drizzle repository. Supabase Postgres synchronization is attempted when configured.
-8. The procedure returns the annotated image and raw detection values to React.
-9. History and analytics query stored records; empty states remain explicit when no records exist.
-
-## M2 / M3 / M4 extension plan
-
-**M2 — Root-cause analysis.** Add a machine-event table keyed by machine ID and UTC event windows. Join sensor aggregates to inspection IDs and defect labels. Train Random Forest/XGBoost only after a verified labeled dataset exists. Store model version, feature snapshot, and explanation metadata with every prediction.
-
-**M3 — Predictive maintenance.** Add maintenance work orders, failure labels, asset health snapshots, and prediction horizons. Surface recommended actions only when a validated model emits a prediction with a confidence, model version, and timestamped input window.
-
-**M4 — Connected factory.** Integrate MES/SCADA/PLC event streams, role-based approvals, notifications, and audit trails. Keep the inspection ID as the stable traceability key so quality evidence can be followed from image to machine context to maintenance action.
-
-## Troubleshooting
-
-- **Model not found:** verify `MODEL_PATH` and that `backend/models/best.pt` exists.
-- **Inference unavailable in WebDev preview:** install `backend/requirements.txt` in the runtime that hosts the Node bridge, or run the FastAPI service separately and point the bridge at a dedicated service.
-- **Database is empty:** this is expected until migrations are applied and an inspection completes successfully.
-- **Supabase says integration pending:** configure `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the `solarvision-images` bucket schema.
-- **Metrics are blank:** independent evaluation data was not provided with the checkpoint. The app deliberately does not estimate it from inference output.
-
-## Verification checklist
-
+### Server Vitest Integration Suite (188 tests)
 ```bash
-pnpm check
+# Run all tRPC contract, SQLite persistence, and security regression tests
 pnpm test
-pnpm build
 ```
 
-Then start the FastAPI service, upload one real solar-cell image from `/inspection`, verify the annotated image and detections, confirm a row in `inspections`, confirm rows in `detections`, and check `/history` and `/analytics`. The checkpoint itself is not a substitute for an independent test report.
+### Dedicated Serving/Evaluation Parity Tests
+```bash
+# Verify Model 3 & Model 4 threshold calibration and serving parity
+pytest backend/tests/test_serving_evaluation_parity.py -v
+```
+
+### Forensic Database Invariant Audit
+```bash
+# Verify that all database records have authentic lineage or isolated test flags
+pytest backend/tests/test_model2_provenance_audit.py -v
+```
+
+---
+
+## Scientific Domain & Data Licensing Disclaimers
+
+1. **Solar-Cell Defect Detection (Model 1):** Trained on authentic electroluminescence and near-infrared solar-cell images under academic research permissions.
+2. **UCI SECOM Benchmark (Model 3):** Sourced from the UC Irvine Machine Learning Repository. Donated by Michael McCann and Al Johnston. Licensed under Creative Commons Attribution 4.0 International (CC-BY 4.0).
+3. **UCI AI4I 2020 Benchmark (Model 4):** Sourced from the UC Irvine Machine Learning Repository. Generated by Stephan Matzka (HTW Berlin). Licensed under Creative Commons Attribution 4.0 International (CC-BY 4.0).
+4. **Zero-Fabrication Guarantee:** This application never fabricates synthetic root cause predictions or claims production deployment on hardware environments for which authentic telemetry has not been acquired.

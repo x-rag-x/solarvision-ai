@@ -155,14 +155,33 @@ class PredictiveQualityTrainer:
 
             fitted_calibrators[name] = calibrator
 
-            # Compute test set performance at standard 0.50 threshold and optimal threshold
+            # Compute test set performance across three distinct threshold/calibration operating modes:
+            # Mode A: Raw probabilities at validation-optimal threshold (historical benchmark baseline)
             metrics_default = QualityMetricsCalculator.compute(y_test, test_probs, threshold=0.50)
             metrics_optimal = QualityMetricsCalculator.compute(y_test, test_probs, threshold=opt_thresh)
+
+            # Mode B: Calibrated probabilities at validation-optimal calibrated threshold (monotonic counterpart)
+            if calibrator is not None:
+                opt_thresh_cal, _, _ = ThresholdOptimizer.optimize_threshold(
+                    y_val_true=y_val,
+                    y_val_prob=calibrator.calibrate(val_probs),
+                    criterion="f1_fail",
+                )
+                metrics_calibrated_opt = QualityMetricsCalculator.compute(y_test, test_probs_cal, threshold=opt_thresh_cal)
+                # Mode C: Serving behavior — calibrated probability compared against uncalibrated threshold
+                metrics_serving_parity = QualityMetricsCalculator.compute(y_test, test_probs_cal, threshold=opt_thresh)
+            else:
+                opt_thresh_cal = opt_thresh
+                metrics_calibrated_opt = metrics_optimal
+                metrics_serving_parity = metrics_optimal
 
             results[name] = {
                 "default_threshold_0_50": metrics_default.to_dict(),
                 "optimal_threshold": metrics_optimal.to_dict(),
                 "optimal_threshold_value": opt_thresh,
+                "calibrated_optimal_threshold_value": opt_thresh_cal,
+                "calibrated_optimal_metrics": metrics_calibrated_opt.to_dict(),
+                "serving_parity_metrics": metrics_serving_parity.to_dict(),
                 "calibration_raw": cal_metrics_raw,
                 "calibration_calibrated": cal_metrics_cal,
                 "calibration": cal_metrics_cal,  # Calibrated evaluator for downstream consumers

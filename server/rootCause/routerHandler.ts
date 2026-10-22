@@ -28,6 +28,7 @@ import {
   commitImportCsv,
   linkInspectionToBatch,
   ImportEntityType,
+  VALID_ROOT_CAUSES,
 } from "./csvImport";
 import {
   CANONICAL_FEATURES_V2,
@@ -309,6 +310,15 @@ export const rootCauseRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      // 1. Validate root-cause taxonomy
+      if (!VALID_ROOT_CAUSES.has(input.confirmedCause)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid confirmedCause '${input.confirmedCause}'. Must be a recognized root cause in the taxonomy.`,
+        });
+      }
+
+      // 2. Enforce inspection ownership
       const requester = {
         userId: ctx.user.openId || String(ctx.user.id),
         role: ctx.user.role,
@@ -329,6 +339,7 @@ export const rootCauseRouter = router({
 
   /**
    * List confirmed root-cause annotations across inspections for quality reviewers.
+   * Scopes results to the requesting operator (or global visibility for admin).
    */
   allAnnotations: authenticatedProcedure
     .input(
@@ -341,8 +352,15 @@ export const rootCauseRouter = router({
         })
         .optional()
     )
-    .query(async ({ input }) => {
-      return getAllConfirmedRootCauseAnnotations(input);
+    .query(async ({ input, ctx }) => {
+      const requester = {
+        userId: ctx.user.openId || String(ctx.user.id),
+        role: ctx.user.role,
+      };
+      return getAllConfirmedRootCauseAnnotations({
+        ...input,
+        requester,
+      });
     }),
 
   /**

@@ -1,0 +1,88 @@
+{
+  "schema_version": "2.0.0",
+  "title": "SolarVision AI — Photovoltaic Manufacturing Root Cause Taxonomy",
+  "description": "Standardized 9-class SEMI root-cause taxonomy with engineering cause codes, physical mechanisms, and failure analysis laboratory diagnostic procedures.",
+  "categories": [
+    {
+      "taxonomy_class": "thermal_stress_soldering",
+      "cause_code": "RC-SOLD-01",
+      "display_name": "Thermal Stress During Soldering",
+      "equipment_type": "stringer",
+      "associated_defects": ["crack", "microcrack", "short_circuit"],
+      "physical_mechanism": "Excessive soldering tip temperature (>250°C), thermal ramp rate (>15°C/s), or preheating delta (>30°C) inducing thermal shock and localized thermo-mechanical stresses between copper ribbon and silicon substrate during eutectic solidification.",
+      "laboratory_verification_method": "Scanning Electron Microscopy (SEM) along ribbon bond pad cross-section; acoustic micro-imaging revealing sub-surface delamination; infrared thermography under reverse bias."
+    },
+    {
+      "taxonomy_class": "squeegee_pressure_drift",
+      "cause_code": "RC-PRNT-01",
+      "display_name": "Squeegee Pressure Drift",
+      "equipment_type": "screen_printer",
+      "associated_defects": ["finger_interruption", "thick_line", "printing_error"],
+      "physical_mechanism": "Squeegee downward force drifting away from nominal 18.0 N/cm² or uneven pneumatic pressure across blade length, resulting in paste bleeding (excess force) or discontinuous finger metallization (insufficient force).",
+      "laboratory_verification_method": "Optical 3D surface profilometry measuring contact finger aspect ratio (height-to-width) and line resistance measurements via 4-point probe transmission line model (TLM)."
+    },
+    {
+      "taxonomy_class": "screen_mesh_clogging",
+      "cause_code": "RC-PRNT-02",
+      "display_name": "Screen Mesh Clogging",
+      "equipment_type": "screen_printer",
+      "associated_defects": ["finger_interruption", "printing_error"],
+      "physical_mechanism": "Partial or complete aperture obstruction in stainless steel mesh due to dried silver paste particles, emulsion breakdown, or particulate contamination, blocking paste transfer onto wafer.",
+      "laboratory_verification_method": "Automated optical inspection (AOI) of screen mesh apertures; high-magnification optical microscopy of recurring missing finger coordinates across consecutive prints."
+    },
+    {
+      "taxonomy_class": "firing_thermal_profile_excursion",
+      "cause_code": "RC-FURN-01",
+      "display_name": "Firing Furnace Thermal Profile Excursion",
+      "equipment_type": "firing_furnace",
+      "associated_defects": ["short_circuit", "hotspot"],
+      "physical_mechanism": "Peak firing temperature exceeding silver paste alloy eutectic window (>870°C) or conveyor belt speed drop, leading to excessive silver crystallite penetration through the emitter junction (shunting / junction punch-through).",
+      "laboratory_verification_method": "Dark Lock-in Thermography (DLIT) revealing localized ohmic shunts; cross-sectional Transmission Electron Microscopy (TEM) measuring silver spike depth into emitter layer."
+    },
+    {
+      "taxonomy_class": "mechanical_handling_impact",
+      "cause_code": "RC-MECH-01",
+      "display_name": "Mechanical Handling Impact / Vacuum Stress",
+      "equipment_type": "handling_robot",
+      "associated_defects": ["crack", "star_crack", "cell_breakage"],
+      "physical_mechanism": "Excessive vacuum cup differential (>80 kPa), robotic end-effector deceleration spike (>2.0 G), or misalignment during cassette transfer inducing micro-fissures along crystalline cleavage planes.",
+      "laboratory_verification_method": "High-resolution Photoluminescence (PL) imaging under low injection level; acoustic emission sensors installed on robot transfer arms; micro-Raman spectroscopy of edge crack tip strain fields."
+    },
+    {
+      "taxonomy_class": "lamination_pressure_imbalance",
+      "cause_code": "RC-LAM-01",
+      "display_name": "Lamination Pressure / Thermal Imbalance",
+      "equipment_type": "laminator",
+      "associated_defects": ["crack", "cell_breakage", "foreign_material"],
+      "physical_mechanism": "Uneven flexible diaphragm inflation pressure, vacuum chamber leak, or localized platen heater element failure during EVA/POE cross-linking cycle, exerting non-uniform mechanical bending moment across cell strings.",
+      "laboratory_verification_method": "Module-level Electroluminescence (EL) before and after lamination; Pressurex tactile pressure-indicating sensor film across platen bed during calibration run."
+    },
+    {
+      "taxonomy_class": "ingot_thermal_gradient",
+      "cause_code": "RC-WAF-01",
+      "display_name": "Ingot Thermal Gradient / Crystal Stress",
+      "equipment_type": "ingot_puller",
+      "associated_defects": ["black_core", "dislocation", "horizontal_dislocation", "vertical_dislocation"],
+      "physical_mechanism": "Radial or axial thermal gradient instability in Czochralski (CZ) silicon ingot puller causing crystallographic slip dislocations, oxygen precipitate clustering, or point defect agglomeration during crystal growth.",
+      "laboratory_verification_method": "Sopori etch pit density (EPD) analysis; lifetime mapping via microwave-detected photoconductive decay (μ-PCD); Fourier Transform Infrared (FTIR) interstitial oxygen concentration measurement."
+    },
+    {
+      "taxonomy_class": "chemical_texturing_contamination",
+      "cause_code": "RC-CHEM-01",
+      "display_name": "Chemical Texturing Contamination",
+      "equipment_type": "chemical_bath",
+      "associated_defects": ["anti_reflective_coating", "printing_error", "short_circuit"],
+      "physical_mechanism": "Silicate accumulation, metal ion contamination (Fe, Cu), or bath temperature drop in alkaline KOH/IPA texturing tanks, resulting in non-uniform random pyramid etching and poor passivation layer adherence.",
+      "laboratory_verification_method": "Spectroscopic ellipsometry measuring anti-reflective coating refractive index and thickness uniformity; Total Reflection X-Ray Fluorescence (TXRF) surface metal trace analysis."
+    },
+    {
+      "taxonomy_class": "nominal_process_variation",
+      "cause_code": "RC-NORM-01",
+      "display_name": "Nominal Process Variation",
+      "equipment_type": "all",
+      "associated_defects": [],
+      "physical_mechanism": "Statistical common-cause variation within 3-sigma process control limits; cell defects caused by minor stochastic wafer surface interactions without an assignable machine excursion.",
+      "laboratory_verification_method": "Statistical Process Control (SPC) Shewhart control chart audit verifying that all machine telemetry channels remained within upper/lower control limits (UCL/LCL) for preceding 60 minutes."
+    }
+  ]
+}

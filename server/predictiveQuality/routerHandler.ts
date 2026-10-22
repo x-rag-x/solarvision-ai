@@ -104,15 +104,30 @@ export const predictiveQualityRouter = router({
    */
   forecast: authenticatedProcedure
     .input(predictiveQualityInputSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const response = await forecastPredictiveQuality(input as PredictiveQualityInput);
 
       // Persist if forecast succeeded with ready status
-      if (response.status === "ready" && response.batchId) {
-        await persistQualityForecast(response);
+      if (response.status === "ready") {
+        try {
+          await persistQualityForecast(response, {
+            userId: ctx.user.openId,
+            role: ctx.user.role,
+            inputReference: input.waferId || input.batchId || "solar_feature_input",
+            waferId: input.waferId,
+          });
+        } catch (err: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to persist quality forecast: ${err.message || String(err)}`,
+          });
+        }
       }
 
-      return response;
+      return {
+        ...response,
+        persistedId: (response as any).persistedId,
+      };
     }),
 
   /**
@@ -127,17 +142,40 @@ export const predictiveQualityRouter = router({
   /**
    * Dedicated authenticated procedure for UCI SECOM semiconductor benchmark inference.
    * Strictly enforces 590 feature dimensions and locks model paths.
+   * Persists successful benchmark forecasts with authenticated operator attribution.
    */
   benchmarkPredict: authenticatedProcedure
     .input(benchmarkPredictInputSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       if (input.features.length !== BENCHMARK_RAW_FEATURE_COUNT) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `SECOM semiconductor benchmark requires exactly ${BENCHMARK_RAW_FEATURE_COUNT} input features, received ${input.features.length}.`,
         });
       }
-      return predictBenchmarkQuality(input);
+      const response = await predictBenchmarkQuality(input);
+
+      // Persist successful benchmark evaluation
+      if (response.status === "ready") {
+        try {
+          await persistQualityForecast(response, {
+            userId: ctx.user.openId,
+            role: ctx.user.role,
+            inputReference: input.waferId || input.batchId || `secom_590_${Date.now()}`,
+            waferId: input.waferId,
+          });
+        } catch (err: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to persist benchmark quality prediction: ${err.message || String(err)}`,
+          });
+        }
+      }
+
+      return {
+        ...response,
+        persistedId: (response as any).persistedId,
+      };
     }),
 
   /**
@@ -159,7 +197,7 @@ export const predictiveQualityRouter = router({
   }),
 
   /**
-   * Query historical forecasts with pagination and risk filtering.
+   * Query historical forecasts with pagination, domain filtering, and user isolation.
    */
   history: authenticatedProcedure
     .input(
@@ -167,22 +205,30 @@ export const predictiveQualityRouter = router({
         .object({
           batchId: z.string().optional(),
           riskLevel: z.string().optional(),
+          domain: z.enum(["solar_cell_manufacturing", "semiconductor_benchmark"]).optional(),
+          isBenchmark: z.boolean().optional(),
           limit: z.number().int().min(1).max(100).default(50),
           offset: z.number().int().min(0).default(0),
         })
         .optional()
     )
-    .query(async ({ input }) => {
-      return getQualityForecasts(input);
+    .query(async ({ input, ctx }) => {
+      return getQualityForecasts(input, {
+        userId: ctx.user.openId,
+        role: ctx.user.role,
+      });
     }),
 
   /**
-   * Query a single forecast detail by ID.
+   * Query a single forecast detail by ID with multi-tenant access control.
    */
   detail: authenticatedProcedure
     .input(z.object({ id: z.string().min(1) }))
-    .query(async ({ input }) => {
-      const forecast = await getQualityForecastById(input.id);
+    .query(async ({ input, ctx }) => {
+      const forecast = await getQualityForecastById(input.id, {
+        userId: ctx.user.openId,
+        role: ctx.user.role,
+      });
       if (!forecast) {
         throw new TRPCError({ code: "NOT_FOUND", message: `Forecast '${input.id}' not found.` });
       }

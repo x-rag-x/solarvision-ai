@@ -1,0 +1,11 @@
+# SolarVision AI — Model 2 Data Import Template: Machines & Equipment
+# Contract Version: 2.0.0
+# Description: Defines fabrication cell tools, physical lines, and preventive maintenance records.
+# Required Fields: machine_id, machine_code, machine_type, line_id, status
+# Status Values: running | idle | maintenance | alarm | offline
+# Machine Types: stringer | tabber | laminator | screen_printer | firing_furnace | cell_tester | handling_robot | laser_cutter
+machine_id,machine_code,machine_type,line_id,location,status,last_maintenance_at,next_maintenance_due
+M_STR_01,STR-LINE1-01,stringer,Line-Alpha,Bay-3A,running,2026-10-10T00:00:00.000Z,2026-11-10T00:00:00.000Z
+M_PRN_01,PRN-LINE1-01,screen_printer,Line-Alpha,Bay-2B,running,2026-10-15T00:00:00.000Z,2026-11-15T00:00:00.000Z
+M_FUR_01,FUR-LINE1-01,firing_furnace,Line-Alpha,Bay-2C,running,2026-10-01T00:00:00.000Z,2026-11-01T00:00:00.000Z
+M_LAM_01,LAM-LINE1-01,laminator,Line-Alpha,Bay-4A,running,2026-10-18T00:00:00.000Z,2026-11-18T00:00:00.000Z

@@ -1,0 +1,7 @@
+# SolarVision AI — Model 2 Data Import Template: Manufacturing Batches
+# Contract Version: 2.0.0
+# Description: Defines fabrication production lots and wafer substrate origins.
+# Required Fields: batch_id, batch_number, cell_line, target_quantity, start_time, status
+# Status Values: in_production | completed | quarantined
+# Ingot Types: monocrystalline_m10 | monocrystalline_g12 | perc_m6 | topcon_m10 | cast_mono | polycrystalline
+batch_id,batch_number,wafer_supplier,ingot_type,cell_line,target_quantity,actual_quantity,start_time,end_time,status

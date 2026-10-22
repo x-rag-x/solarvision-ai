@@ -382,6 +382,14 @@ export function validateAndPreviewCsv(
         rowErrs.push(`next_maintenance_due '${row.next_maintenance_due}' is not a valid ISO-8601 timestamp`);
       }
     } else if (entityType === "sensor_readings") {
+      const machineId = (row.machine_id ?? "").trim();
+      if (machineId && existingMachines.size > 0 && !existingMachines.has(machineId)) {
+        rowErrs.push(`machine_id '${machineId}' does not exist in manufacturing_machines`);
+      }
+      const batchId = (row.batch_id ?? "").trim();
+      if (batchId && existingBatches.size > 0 && !existingBatches.has(batchId)) {
+        rowErrs.push(`batch_id '${batchId}' does not exist in manufacturing_batches`);
+      }
       const valStr = (row.measurement_value ?? "").trim();
       const val = Number(valStr);
       if (isNaN(val)) {
@@ -399,6 +407,14 @@ export function validateAndPreviewCsv(
         rowErrs.push(`recorded_at '${row.recorded_at}' is not a valid ISO-8601 timestamp`);
       }
     } else if (entityType === "production_events") {
+      const machineId = (row.machine_id ?? "").trim();
+      if (machineId && existingMachines.size > 0 && !existingMachines.has(machineId)) {
+        rowErrs.push(`machine_id '${machineId}' does not exist in manufacturing_machines`);
+      }
+      const batchId = (row.batch_id ?? "").trim();
+      if (batchId && existingBatches.size > 0 && !existingBatches.has(batchId)) {
+        rowErrs.push(`batch_id '${batchId}' does not exist in manufacturing_batches`);
+      }
       const sev = (row.severity ?? "").trim().toLowerCase();
       if (sev && !VALID_EVENT_SEVERITIES.has(sev)) {
         rowErrs.push(`Invalid severity '${sev}'. Must be one of: ${Array.from(VALID_EVENT_SEVERITIES).join(", ")}`);
@@ -503,7 +519,38 @@ export function commitImportCsv(
     }
     parsedRows = validation.parsedRows;
   } else if (Array.isArray(csvContentOrRows)) {
-    parsedRows = csvContentOrRows;
+    if (csvContentOrRows.length > 0) {
+      const headers = Object.keys(csvContentOrRows[0]);
+      const csvLines = [headers.join(",")];
+      for (const row of csvContentOrRows) {
+        const line = headers.map(h => {
+          const val = row[h] ?? "";
+          return typeof val === "string" && (val.includes(",") || val.includes('"'))
+            ? `"${val.replace(/"/g, '""')}"`
+            : String(val);
+        }).join(",");
+        csvLines.push(line);
+      }
+      const validation = validateAndPreviewCsv(entityType, csvLines.join("\n"), filename);
+      if (!validation.isValid) {
+        const errors = validation.rowErrors.map(e => `Row ${e.rowNumber}: ${e.message}`);
+        logAudit(auditId, entityType, filename, validation.totalRows, 0, validation.invalidRows, "REJECTED", errors.slice(0, 5).join("; "), operatorName, nowIso);
+        return {
+          success: false,
+          entityType,
+          totalRecords: validation.totalRows,
+          insertedRecords: 0,
+          rejectedRecords: validation.invalidRows,
+          status: "REJECTED",
+          auditId,
+          errors,
+          timestamp: nowIso,
+        };
+      }
+      parsedRows = validation.parsedRows;
+    } else {
+      parsedRows = [];
+    }
   }
 
   if (parsedRows.length === 0) {
@@ -527,16 +574,31 @@ export function commitImportCsv(
     db.exec("BEGIN IMMEDIATE;");
 
     if (entityType === "batches") {
+      const findBatchStmt = db.prepare("SELECT id FROM manufacturing_batches WHERE id = ? OR batchNumber = ?");
       const stmt = db.prepare(`
-        INSERT OR REPLACE INTO manufacturing_batches (
+        INSERT INTO manufacturing_batches (
           id, batchNumber, waferType, cellLine, targetQuantity, actualQuantity,
           status, startTime, endTime, metadata, createdAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          batchNumber = excluded.batchNumber,
+          waferType = excluded.waferType,
+          cellLine = excluded.cellLine,
+          targetQuantity = excluded.targetQuantity,
+          actualQuantity = excluded.actualQuantity,
+          status = excluded.status,
+          startTime = excluded.startTime,
+          endTime = excluded.endTime,
+          metadata = COALESCE(excluded.metadata, manufacturing_batches.metadata),
+          updatedAt = excluded.updatedAt
       `);
 
       for (const r of parsedRows) {
         const id = (r.batch_id || r.id || `batch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`).trim();
         const batchNumber = (r.batch_number || id).trim();
+        const existing = findBatchStmt.get(id, batchNumber) as any;
+        const finalId = existing ? existing.id : id;
+
         const waferType = (r.ingot_type || r.waferType || "monocrystalline_m10").trim();
         const cellLine = (r.cell_line || r.cellLine || "Line-1").trim();
         const targetQuantity = Number(r.target_quantity ?? r.targetQuantity ?? 1000);
@@ -546,22 +608,36 @@ export function commitImportCsv(
         const endTime = r.end_time || r.endTime || null;
 
         stmt.run(
-          id, batchNumber, waferType, cellLine, targetQuantity, actualQuantity,
+          finalId, batchNumber, waferType, cellLine, targetQuantity, actualQuantity,
           status, startTime, endTime, null, nowIso, nowIso
         );
         inserted++;
       }
     } else if (entityType === "machines") {
+      const findMachineStmt = db.prepare("SELECT id FROM manufacturing_machines WHERE id = ? OR machineCode = ?");
       const stmt = db.prepare(`
-        INSERT OR REPLACE INTO manufacturing_machines (
+        INSERT INTO manufacturing_machines (
           id, machineCode, machineType, lineId, location, status,
           lastMaintenanceAt, nextMaintenanceDue, metadata, createdAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          machineCode = excluded.machineCode,
+          machineType = excluded.machineType,
+          lineId = excluded.lineId,
+          location = excluded.location,
+          status = excluded.status,
+          lastMaintenanceAt = excluded.lastMaintenanceAt,
+          nextMaintenanceDue = excluded.nextMaintenanceDue,
+          metadata = COALESCE(excluded.metadata, manufacturing_machines.metadata),
+          updatedAt = excluded.updatedAt
       `);
 
       for (const r of parsedRows) {
         const id = (r.machine_id || r.id || `mach_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`).trim();
         const machineCode = (r.machine_code || r.machineCode || id).trim();
+        const existing = findMachineStmt.get(id, machineCode) as any;
+        const finalId = existing ? existing.id : id;
+
         const machineType = (r.machine_type || r.machineType || "stringer").trim();
         const lineId = (r.line_id || r.lineId || "line_1").trim();
         const location = r.location || null;
@@ -570,17 +646,26 @@ export function commitImportCsv(
         const nextMaintenanceDue = r.next_maintenance_due || r.nextMaintenanceDue || null;
 
         stmt.run(
-          id, machineCode, machineType, lineId, location, status,
+          finalId, machineCode, machineType, lineId, location, status,
           lastMaintenanceAt, nextMaintenanceDue, null, nowIso, nowIso
         );
         inserted++;
       }
     } else if (entityType === "sensor_readings") {
       const stmt = db.prepare(`
-        INSERT OR REPLACE INTO sensor_measurements (
+        INSERT INTO sensor_measurements (
           id, machineId, batchId, sensorType, measurementValue, unit,
           isAnomaly, anomalyScore, recordedAt, createdAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          machineId = excluded.machineId,
+          batchId = excluded.batchId,
+          sensorType = excluded.sensorType,
+          measurementValue = excluded.measurementValue,
+          unit = excluded.unit,
+          isAnomaly = excluded.isAnomaly,
+          anomalyScore = excluded.anomalyScore,
+          recordedAt = excluded.recordedAt
       `);
 
       for (const r of parsedRows) {
@@ -602,10 +687,19 @@ export function commitImportCsv(
       }
     } else if (entityType === "production_events") {
       const stmt = db.prepare(`
-        INSERT OR REPLACE INTO production_events (
+        INSERT INTO production_events (
           id, machineId, batchId, eventType, severity, message,
           details, startedAt, resolvedAt, createdAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          machineId = excluded.machineId,
+          batchId = excluded.batchId,
+          eventType = excluded.eventType,
+          severity = excluded.severity,
+          message = excluded.message,
+          details = COALESCE(excluded.details, production_events.details),
+          startedAt = excluded.startedAt,
+          resolvedAt = excluded.resolvedAt
       `);
 
       for (const r of parsedRows) {
@@ -625,18 +719,38 @@ export function commitImportCsv(
         inserted++;
       }
     } else if (entityType === "root_cause_annotations") {
+      const checkInspStmt = db.prepare("SELECT inspectionId FROM inspections WHERE inspectionId = ?");
       const stmt = db.prepare(`
-        INSERT OR REPLACE INTO root_cause_annotations (
+        INSERT INTO root_cause_annotations (
           id, inspectionId, defectId, confirmedCause, confidenceLevel,
           verifiedBy, verifiedAt, investigationNotes, createdAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          inspectionId = excluded.inspectionId,
+          defectId = excluded.defectId,
+          confirmedCause = excluded.confirmedCause,
+          confidenceLevel = excluded.confidenceLevel,
+          verifiedBy = excluded.verifiedBy,
+          verifiedAt = excluded.verifiedAt,
+          investigationNotes = excluded.investigationNotes
       `);
 
       for (const r of parsedRows) {
         const id = (r.id || `annot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`).trim();
         const inspectionId = (r.inspection_id || r.inspectionId).trim();
+
+        // Foreign key check
+        const existsInsp = checkInspStmt.get(inspectionId);
+        if (!existsInsp) {
+          throw new Error(`Referenced inspection '${inspectionId}' does not exist in inspections table.`);
+        }
+
         const defectId = r.defect_id ? Number(r.defect_id) : (r.defectId ? Number(r.defectId) : null);
         const confirmedCause = (r.confirmed_cause || r.confirmedCause).trim();
+        if (!VALID_ROOT_CAUSES.has(confirmedCause)) {
+          throw new Error(`Invalid confirmedCause '${confirmedCause}'. Must be in root-cause taxonomy.`);
+        }
+
         const confidenceLevel = (r.confidence_level || r.confidenceLevel || "confirmed").trim();
         const verifiedBy = (r.verified_by || r.verifiedBy || operatorName).trim();
         const verifiedAt = (r.verified_at || r.verifiedAt || nowIso).trim();
@@ -649,6 +763,10 @@ export function commitImportCsv(
         inserted++;
       }
     } else if (entityType === "inspection_batch_links") {
+      const checkInspStmt = db.prepare("SELECT inspectionId FROM inspections WHERE inspectionId = ?");
+      const checkBatchStmt = db.prepare("SELECT id FROM manufacturing_batches WHERE id = ? OR batchNumber = ?");
+      const checkMachStmt = db.prepare("SELECT id FROM manufacturing_machines WHERE id = ? OR machineCode = ?");
+
       const stmt = db.prepare(`
         UPDATE inspections
         SET batchId = ?, machineId = ?
@@ -660,8 +778,23 @@ export function commitImportCsv(
         const batchId = (r.batch_id || r.batchId).trim();
         const machineId = (r.machine_id || r.machineId).trim();
 
-        stmt.run(batchId, machineId, inspectionId);
-        inserted++;
+        const existsInsp = checkInspStmt.get(inspectionId);
+        if (!existsInsp) {
+          throw new Error(`Referenced inspection '${inspectionId}' does not exist.`);
+        }
+        const batchRow = checkBatchStmt.get(batchId, batchId) as any;
+        if (!batchRow) {
+          throw new Error(`Referenced batch '${batchId}' does not exist.`);
+        }
+        const machRow = checkMachStmt.get(machineId, machineId) as any;
+        if (!machRow) {
+          throw new Error(`Referenced machine '${machineId}' does not exist.`);
+        }
+
+        const res = stmt.run(batchRow.id, machRow.id, inspectionId);
+        if (res.changes > 0) {
+          inserted++;
+        }
       }
     }
 
@@ -737,6 +870,12 @@ export async function linkInspectionToBatch(input: {
   waferPosition?: string | null;
 }): Promise<{ success: boolean; inspectionId: string; batchId: string; machineId: string }> {
   const db = getSqliteDb();
+
+  // Verify inspection exists
+  const insp = db.prepare("SELECT inspectionId FROM inspections WHERE inspectionId = ?").get(input.inspectionId);
+  if (!insp) {
+    throw new Error(`Inspection '${input.inspectionId}' does not exist.`);
+  }
 
   // Verify batch exists
   const batch = db.prepare("SELECT id FROM manufacturing_batches WHERE id = ? OR batchNumber = ?").get(input.batchId, input.batchId);

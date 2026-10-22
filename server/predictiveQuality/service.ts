@@ -38,6 +38,9 @@ export const SOLAR_ARTIFACT_PATH = resolve(
 );
 
 function getPythonCmd(): string {
+  if (process.env.PYTHON_EXECUTABLE) {
+    return process.env.PYTHON_EXECUTABLE;
+  }
   if (existsSync(PYTHON_EXECUTABLE)) {
     return PYTHON_EXECUTABLE;
   }

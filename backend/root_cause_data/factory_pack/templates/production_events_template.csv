@@ -1,0 +1,9 @@
+# SolarVision AI — Model 2 Data Import Template: Production Events
+# Contract Version: 2.0.0
+# Description: Equipment alarms, maintenance events, recipe adjustments, and operator overrides.
+# Required Fields: id, machine_id, event_type, severity, description, started_at
+# Severity Values: info | warning | critical
+# Timestamp format: ISO-8601 UTC (e.g., 2026-10-22T08:30:00.000Z)
+id,machine_id,batch_id,event_type,severity,description,started_at,resolved_at
+EV_1001,M_STR_01,BATCH_2026_1001,thermal_warning,warning,Soldering upper tip temperature rose +12C above recipe,2026-10-22T08:14:10.000Z,2026-10-22T08:16:30.000Z
+EV_1002,M_PRN_01,BATCH_2026_1001,paste_level_low,info,Screen paste replenishment requested,2026-10-22T09:30:00.000Z,2026-10-22T09:34:00.000Z

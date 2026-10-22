@@ -1,0 +1,789 @@
+{
+  "schema_version": "2.0.0",
+  "feature_count": 48,
+  "generated_at": "2026-10-22T05:22:28.084734+00:00",
+  "features": [
+    {
+      "index": 0,
+      "name": "defect_count_crack",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Detected micro-crack and macro-crack bounding box count"
+    },
+    {
+      "index": 1,
+      "name": "defect_count_finger_interruption",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Broken or interrupted screen-printed front finger grid line count"
+    },
+    {
+      "index": 2,
+      "name": "defect_count_busbar_defect",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Busbar misalignment, soldering blob, or thick paste deposition count"
+    },
+    {
+      "index": 3,
+      "name": "defect_count_soldering_defect",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Cold soldering, ribbon detachment, or flux burn defect count"
+    },
+    {
+      "index": 4,
+      "name": "defect_count_microcrack",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Sub-millimeter crystal lattice fracture count under EL excitation"
+    },
+    {
+      "index": 5,
+      "name": "defect_count_hotspot",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Localized current crowding and severe localized resistive shunting count"
+    },
+    {
+      "index": 6,
+      "name": "defect_count_cell_breakage",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        20.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Wafer corner chipping, edge spalling, or structural cell fragmentation count"
+    },
+    {
+      "index": 7,
+      "name": "defect_count_foreign_material",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Dust particles, solder splash, hair, or laminator debris count"
+    },
+    {
+      "index": 8,
+      "name": "defect_count_anti_reflective_coating",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        20.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "PECVD SiNx anti-reflective coating thickness variation or color stain count"
+    },
+    {
+      "index": 9,
+      "name": "defect_total_count",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        100.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Total defect bounding box count across all defect classes"
+    },
+    {
+      "index": 10,
+      "name": "defect_avg_confidence",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "ratio",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Mean detection confidence score of active defect detections"
+    },
+    {
+      "index": 11,
+      "name": "defect_max_confidence",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "ratio",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Maximum detection confidence score among detected defects"
+    },
+    {
+      "index": 12,
+      "name": "defect_edge_ratio",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "ratio",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Proportion of defects located at wafer peripheral edge (>0.35 normalized radius)"
+    },
+    {
+      "index": 13,
+      "name": "defect_center_ratio",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "ratio",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Proportion of defects located within central cell region (<=0.35 normalized radius)"
+    },
+    {
+      "index": 14,
+      "name": "defect_total_area_fraction",
+      "domain": "defect_optical",
+      "dtype": "float32",
+      "unit": "ratio",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Cumulative fraction of total cell area obscured by detected defects"
+    },
+    {
+      "index": 15,
+      "name": "machine_is_stringer",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection occurred downstream of tabber/stringer"
+    },
+    {
+      "index": 16,
+      "name": "machine_is_tabber",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection occurred downstream of tabber ribbon applicator"
+    },
+    {
+      "index": 17,
+      "name": "machine_is_laminator",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection occurred post-lamination encapsulation platen"
+    },
+    {
+      "index": 18,
+      "name": "machine_is_soldering_station",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection occurred at automated cell interconnect station"
+    },
+    {
+      "index": 19,
+      "name": "machine_is_wafer_saw",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection evaluates incoming diamond-wire cut raw wafer"
+    },
+    {
+      "index": 20,
+      "name": "machine_is_laser_cutter",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection occurred post half-cut / shingled cell laser scribe"
+    },
+    {
+      "index": 21,
+      "name": "machine_is_coating_chamber",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Inspection occurred post PECVD passivation/anti-reflective tube"
+    },
+    {
+      "index": 22,
+      "name": "machine_status_operational",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "operational_default",
+      "description": "Binary flag: Associated equipment was reported in nominal operational state"
+    },
+    {
+      "index": 23,
+      "name": "machine_status_maintenance_required",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Binary flag: Equipment has pending maintenance ticket or warning"
+    },
+    {
+      "index": 24,
+      "name": "machine_status_error",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Binary flag: Equipment was actively reporting an error or offline state during cell run"
+    },
+    {
+      "index": 25,
+      "name": "machine_days_since_maintenance",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "days",
+      "valid_range": [
+        0.0,
+        365.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Elapsed calendar days since last confirmed calibration or preventive maintenance"
+    },
+    {
+      "index": 26,
+      "name": "machine_maintenance_overdue",
+      "domain": "machine_context",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Binary flag: Current timestamp exceeds scheduled preventive maintenance date"
+    },
+    {
+      "index": 27,
+      "name": "batch_is_monocrystalline",
+      "domain": "batch_material",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "operational_default",
+      "description": "One-hot indicator: Batch uses monocrystalline p-type or n-type c-Si substrate"
+    },
+    {
+      "index": 28,
+      "name": "batch_is_polycrystalline",
+      "domain": "batch_material",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Batch uses cast multi-crystalline silicon wafer"
+    },
+    {
+      "index": 29,
+      "name": "batch_is_perc",
+      "domain": "batch_material",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Cell line utilizes PERC rear passivation architecture"
+    },
+    {
+      "index": 30,
+      "name": "batch_is_topcon",
+      "domain": "batch_material",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "One-hot indicator: Cell line utilizes n-type TOPCon passivated contact architecture"
+    },
+    {
+      "index": 31,
+      "name": "batch_progress_ratio",
+      "domain": "batch_material",
+      "dtype": "float32",
+      "unit": "ratio",
+      "valid_range": [
+        0.0,
+        2.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "default_progress",
+      "description": "Ratio of actual produced units to target lot quantity (clamped to [0.0, 2.0])"
+    },
+    {
+      "index": 32,
+      "name": "sensor_soldering_temp_top_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 225.0,
+        "std": 15.0
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized stringer upper soldering head temperature (baseline: 225\u00b0C, std: 15\u00b0C)"
+    },
+    {
+      "index": 33,
+      "name": "sensor_soldering_temp_bottom_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 220.0,
+        "std": 15.0
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized stringer lower preheating bed temperature (baseline: 220\u00b0C, std: 15\u00b0C)"
+    },
+    {
+      "index": 34,
+      "name": "sensor_ribbon_tension_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 1.2,
+        "std": 0.3
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized interconnect ribbon mechanical tension (baseline: 1.2N, std: 0.3N)"
+    },
+    {
+      "index": 35,
+      "name": "sensor_squeegee_pressure_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 18.0,
+        "std": 3.0
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized screen printing squeegee downward force (baseline: 18 N/cm2, std: 3 N/cm2)"
+    },
+    {
+      "index": 36,
+      "name": "sensor_firing_peak_temp_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 840.0,
+        "std": 20.0
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized metallization firing furnace peak zone temperature (baseline: 840\u00b0C, std: 20\u00b0C)"
+    },
+    {
+      "index": 37,
+      "name": "sensor_lamination_temp_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 148.0,
+        "std": 8.0
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized laminator platen heating temperature (baseline: 148\u00b0C, std: 8\u00b0C)"
+    },
+    {
+      "index": 38,
+      "name": "sensor_lamination_pressure_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 0.9,
+        "std": 0.15
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized encapsulation diaphragm hydraulic pressure (baseline: 0.9 bar, std: 0.15 bar)"
+    },
+    {
+      "index": 39,
+      "name": "sensor_chamber_vacuum_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": 0.8,
+        "std": 0.2
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized vacuum chamber degassing level (baseline: 0.8 mbar, std: 0.2 mbar)"
+    },
+    {
+      "index": 40,
+      "name": "sensor_gripper_vacuum_norm",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "z-score",
+      "valid_range": [
+        -5.0,
+        5.0
+      ],
+      "nominal_baseline": {
+        "mean": -75.0,
+        "std": 10.0
+      },
+      "missing_policy": "nominal_baseline",
+      "description": "Normalized robotic end-effector suction cup vacuum (baseline: -75 kPa, std: 10 kPa)"
+    },
+    {
+      "index": 41,
+      "name": "sensor_telemetry_anomaly_total",
+      "domain": "sensor_telemetry",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        20.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Total anomalous sensor measurements recorded across the 15-minute operational window"
+    },
+    {
+      "index": 42,
+      "name": "events_total_count",
+      "domain": "production_event",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        50.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Total equipment events recorded during the 1-hour pre-inspection window"
+    },
+    {
+      "index": 43,
+      "name": "events_critical_count",
+      "domain": "production_event",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        20.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Count of severity='critical' equipment events (line stops, thermal trips)"
+    },
+    {
+      "index": 44,
+      "name": "events_high_count",
+      "domain": "production_event",
+      "dtype": "float32",
+      "unit": "count",
+      "valid_range": [
+        0.0,
+        30.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Count of severity='high' equipment events (speed deviations, tension warnings)"
+    },
+    {
+      "index": 45,
+      "name": "events_thermal_flag",
+      "domain": "production_event",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Binary flag: At least one temperature/thermal excursion event was logged"
+    },
+    {
+      "index": 46,
+      "name": "events_mechanical_flag",
+      "domain": "production_event",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Binary flag: At least one feeder jam, tension fault, or vacuum drop was logged"
+    },
+    {
+      "index": 47,
+      "name": "events_operator_override_flag",
+      "domain": "production_event",
+      "dtype": "float32",
+      "unit": "binary",
+      "valid_range": [
+        0.0,
+        1.0
+      ],
+      "nominal_baseline": null,
+      "missing_policy": "zero_fill",
+      "description": "Binary flag: Manual operator override or speed bypass occurred on line"
+    }
+  ],
+  "taxonomy": {
+    "thermal_stress_soldering": {
+      "class_index": 0,
+      "cause_code": "RC-SOLD-01",
+      "taxonomy_identifier": "thermal_stress_soldering",
+      "display_label": "Thermal Stress During Soldering",
+      "responsible_equipment": "Tabber / Stringer",
+      "description": "Excessive soldering head temperature, rapid thermal cycling, or preheat-to-soldering thermal shock causing wafer micro-cracking.",
+      "recommended_action": "Recalibrate stringer soldering tip PID controller and inspect thermocouple bonding."
+    },
+    "squeegee_pressure_drift": {
+      "class_index": 1,
+      "cause_code": "RC-PRNT-01",
+      "taxonomy_identifier": "squeegee_pressure_drift",
+      "display_label": "Squeegee Pressure Drift",
+      "responsible_equipment": "Screen Printer",
+      "description": "Downward squeegee blade force drift causing non-uniform metallization paste thickness and grid line interruptions.",
+      "recommended_action": "Re-level screen printing squeegee blade and calibrate pneumatic pressure regulator."
+    },
+    "screen_mesh_clogging": {
+      "class_index": 2,
+      "cause_code": "RC-PRNT-02",
+      "taxonomy_identifier": "screen_mesh_clogging",
+      "display_label": "Screen Mesh Clogging / Paste Drying",
+      "responsible_equipment": "Screen Printer",
+      "description": "Partially dried silver paste or emulsion aperture blockage causing missing contact fingers.",
+      "recommended_action": "Execute automated ultrasonic screen wash cycle and verify paste solvent viscosity."
+    },
+    "firing_thermal_profile_excursion": {
+      "class_index": 3,
+      "cause_code": "RC-FURN-01",
+      "taxonomy_identifier": "firing_thermal_profile_excursion",
+      "display_label": "Firing Furnace Thermal Profile Excursion",
+      "responsible_equipment": "Firing Furnace",
+      "description": "Thermal zone excursion or conveyor belt speed variance causing improper contact burn-through.",
+      "recommended_action": "Perform multi-point thermal profiler pass through furnace and verify belt tachometer."
+    },
+    "mechanical_handling_impact": {
+      "class_index": 4,
+      "cause_code": "RC-MECH-01",
+      "taxonomy_identifier": "mechanical_handling_impact",
+      "display_label": "Mechanical Handling Impact / Vacuum Stress",
+      "responsible_equipment": "Handling Automation / Robot",
+      "description": "Excessive suction cup vacuum, track deceleration shock, or guide pin impact inducing stress cracks.",
+      "recommended_action": "Inspect robotic end-effector vacuum regulator, reduce suction level, and align guide rails."
+    },
+    "lamination_pressure_imbalance": {
+      "class_index": 5,
+      "cause_code": "RC-LAM-01",
+      "taxonomy_identifier": "lamination_pressure_imbalance",
+      "display_label": "Lamination Pressure / Thermal Imbalance",
+      "responsible_equipment": "Module Laminator",
+      "description": "Diaphragm pressure non-uniformity or heating platen temperature delta causing encapsulation faults.",
+      "recommended_action": "Check laminator vacuum diaphragm for micro-tears and verify multi-zone platen heating elements."
+    },
+    "ingot_thermal_gradient": {
+      "class_index": 6,
+      "cause_code": "RC-WAF-01",
+      "taxonomy_identifier": "ingot_thermal_gradient",
+      "display_label": "Ingot Thermal Gradient / Crystal Stress",
+      "responsible_equipment": "Ingot Puller / Wafer Slicer",
+      "description": "Asymmetric cooling gradient during Czochralski crystallization causing crystallographic dislocations.",
+      "recommended_action": "Quarantine wafer lot from current supplier batch and execute incoming EL stress screening."
+    },
+    "chemical_texturing_contamination": {
+      "class_index": 7,
+      "cause_code": "RC-CHEM-01",
+      "taxonomy_identifier": "chemical_texturing_contamination",
+      "display_label": "Chemical Texturing Bath Contamination",
+      "responsible_equipment": "Wet Chemical Bench",
+      "description": "Alkaline/acid chemical texturing bath contamination or surfactant depletion altering surface reflectivity.",
+      "recommended_action": "Dump and recharge wet bench chemical texturing bath and verify surfactant concentration."
+    },
+    "nominal_process_variation": {
+      "class_index": 8,
+      "cause_code": "RC-SPC-01",
+      "taxonomy_identifier": "nominal_process_variation",
+      "display_label": "Nominal Process Variation",
+      "responsible_equipment": "All Equipment",
+      "description": "Natural manufacturing statistical variation within 3-sigma process control boundaries.",
+      "recommended_action": "No equipment corrective action required. Continue routine statistical process control monitoring."
+    }
+  }
+}

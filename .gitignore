@@ -62,10 +62,8 @@ temp/
 
 # Large Datasets, Raw Data, Storage & Runs
 data/
-backend/predictive_quality_data/
-backend/predictive_maintenance_data/
-backend/root_cause_data/
-backend/evaluation/
+backend/predictive_quality_data/raw/
+backend/predictive_maintenance_data/raw/
 backend/storage/
 backend/models/candidates/
 uploads/

@@ -228,6 +228,20 @@ class Model4Loader:
 
             self._is_ready = True
             self._unavailability_reason = ""
+
+            # Minimal valid inference verification call (smoke test)
+            if self.domain == Model4Domain.AI4I_SYNTHETIC_BENCHMARK:
+                try:
+                    dummy_features = np.zeros(self.expected_dim, dtype=np.float32)
+                    test_state, test_mode, test_fail_prob, test_healthy_prob, _, _ = self.predict(dummy_features)
+                    if test_state not in (MachineHealthState.HEALTHY, MachineHealthState.WARNING, MachineHealthState.FAILURE):
+                        raise RuntimeError(f"Unexpected smoke test health state: {test_state}")
+                except Exception as smoke_exc:
+                    self._unavailability_reason = f"Model 4 minimal validation inference failed: {smoke_exc}"
+                    logger.error(self._unavailability_reason)
+                    self._is_ready = False
+                    return False
+
             logger.info("Model 4 benchmark artifact loaded and verified successfully.")
             return True
 

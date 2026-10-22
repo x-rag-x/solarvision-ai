@@ -1,0 +1,50 @@
+{
+  "total_inspections": 478,
+  "inspections_with_batch": 2,
+  "inspections_with_machine": 2,
+  "total_sensor_readings": 1,
+  "sensor_types_present": [
+    "soldering_temp_top_c"
+  ],
+  "missing_sensor_types": [
+    "fill_factor_pct",
+    "firing_belt_speed_m_min",
+    "firing_exhaust_pressure_pa",
+    "firing_peak_temp_c",
+    "gripper_vacuum_kpa",
+    "isc_a",
+    "lamination_pressure_bar",
+    "lamination_temp_c",
+    "lamination_vacuum_mbar",
+    "paste_temperature_c",
+    "paste_viscosity_pa_s",
+    "ribbon_tension_n",
+    "screen_snapoff_mm",
+    "series_resistance_mohm",
+    "shunt_resistance_ohm",
+    "soldering_temp_bottom_c",
+    "squeegee_pressure_n_cm2",
+    "squeegee_speed_mm_s",
+    "transfer_accel_max_g",
+    "voc_v"
+  ],
+  "confirmed_root_cause_labels_count": 0,
+  "unlabeled_inspections_count": 478,
+  "duplicate_telemetry_count": 0,
+  "out_of_bounds_sensor_count": 0,
+  "class_distribution": {
+    "thermal_stress_soldering": 0,
+    "squeegee_pressure_drift": 0,
+    "screen_mesh_clogging": 0,
+    "firing_thermal_profile_excursion": 0,
+    "mechanical_handling_impact": 0,
+    "lamination_pressure_imbalance": 0,
+    "ingot_thermal_gradient": 0,
+    "chemical_texturing_contamination": 0,
+    "nominal_process_variation": 0
+  },
+  "dataset_status": "DATASET_BLOCKED",
+  "blocking_reasons": [
+    "Zero confirmed root-cause labels available. Model 1 optical defect classes cannot be treated as root causes."
+  ]
+}

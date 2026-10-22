@@ -300,16 +300,29 @@ export async function getSupabaseInspectionById(inspectionId: string, requester?
 
 export async function getSupabaseDashboardStats(requester?: RequesterContext) {
   if (!getConfig()) return null;
-  const userFilter =
-    requester?.userId && requester.role !== "admin"
-      ? `&user_id=eq.${encodeURIComponent(requester.userId)}`
-      : "";
-  const inspectionRows = await request<Pick<SupabaseInspection, "processing_time_ms" | "detections_count">[]>(
-    `/rest/v1/inspections?select=processing_time_ms,detections_count${userFilter}&limit=5000`,
+  const isScopedUser = Boolean(requester?.userId && requester.role !== "admin");
+  const userFilter = isScopedUser && requester?.userId
+    ? `&user_id=eq.${encodeURIComponent(requester.userId)}`
+    : "";
+  const inspectionRows = await request<Pick<SupabaseInspection, "inspection_id" | "processing_time_ms" | "detections_count">[]>(
+    `/rest/v1/inspections?select=inspection_id,processing_time_ms,detections_count${userFilter}&limit=5000`,
   );
-  const detectionRows = await request<Pick<SupabaseDetection, "defect_type">[]>(
-    `/rest/v1/detections?select=defect_type&limit=5000`,
-  );
+
+  let detectionRows: Pick<SupabaseDetection, "defect_type">[] = [];
+  if (isScopedUser) {
+    const inspectionIds = inspectionRows.map(r => r.inspection_id).filter(Boolean);
+    if (inspectionIds.length > 0) {
+      const idBatch = inspectionIds.slice(0, 100).map(encodeURIComponent).join(",");
+      detectionRows = await request<Pick<SupabaseDetection, "defect_type">[]>(
+        `/rest/v1/detections?select=defect_type&inspection_id=in.(${idBatch})&limit=5000`,
+      );
+    }
+  } else {
+    detectionRows = await request<Pick<SupabaseDetection, "defect_type">[]>(
+      `/rest/v1/detections?select=defect_type&limit=5000`,
+    );
+  }
+
   const totalTime = inspectionRows.reduce((sum, row) => sum + Number(row.processing_time_ms), 0);
   return {
     configured: true,
@@ -322,13 +335,30 @@ export async function getSupabaseDashboardStats(requester?: RequesterContext) {
 
 export async function getSupabaseDefectAnalytics(requester?: RequesterContext) {
   if (!getConfig()) return null;
-  const userFilter =
-    requester?.userId && requester.role !== "admin"
-      ? `&user_id=eq.${encodeURIComponent(requester.userId)}`
-      : "";
-  const detectionRows = await request<Pick<SupabaseDetection, "defect_type" | "confidence">[]>(
-    `/rest/v1/detections?select=defect_type,confidence&limit=5000`,
+  const isScopedUser = Boolean(requester?.userId && requester.role !== "admin");
+  const userFilter = isScopedUser && requester?.userId
+    ? `&user_id=eq.${encodeURIComponent(requester.userId)}`
+    : "";
+
+  const inspectionRows = await request<Pick<SupabaseInspection, "inspection_id" | "created_at" | "detections_count">[]>(
+    `/rest/v1/inspections?select=inspection_id,created_at,detections_count${userFilter}&order=created_at.desc&limit=5000`,
   );
+
+  let detectionRows: Pick<SupabaseDetection, "defect_type" | "confidence">[] = [];
+  if (isScopedUser) {
+    const inspectionIds = inspectionRows.map(r => r.inspection_id).filter(Boolean);
+    if (inspectionIds.length > 0) {
+      const idBatch = inspectionIds.slice(0, 100).map(encodeURIComponent).join(",");
+      detectionRows = await request<Pick<SupabaseDetection, "defect_type" | "confidence">[]>(
+        `/rest/v1/detections?select=defect_type,confidence&inspection_id=in.(${idBatch})&limit=5000`,
+      );
+    }
+  } else {
+    detectionRows = await request<Pick<SupabaseDetection, "defect_type" | "confidence">[]>(
+      `/rest/v1/detections?select=defect_type,confidence&limit=5000`,
+    );
+  }
+
   const byTypeMap = new Map<string, { count: number; confidenceTotal: number }>();
   for (const row of detectionRows) {
     const current = byTypeMap.get(row.defect_type) ?? { count: 0, confidenceTotal: 0 };
@@ -345,9 +375,6 @@ export async function getSupabaseDefectAnalytics(requester?: RequesterContext) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 50);
 
-  const inspectionRows = await request<Pick<SupabaseInspection, "created_at" | "detections_count">[]>(
-    `/rest/v1/inspections?select=created_at,detections_count${userFilter}&order=created_at.desc&limit=5000`,
-  );
   const trendMap = new Map<string, { inspections: number; detections: number }>();
   for (const row of inspectionRows) {
     const day = new Date(row.created_at).toISOString().slice(0, 10);

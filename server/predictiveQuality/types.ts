@@ -112,6 +112,7 @@ export interface PredictiveQualityResponse {
   modelMetadata: Model3Manifest | null;
   limitations: string[];
   processingTimeMs: number;
+  persistedId?: string;
 }
 
 export interface Model3StatusInfo {
@@ -127,18 +128,82 @@ export interface Model3StatusInfo {
   calibrationMethod: string;
 }
 
+export interface QualityRequesterContext {
+  userId?: string | null;
+  role?: "user" | "admin" | string | null;
+}
+
+export interface QualityHistoryQueryOptions {
+  batchId?: string;
+  riskLevel?: string;
+  domain?: ModelDomain | string;
+  isBenchmark?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
 export interface PredictiveQualityDbRecord {
   id: string;
-  batchId: string;
+  batchId: string | null;
+  machineId?: string | null;
+  waferId?: string | null;
+  userId?: string | null;
   modelVersionId?: string | null;
-  predictedDefectRate: number;
-  predictedYield: number;
-  riskLevel: string;
-  forecastHorizonHours: number;
+  modelVersion?: string | null;
+  domain: ModelDomain;
+  isBenchmark: boolean | number;
+  dataSource?: string | null;
+  provenance?: string | null;
+  qualityOutcome: QualityOutcome;
+  riskLevel: RiskLevel | string;
+  failureProbability?: number | null;
+  predictedDefectRate?: number | null;
+  predictedYield?: number | null;
+  confidence?: number | null;
   confidenceIntervalLow?: number | null;
   confidenceIntervalHigh?: number | null;
+  confidenceInterval?: string | null;
+  forecastHorizonHours?: number;
+  forecastHorizon?: string | null;
+  dominantRiskDefect?: string | null;
+  predictedLossPercentage?: number | null;
+  topRiskFactors?: string | null;
   factors?: string | null;
+  probabilities?: string | null;
+  inputReference?: string | null;
+  recommendedAction?: string | null;
   createdAt: string;
+  generatedAt?: string | null;
+}
+
+export interface QualityForecastRecord {
+  id: string;
+  batchId: string | null;
+  machineId: string | null;
+  waferId: string | null;
+  userId: string | null;
+  modelVersionId: string | null;
+  modelVersion: string | null;
+  domain: ModelDomain;
+  isBenchmark: boolean;
+  dataSource: string | null;
+  provenance: string | null;
+  qualityOutcome: QualityOutcome;
+  riskLevel: RiskLevel;
+  failureProbability: number | null;
+  predictedDefectRate: number | null;
+  predictedYield: number | null;
+  confidence: number | null;
+  confidenceIntervalLow: number | null;
+  confidenceIntervalHigh: number | null;
+  forecastHorizonHours: number;
+  topRiskFactors: RiskFactor[] | null;
+  factors: RiskFactor[] | null;
+  probabilities: Record<string, number> | null;
+  inputReference: string | null;
+  recommendedAction: string | null;
+  createdAt: string;
+  generatedAt: string;
 }
 
 export interface BenchmarkPredictInput {

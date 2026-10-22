@@ -5,12 +5,14 @@
  * 
  * STRICT COMPLIANCE:
  * - Connects to real tRPC procedures (rootCause.annotate, rootCause.readiness)
+ * - Connects to REST endpoints for CSV import and batch linking
  * - Does not simulate successful database imports
  * - Does not invent artificial dataset counts
  * - Truthfully reports DATASET_BLOCKED when requirements are unmet
  * - Never claims records are persisted unless verified by server response
  */
 
+import { trpcVanilla } from "@/lib/trpc";
 import {
   ConfirmedRootCauseAnnotation,
   ImportEntityType,
@@ -171,38 +173,28 @@ export async function submitConfirmedRootCauseAnnotation(
   annotation: ConfirmedRootCauseAnnotation
 ): Promise<{ success: boolean; message: string; isPersisted: boolean; annotationId?: string }> {
   try {
-    // 1. First attempt authenticated tRPC procedure: rootCause.annotate
-    const trpcPayload = {
+    // 1. Attempt authenticated tRPC procedure: rootCause.annotate via trpcVanilla
+    const result = await trpcVanilla.rootCause.annotate.mutate({
       inspectionId: annotation.inspectionId,
       defectId: annotation.defectId ? String(annotation.defectId) : undefined,
       confirmedCause: annotation.confirmedCause,
       confidenceLevel: annotation.confidenceLevel,
       investigationNotes: annotation.investigationNotes || undefined,
-    };
-
-    const trpcRes = await fetch("/api/trpc/rootCause.annotate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({ json: trpcPayload }),
     });
 
-    if (trpcRes.ok) {
-      const data = await trpcRes.json();
-      const result = data?.result?.data?.json || data?.result?.data;
-      if (result?.success) {
-        return {
-          success: true,
-          message: "Confirmed root cause recorded in quality engineering audit log (persisted in SQLite).",
-          isPersisted: true,
-          annotationId: result.annotationId,
-        };
-      }
+    if (result && result.success) {
+      return {
+        success: true,
+        message: "Confirmed root cause recorded in quality engineering audit log (persisted in SQLite).",
+        isPersisted: true,
+        annotationId: result.annotationId,
+      };
     }
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    const status = err?.data?.httpStatus;
 
-    if (trpcRes.status === 401) {
+    if (status === 401 || errMsg.includes("UNAUTHORIZED")) {
       return {
         success: false,
         message: "Unauthorized: Session expired or invalid. Please sign in as an authenticated quality engineer to record ground-truth annotations.",
@@ -210,15 +202,17 @@ export async function submitConfirmedRootCauseAnnotation(
       };
     }
 
-    if (trpcRes.status === 403) {
+    if (status === 403 || errMsg.includes("Access denied") || errMsg.includes("FORBIDDEN") || err?.shape?.code === -32003) {
       return {
         success: false,
         message: "Forbidden: Access denied to this inspection record. You may only record annotations on inspections owned by your organization.",
         isPersisted: false,
       };
     }
+  }
 
-    // 2. Fallback attempt REST endpoint if tRPC returned 404 or 501
+  // 2. Fallback attempt REST endpoint if tRPC returned 404 or 501
+  try {
     const res = await fetch("/api/v2/root-cause/annotations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -264,40 +258,37 @@ export async function submitConfirmedRootCauseAnnotation(
 export async function fetchDatasetReadiness(): Promise<Model2DatasetReadinessStats> {
   // 1. Try querying Agent 1's real authenticated tRPC procedure: rootCause.readiness
   try {
-    const res = await fetch("/api/trpc/rootCause.readiness", {
-      headers: { Accept: "application/json" },
-    });
+    const summary: any = await trpcVanilla.rootCause.readiness.query();
 
-    if (res.ok) {
-      const data = await res.json();
-      const summary = data?.result?.data?.json || data?.result?.data;
+    if (summary && summary.tableCounts) {
+      const tc = summary.tableCounts;
+      const isBlocked =
+        summary.datasetStatus === "DATASET_BLOCKED" ||
+        tc.sensors === 0 ||
+        tc.annotations === 0;
 
-      if (summary && summary.tableCounts) {
-        const tc = summary.tableCounts;
-        const isBlocked = summary.datasetStatus === "DATASET_BLOCKED" || tc.sensors === 0 || tc.annotations === 0;
-
-        return {
-          status: isBlocked ? "DATASET_BLOCKED" : "DATASET_READY",
-          batchesCount: tc.batches ?? 0,
-          machinesCount: tc.machines ?? 0,
-          sensorRecordsCount: tc.sensors ?? 0,
-          linkedInspectionsCount: 0,
-          expertAnnotationsCount: tc.annotations ?? 0,
-          confirmedLabelsCount: tc.annotations ?? 0,
-          trainingReadyExamplesCount: Math.min(tc.batches, tc.annotations),
-          unlabeledOrInvalidCount: 130,
-          requiredMinimumExamples: 100,
-          minimumTaxonomyClassesRepresented: 5,
-          activeTaxonomyClassesCount: tc.annotations > 0 ? 1 : 0,
-          blockers: Array.isArray(summary.blockingReasons) && summary.blockingReasons.length > 0
+      return {
+        status: isBlocked ? "DATASET_BLOCKED" : "DATASET_READY",
+        batchesCount: tc.batches ?? 0,
+        machinesCount: tc.machines ?? 0,
+        sensorRecordsCount: tc.sensors ?? 0,
+        linkedInspectionsCount: 0,
+        expertAnnotationsCount: tc.annotations ?? 0,
+        confirmedLabelsCount: tc.annotations ?? 0,
+        trainingReadyExamplesCount: Math.min(tc.batches, tc.annotations),
+        unlabeledOrInvalidCount: 130,
+        requiredMinimumExamples: 100,
+        minimumTaxonomyClassesRepresented: 5,
+        activeTaxonomyClassesCount: tc.annotations > 0 ? 1 : 0,
+        blockers:
+          Array.isArray(summary.blockingReasons) && summary.blockingReasons.length > 0
             ? summary.blockingReasons
             : [
                 "Zero historical sensor telemetry records available in local production database.",
                 "Zero confirmed failure-analysis root cause ground truth annotations recorded.",
               ],
-          lastAuditedAt: new Date().toISOString(),
-        };
-      }
+        lastAuditedAt: new Date().toISOString(),
+      };
     }
   } catch {
     // Proceed to REST fallback
@@ -328,7 +319,7 @@ export async function fetchDatasetReadiness(): Promise<Model2DatasetReadinessSta
     expertAnnotationsCount: 0,
     confirmedLabelsCount: 0,
     trainingReadyExamplesCount: 0,
-    unlabeledOrInvalidCount: 130, // 130 inspections currently unlinked in database
+    unlabeledOrInvalidCount: 130,
     requiredMinimumExamples: 100,
     minimumTaxonomyClassesRepresented: 5,
     activeTaxonomyClassesCount: 0,

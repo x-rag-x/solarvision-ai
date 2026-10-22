@@ -3,8 +3,8 @@
  * 
  * Communicates with backend Root Cause endpoints (Agent 1 tRPC contract).
  * Handles:
- * - Model 2 status checks via /api/trpc/rootCause.status
- * - Execution of root cause etiology inference via /api/trpc/rootCause.analyze
+ * - Model 2 status checks via trpcVanilla.rootCause.status
+ * - Execution of root cause etiology inference via trpcVanilla.rootCause.analyze
  * - Retrieval of linked manufacturing batches, machine telemetry, and sensors
  * - Historical prediction logs and verification feedback
  * 
@@ -12,8 +12,10 @@
  * - Does not invent artificial predictions or illustrative percentages.
  * - Only returns predictions when delivered by a real, validated API.
  * - Truthfully reports "Model 2 Not Trained" and "Manufacturing Data Required".
+ * - Uses typed tRPC client with SuperJSON serialization and auth tokens.
  */
 
+import { trpcVanilla } from "@/lib/trpc";
 import type {
   CandidateCause,
   CauseCategory,
@@ -46,57 +48,11 @@ export class RootCauseApiError extends Error {
 
 /**
  * Checks whether Model 2 (Multimodal Root Cause Analysis) is trained, loaded, and available.
- * Queries Agent 1's rootCause.status tRPC procedure.
+ * Queries Agent 1's rootCause.status tRPC procedure via trpcVanilla.
  */
 export async function fetchModel2Status(): Promise<Model2StatusResponse> {
   try {
-    const res = await fetch("/api/trpc/rootCause.status", {
-      headers: { Accept: "application/json" },
-    });
-
-    if (res.status === 404 || res.status === 501) {
-      return {
-        status: "not_trained",
-        modelName: "SolarVision-RC-Model2",
-        modelVersion: "none",
-        isReady: false,
-        trainingStatus: "Model 2 checkpoint file not found. Model 2 is not trained or deployed.",
-        supportedCausesCount: 0,
-        limitations: [
-          "Model 2 checkpoint has not been trained or loaded into the inference engine.",
-          "Requires training across historical manufacturing telemetry and confirmed defect labels.",
-        ],
-      };
-    }
-
-    if (!res.ok) {
-      if (res.status === 503) {
-        return {
-          status: "unavailable",
-          modelName: "SolarVision-RC-Model2",
-          modelVersion: "offline",
-          isReady: false,
-          trainingStatus: "Model 2 inference worker is temporarily unavailable or starting up.",
-          supportedCausesCount: 0,
-          limitations: ["Inference service unreachable."],
-        };
-      }
-      // Check if REST fallback /api/v2/root-cause/status exists
-      const fallbackRes = await fetch("/api/v2/root-cause/status").catch(() => null);
-      if (fallbackRes && fallbackRes.ok) {
-        const fbData = await fallbackRes.json();
-        return fbData as Model2StatusResponse;
-      }
-
-      throw new RootCauseApiError(
-        `Failed to fetch Model 2 status: ${res.statusText}`,
-        "PREDICTION_FAILED",
-        res.status
-      );
-    }
-
-    const json = await res.json();
-    const data = json.result?.data ?? json;
+    const data = await trpcVanilla.rootCause.status.query();
 
     return {
       status: data.isReady ? "ready" : "not_trained",
@@ -111,6 +67,20 @@ export async function fetchModel2Status(): Promise<Model2StatusResponse> {
     };
   } catch (err: any) {
     if (err instanceof RootCauseApiError) throw err;
+    const errMsg = err?.message || String(err);
+    const status = err?.data?.httpStatus || err?.statusCode;
+    if (status === 503 || errMsg.includes("503") || errMsg.includes("Service Unavailable")) {
+      return {
+        status: "unavailable",
+        modelName: "SolarVision-RC-Model2",
+        modelVersion: "offline",
+        isReady: false,
+        trainingStatus: "Model 2 inference worker is temporarily unavailable or starting up.",
+        supportedCausesCount: 0,
+        limitations: ["Inference service unreachable."],
+      };
+    }
+
     return {
       status: "not_trained",
       modelName: "SolarVision-RC-Model2",
@@ -142,12 +112,7 @@ export async function fetchManufacturingContext(inspectionId: string): Promise<{
       headers: { Accept: "application/json" },
     });
 
-    if (res.status === 404) {
-      // Inspection exists in YOLO DB but has no linked MES / SCADA manufacturing records
-      return { batch: null, machine: null, sensors: [] };
-    }
-
-    if (!res.ok) {
+    if (res.status === 404 || !res.ok) {
       return { batch: null, machine: null, sensors: [] };
     }
 
@@ -157,14 +122,14 @@ export async function fetchManufacturingContext(inspectionId: string): Promise<{
       machine: data.machine ?? null,
       sensors: Array.isArray(data.sensors) ? data.sensors : [],
     };
-  } catch (err: any) {
+  } catch {
     return { batch: null, machine: null, sensors: [] };
   }
 }
 
 /**
  * Submits an inspection ID to trigger Model 2 root cause prediction.
- * Strictly calls Agent 1's rootCause.analyze tRPC procedure.
+ * Strictly calls Agent 1's rootCause.analyze tRPC procedure via trpcVanilla.
  */
 export async function runRootCauseDiagnosis(
   inspectionId: string,
@@ -203,49 +168,69 @@ export async function runRootCauseDiagnosis(
     productionEvents: [],
   };
 
-  const res = await fetch("/api/trpc/rootCause.analyze", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  let data: any;
+  try {
+    data = await trpcVanilla.rootCause.analyze.mutate(payload);
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    const status = err?.data?.httpStatus || err?.statusCode || 500;
 
-  if (res.status === 404 || res.status === 501) {
-    throw new RootCauseApiError(
-      "Model 2 Root Cause Analysis is not currently trained or deployed.",
-      "MODEL_NOT_TRAINED",
-      res.status
-    );
-  }
+    if (status === 501 || errMsg.includes("not compiled") || errMsg.includes("501")) {
+      throw new RootCauseApiError(
+        "Model 2 Root Cause Analysis is not currently trained or deployed.",
+        "MODEL_NOT_TRAINED",
+        501
+      );
+    }
 
-  if (res.status === 422) {
-    const errorBody = await res.json().catch(() => ({}));
-    throw new RootCauseApiError(
-      errorBody.message || "Manufacturing Data Required: no process or sensor telemetry linked.",
-      "NO_MANUFACTURING_DATA",
-      res.status,
-      errorBody.details
-    );
-  }
+    if (
+      status === 422 ||
+      errMsg.includes("422") ||
+      errMsg.includes("lacks linked furnace") ||
+      errMsg.includes("telemetry")
+    ) {
+      throw new RootCauseApiError(
+        errMsg || "Manufacturing Data Required: no process or sensor telemetry linked.",
+        "NO_MANUFACTURING_DATA",
+        422,
+        err?.data?.details
+      );
+    }
 
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}));
+    if (
+      status === 403 ||
+      errMsg.includes("Access denied") ||
+      errMsg.includes("FORBIDDEN") ||
+      err?.shape?.code === -32003
+    ) {
+      throw new RootCauseApiError(
+        "Access denied to inspection record or record does not exist.",
+        "UNAUTHORIZED",
+        403
+      );
+    }
+
+    if (status === 401 || errMsg.includes("UNAUTHORIZED") || err?.shape?.code === -32001) {
+      throw new RootCauseApiError(
+        "Session expired or unauthenticated. Please sign in as an authorized operator.",
+        "UNAUTHORIZED",
+        401
+      );
+    }
+
     throw new RootCauseApiError(
-      errorBody.message || `Root cause prediction failed with HTTP ${res.status}`,
+      errMsg || "Root cause prediction failed.",
       "PREDICTION_FAILED",
-      res.status,
-      errorBody.details
+      status,
+      err?.data?.details
     );
   }
-
-  const json = await res.json();
-  const data = json.result?.data ?? json;
 
   // Process Agent 1 response status
   if (data.status === "missing_process_data") {
-    const detail = data.limitations?.[0] || "root cause attribution requires linked sensor measurements, machine telemetry, or batch metadata to correlate with defect patterns.";
+    const detail =
+      data.limitations?.[0] ||
+      "root cause attribution requires linked sensor measurements, machine telemetry, or batch metadata to correlate with defect patterns.";
     throw new RootCauseApiError(
       detail.includes("Manufacturing Data Required") ? detail : `Manufacturing Data Required: ${detail}`,
       "NO_MANUFACTURING_DATA"
@@ -253,7 +238,9 @@ export async function runRootCauseDiagnosis(
   }
 
   if (data.status === "not_trained") {
-    const detail = data.limitations?.[0] || "checkpoint file not found at 'backend/models/root_cause/root_cause_model.pt'.";
+    const detail =
+      data.limitations?.[0] ||
+      "checkpoint file not found at 'backend/models/root_cause/root_cause_model.pt'.";
     throw new RootCauseApiError(
       detail.includes("Model 2 Not Trained") ? detail : `Model 2 Not Trained: ${detail}`,
       "MODEL_NOT_TRAINED"
@@ -276,7 +263,6 @@ export async function runRootCauseDiagnosis(
 
   const candidateCauses: CandidateCause[] = rawCauses.map(
     (cause: any, idx: number) => {
-      // If already formatted as CandidateCause
       if (cause.rank && cause.title && cause.category && Array.isArray(cause.evidence)) {
         return cause as CandidateCause;
       }
@@ -348,7 +334,7 @@ export async function fetchHistoricalPredictions(
 
     const data = await res.json();
     return Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
-  } catch (err: any) {
+  } catch {
     return [];
   }
 }

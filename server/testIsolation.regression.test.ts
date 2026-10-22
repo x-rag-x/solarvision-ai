@@ -19,6 +19,10 @@ import {
   persistMaintenanceAssessment,
   getMaintenanceHistory,
 } from "./predictiveMaintenance/persistence";
+import {
+  persistQualityForecast,
+  getQualityForecastById,
+} from "./predictiveQuality/dbContract";
 import { randomUUID } from "node:crypto";
 import { resolve, join } from "node:path";
 import { existsSync, unlinkSync } from "node:fs";
@@ -58,6 +62,9 @@ describe("Database Test Isolation & Zero-Pollution Regression Suite", () => {
     );
     const initialPredictionsCount = Number(
       (devDb.prepare("SELECT COUNT(*) as count FROM maintenance_predictions").get() as any)?.count ?? 0
+    );
+    const initialForecastsCount = Number(
+      (devDb.prepare("SELECT COUNT(*) as count FROM predictive_quality_forecasts").get() as any)?.count ?? 0
     );
 
     // 2. Switch to isolated in-memory database
@@ -116,6 +123,37 @@ describe("Database Test Isolation & Zero-Pollution Regression Suite", () => {
     );
     expect(savedAssessment.id).toBeDefined();
 
+    // Persist Model 3 predictive quality benchmark forecast in isolated DB
+    const testQualityResp = {
+      contractVersion: "3.0.0",
+      status: "ready" as const,
+      domain: "semiconductor_benchmark" as const,
+      batchId: null,
+      machineId: null,
+      qualityOutcome: "fail" as const,
+      riskLevel: "high" as const,
+      probabilities: { pass: 0.1, fail: 0.9 },
+      confidence: 0.9,
+      isCalibrated: true,
+      calibrationMethod: "binned",
+      predictedDefectRate: 0.9,
+      predictedYield: null,
+      confidenceInterval: null,
+      topRiskFactors: [],
+      recommendedAction: "Quarantine wafer",
+      modelVersion: "3.0.0-benchmark",
+      modelMetadata: { isBenchmark: true } as any,
+      limitations: [],
+      processingTimeMs: 20,
+    };
+    await persistQualityForecast(
+      testQualityResp,
+      { userId: "isolated-user-01", inputReference: "iso-wafer-001" },
+      isoDb
+    );
+    const testQualityId = (testQualityResp as any).persistedId;
+    expect(testQualityId).toBeDefined();
+
     // Verify records exist in isolated DB
     const isolatedInspection = getSqliteInspectionById(testInspectionId, {
       userId: "isolated-user-01",
@@ -132,6 +170,14 @@ describe("Database Test Isolation & Zero-Pollution Regression Suite", () => {
     expect(isolatedHistory.records.length).toBe(1);
     expect(isolatedHistory.records[0].machineId).toBe(testMachineId);
 
+    const isolatedForecast = await getQualityForecastById(
+      testQualityId,
+      { userId: "isolated-user-01" },
+      isoDb
+    );
+    expect(isolatedForecast).not.toBeNull();
+    expect(isolatedForecast?.id).toBe(testQualityId);
+
     // 3. Switch back to development database
     resetSqliteDb();
     const restoredDevDb = getSqliteDb();
@@ -141,10 +187,14 @@ describe("Database Test Isolation & Zero-Pollution Regression Suite", () => {
     const finalPredictionsCount = Number(
       (restoredDevDb.prepare("SELECT COUNT(*) as count FROM maintenance_predictions").get() as any)?.count ?? 0
     );
+    const finalForecastsCount = Number(
+      (restoredDevDb.prepare("SELECT COUNT(*) as count FROM predictive_quality_forecasts").get() as any)?.count ?? 0
+    );
 
     // Development database must have ZERO added rows
     expect(finalInspectionsCount).toBe(initialInspectionsCount);
     expect(finalPredictionsCount).toBe(initialPredictionsCount);
+    expect(finalForecastsCount).toBe(initialForecastsCount);
 
     // Test record must NOT exist in development database
     const leakedInspection = restoredDevDb
@@ -156,6 +206,11 @@ describe("Database Test Isolation & Zero-Pollution Regression Suite", () => {
       .prepare("SELECT * FROM maintenance_predictions WHERE machineId = ?")
       .get(testMachineId);
     expect(leakedPrediction).toBeUndefined();
+
+    const leakedForecast = restoredDevDb
+      .prepare("SELECT * FROM predictive_quality_forecasts WHERE id = ?")
+      .get(testQualityId);
+    expect(leakedForecast).toBeUndefined();
   });
 
   it("supports isolated temporary file database and cleans up cleanly", async () => {

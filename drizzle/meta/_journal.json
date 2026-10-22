@@ -22,6 +22,27 @@
       "when": 1788966000000,
       "tag": "0002_future_models_and_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1788970000000,
+      "tag": "0003_add_inspection_user_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1788975000000,
+      "tag": "0004_model4_maintenance_persistence",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1788980000000,
+      "tag": "0005_model3_predictive_quality_persistence",
+      "breakpoints": true
     }
   ]
 }
