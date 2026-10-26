@@ -13,20 +13,25 @@ export function getBaseUrl(): string {
 
 export function getAuthHeaders(): Record<string, string> {
   try {
-    const storage = typeof window !== "undefined" ? window.sessionStorage : (globalThis as any).sessionStorage;
-    if (storage) {
-      const raw = storage.getItem("manus-cookie");
-      if (raw) {
-        const prefix = `${COOKIE_NAME}=`;
-        const pair = raw.split(";").find((s) => s.trim().startsWith(prefix));
-        const token = pair?.trim().slice(prefix.length);
-        if (token) {
-          return { Authorization: `Bearer ${token}` };
-        }
+    const sessionStorageRef = typeof window !== "undefined" ? window.sessionStorage : (globalThis as any).sessionStorage;
+    const localStorageRef = typeof window !== "undefined" ? window.localStorage : (globalThis as any).localStorage;
+
+    const directToken = localStorageRef?.getItem?.("solarvision-session-token");
+    if (directToken) {
+      return { Authorization: `Bearer ${directToken}` };
+    }
+
+    const raw = sessionStorageRef?.getItem?.("manus-cookie") || localStorageRef?.getItem?.("manus-cookie");
+    if (raw) {
+      const prefix = `${COOKIE_NAME}=`;
+      const pair = raw.split(";").find((s: string) => s.trim().startsWith(prefix));
+      const token = pair?.trim().slice(prefix.length);
+      if (token) {
+        return { Authorization: `Bearer ${token}` };
       }
     }
   } catch {
-    // sessionStorage unavailable
+    // storage unavailable
   }
   return {};
 }

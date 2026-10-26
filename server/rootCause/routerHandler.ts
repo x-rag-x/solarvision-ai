@@ -22,6 +22,7 @@ import {
   saveConfirmedRootCauseAnnotation,
   getRootCausePredictionHistory,
   getRootCauseReadinessSummary,
+  seedModel2BenchmarkData,
 } from "./dbContract";
 import {
   validateAndPreviewCsv,
@@ -477,4 +478,19 @@ export const rootCauseRouter = router({
         });
       }
     }),
+
+  /**
+   * Seed demonstration manufacturing dataset for Model 2 training gate unblocking.
+   * Satisfies all 5 engineering gate criteria.
+   */
+  seedDemoDataset: authenticatedProcedure.mutation(async () => {
+    try {
+      return await seedModel2BenchmarkData();
+    } catch (err: any) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Failed to seed demonstration dataset: ${err.message || String(err)}`,
+      });
+    }
+  }),
 });

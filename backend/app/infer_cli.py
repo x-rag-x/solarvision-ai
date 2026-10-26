@@ -19,6 +19,7 @@ def main() -> None:
     parser.add_argument("--annotated", required=True, help="Path to save annotated output image")
     parser.add_argument("--json", required=True, help="Path to save detection result JSON")
     parser.add_argument("--confidence", type=float, default=None, help="Confidence threshold (defaults to settings: 0.25)")
+    parser.add_argument("--image-size", "--imgsz", type=int, default=None, help="Inference image resolution (defaults to settings: 640)")
     parser.add_argument(
         "--diagnostic",
         action="store_true",
@@ -46,6 +47,11 @@ def main() -> None:
             sys.stderr.write(f"Error: Invalid confidence threshold {args.confidence}. Must be between 0.0 and 1.0.\n")
             sys.exit(1)
 
+    if args.image_size is not None:
+        if not (32 <= args.image_size <= 4096):
+            sys.stderr.write(f"Error: Invalid image size {args.image_size}. Must be between 32 and 4096.\n")
+            sys.exit(1)
+
     try:
         image = load_image_safely(input_path)
     except Exception as exc:
@@ -53,8 +59,11 @@ def main() -> None:
         sys.exit(1)
 
     conf = args.confidence if args.confidence is not None else settings.confidence_threshold
+    imgsz = args.image_size if args.image_size is not None else settings.image_size
     try:
-        detections, annotated, processing_time_ms = inference_service.predict(image, confidence=conf)
+        detections, annotated, processing_time_ms = inference_service.predict(
+            image, confidence=conf, image_size=imgsz
+        )
     except Exception as exc:
         sys.stderr.write(f"Error during inference execution: {exc}\n")
         sys.exit(1)
@@ -73,7 +82,7 @@ def main() -> None:
         "inference_configuration": {
             "confidence_threshold": conf,
             "iou_threshold": settings.iou_threshold,
-            "image_size": settings.image_size,
+            "image_size": imgsz,
             "preprocessing": "Ultralytics letterbox/normalization via model.predict",
         },
         "processing_time_ms": round(processing_time_ms, 2),
@@ -84,7 +93,7 @@ def main() -> None:
     }
 
     if args.diagnostic:
-        diagnostic = inference_service.diagnostics(image, THRESHOLDS)
+        diagnostic = inference_service.diagnostics(image, THRESHOLDS, image_size=imgsz)
         payload["pre_nms_raw_prediction_count"] = diagnostic["pre_nms_raw_prediction_count"]
         payload["pre_nms_raw_prediction_status"] = diagnostic["pre_nms_raw_prediction_status"]
         payload["nms_filtered_candidate_count"] = diagnostic["nms_filtered_candidate_count"]

@@ -209,3 +209,85 @@ def test_application_contract_compatibility() -> None:
     assert "annotated_image_url" in data
     assert "inference_configuration" in data
     assert data["inference_configuration"]["confidence_threshold"] == 0.25
+
+
+def test_dynamic_image_size_propagation() -> None:
+    """Verify that image_size / imgsz parameter propagates across API, CLI, and inference service."""
+    sample_img = Path("client/public/samples/sample-el-cell-3.jpg")
+    if not sample_img.exists():
+        pytest.skip(f"Sample image {sample_img} not present")
+
+    # 1. Inference service
+    dets_640, _, _ = inference_service.predict(sample_img, confidence=0.10, image_size=640)
+    dets_1024, _, _ = inference_service.predict(sample_img, confidence=0.10, image_size=1024)
+    assert len(dets_640) == 1
+    assert len(dets_1024) == 1
+    assert dets_640[0].defect_type == "crack"
+    assert dets_1024[0].defect_type == "crack"
+    # Confidences differ slightly between 640 and 1024 due to scale
+    assert dets_640[0].confidence > 0.75
+    assert dets_1024[0].confidence > 0.70
+
+    # 2. FastAPI endpoint with image_size
+    with open(sample_img, "rb") as f:
+        resp = client.post(
+            "/inspect?confidence=0.10&image_size=1024",
+            files={"file": ("sample-el-cell-3.jpg", f, "image/jpeg")},
+        )
+    assert resp.status_code == 200
+    api_data = resp.json()
+    assert api_data["inference_configuration"]["image_size"] == 1024
+    assert len(api_data["detections"]) == 1
+
+    # 3. CLI execution with --image-size
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ann_path = Path(tmpdir) / "ann.jpg"
+        json_path = Path(tmpdir) / "result.json"
+        cmd = [
+            sys.executable,
+            "-m",
+            "backend.app.infer_cli",
+            "--input",
+            str(sample_img),
+            "--annotated",
+            str(ann_path),
+            "--json",
+            str(json_path),
+            "--confidence",
+            "0.10",
+            "--image-size",
+            "1024",
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        assert proc.returncode == 0, f"CLI error: {proc.stderr}"
+        cli_data = json.loads(json_path.read_text(encoding="utf-8"))
+        assert cli_data["inference_configuration"]["image_size"] == 1024
+        assert len(cli_data["detections"]) == 1
+
+
+def test_sample_el_cell_3_confidence_ladder_gap() -> None:
+    """
+    Certifies forensic finding: sample-el-cell-3.jpg genuinely contains a single
+    high-confidence bottom-right crack (~0.81), and candidate drop-off produces
+    identical 1-detection counts at 0.25, 0.10, and 0.05.
+    """
+    sample_img = Path("client/public/samples/sample-el-cell-3.jpg")
+    if not sample_img.exists():
+        pytest.skip(f"Sample image {sample_img} not present")
+
+    d25, _, _ = inference_service.predict(sample_img, confidence=0.25, image_size=640)
+    d10, _, _ = inference_service.predict(sample_img, confidence=0.10, image_size=640)
+    d05, _, _ = inference_service.predict(sample_img, confidence=0.05, image_size=640)
+    d01, _, _ = inference_service.predict(sample_img, confidence=0.01, image_size=640)
+
+    assert len(d25) == 1, "Expected 1 detection at conf=0.25"
+    assert len(d10) == 1, "Expected 1 detection at conf=0.10"
+    assert len(d05) == 1, "Expected 1 detection at conf=0.05"
+    assert len(d01) == 3, "Expected 3 detections at conf=0.01"
+
+    # Confirm bottom-right crack coordinates and type
+    crack = d25[0]
+    assert crack.defect_type == "crack"
+    assert crack.confidence > 0.80
+    assert crack.x1 > 800 and crack.y1 > 850
+

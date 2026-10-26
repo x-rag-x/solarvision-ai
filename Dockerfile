@@ -5,7 +5,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 python3-pip libgl1 libglib2.0-0 \
+  && apt-get install -y --no-install-recommends python3 python3-pip libgl1 libglib2.0-0 curl \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -25,5 +25,15 @@ RUN python3 -m pip install --break-system-packages --no-cache-dir --index-url ht
 COPY . .
 RUN corepack pnpm run build
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    PYTHON_EXECUTABLE=python3 \
+    PORT=3000 \
+    SQLITE_DB_PATH=/app/data/solarvision.db \
+    UPLOADS_DIR=/app/data/uploads
+
+RUN mkdir -p /app/data /app/data/uploads
+
+EXPOSE 3000
+VOLUME ["/app/data"]
+
 CMD ["node", "dist/index.js"]

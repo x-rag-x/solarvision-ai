@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="SolarVision AI Inference API",
     version="1.1.0",
-    description="Production EL/NIR Solar Cell Defect Detection API backed by YOLO26n",
+    description="Academically Validated EL/NIR Solar Cell Defect Detection Prototype backed by YOLO26n (Evaluated on PVELAD benchmark; not factory-production-certified)",
     lifespan=lifespan,
 )
 
@@ -90,6 +90,7 @@ async def run_inspection(
     file: UploadFile,
     diagnostic: bool = False,
     confidence: float | None = None,
+    image_size: int | None = None,
 ) -> InspectionResponse:
     # 1. Media type validation
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -132,12 +133,13 @@ async def run_inspection(
 
     inspection_id = str(uuid.uuid4())
     effective_confidence = settings.confidence_threshold if confidence is None else confidence
+    effective_image_size = settings.image_size if image_size is None else image_size
 
     # 5. YOLO inference execution
     started_time = time.perf_counter()
     try:
         detections, annotated, processing_time_ms = inference_service.predict(
-            image, confidence=effective_confidence
+            image, confidence=effective_confidence, image_size=effective_image_size
         )
     except Exception as exc:
         logger.error("Inference execution failed for inspection %s: %s", inspection_id, exc, exc_info=True)
@@ -166,7 +168,9 @@ async def run_inspection(
     diagnostic_result = None
     if diagnostic:
         try:
-            diagnostic_result = inference_service.diagnostics(image)
+            diagnostic_result = inference_service.diagnostics(
+                image, image_size=effective_image_size
+            )
         except Exception as diag_exc:
             logger.error("Diagnostic execution failed for inspection %s: %s", inspection_id, diag_exc, exc_info=True)
             raise HTTPException(
@@ -203,7 +207,7 @@ async def run_inspection(
         inference_configuration=InferenceConfiguration(
             confidence_threshold=effective_confidence,
             iou_threshold=settings.iou_threshold,
-            image_size=settings.image_size,
+            image_size=effective_image_size,
             width=int(image.shape[1]),
             height=int(image.shape[0]),
             class_names=inference_service.class_names(),
@@ -234,5 +238,13 @@ async def inspect(
         le=1.0,
         description="Confidence threshold override (defaults to settings: 0.25)",
     ),
+    image_size: int | None = Query(
+        None,
+        ge=32,
+        le=4096,
+        description="Inference image resolution override (defaults to settings: 640)",
+    ),
 ) -> InspectionResponse:
-    return await run_inspection(file, diagnostic=diagnostic, confidence=confidence)
+    return await run_inspection(
+        file, diagnostic=diagnostic, confidence=confidence, image_size=image_size
+    )

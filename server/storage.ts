@@ -7,7 +7,13 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve, isAbsolute } from "node:path";
 import { ENV } from "./_core/env";
 
-const UPLOADS_DIR = resolve(process.cwd(), "uploads");
+export function getUploadsDir(): string {
+  return process.env.UPLOADS_DIR
+    ? resolve(process.env.UPLOADS_DIR)
+    : resolve(process.cwd(), "uploads");
+}
+
+const UPLOADS_DIR = getUploadsDir();
 
 function getForgeConfig() {
   const forgeUrl = ENV.forgeApiUrl;

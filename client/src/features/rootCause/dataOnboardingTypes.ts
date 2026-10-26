@@ -179,6 +179,8 @@ export interface BackendReadinessSummary {
   schemaVersion: string;
   canonicalFeatureCount: number;
   datasetStatus: "DATASET_BLOCKED" | "PARTIAL" | "READY";
+  totalInspectionsCount?: number;
+  linkedInspectionsCount?: number;
   tableCounts: {
     batches: number;
     machines: number;
@@ -186,6 +188,8 @@ export interface BackendReadinessSummary {
     events: number;
     predictions: number;
     annotations: number;
+    linkedInspections?: number;
+    trainingEligible?: number;
   };
   blockingReasons: string[];
 }
@@ -196,6 +200,7 @@ export interface Model2DatasetReadinessStats {
   machinesCount: number;
   sensorRecordsCount: number;
   linkedInspectionsCount: number;
+  totalInspectionsCount?: number;
   expertAnnotationsCount: number;
   confirmedLabelsCount: number;
   trainingReadyExamplesCount: number;

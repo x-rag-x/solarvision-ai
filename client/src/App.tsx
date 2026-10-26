@@ -15,6 +15,7 @@ import InspectionDetail from "./pages/InspectionDetail";
 import { RootCauseOverview } from "./features/rootCause";
 import { PredictiveQualityOverview } from "./features/predictiveQuality";
 import { PredictiveMaintenanceOverview } from "./features/predictiveMaintenance";
+import { OperatorLoginDialog } from "./components/solarvision/OperatorLoginDialog";
 import { Route, Switch } from "wouter";
 
 function Router() {
@@ -26,9 +27,18 @@ function Router() {
         <Route path="/inspect" component={Inspection} />
         <Route path="/inspection/:inspectionId" component={InspectionDetail} />
         <Route path="/root-cause" component={RootCauseOverview} />
+        <Route path="/root%20cause" component={RootCauseOverview} />
+        <Route path="/root cause" component={RootCauseOverview} />
+        <Route path="/root_cause" component={RootCauseOverview} />
         <Route path="/root-cause/:inspectionId" component={RootCauseOverview} />
         <Route path="/predictive-quality" component={PredictiveQualityOverview} />
+        <Route path="/predictive%20quality" component={PredictiveQualityOverview} />
+        <Route path="/predictive quality" component={PredictiveQualityOverview} />
+        <Route path="/predictive_quality" component={PredictiveQualityOverview} />
         <Route path="/predictive-maintenance" component={PredictiveMaintenanceOverview} />
+        <Route path="/predictive%20maintenance" component={PredictiveMaintenanceOverview} />
+        <Route path="/predictive maintenance" component={PredictiveMaintenanceOverview} />
+        <Route path="/predictive_maintenance" component={PredictiveMaintenanceOverview} />
         <Route path="/history" component={History} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/model" component={ModelPerformance} />
@@ -47,6 +57,7 @@ export default function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <OperatorLoginDialog />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

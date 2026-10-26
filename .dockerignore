@@ -14,3 +14,11 @@ backend/storage
 .env.*
 webdev-static-assets
 screenshots
+data/
+downloads/
+uploads/
+scratch/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3

@@ -27,11 +27,12 @@ import { DefectBadge } from "@/components/solarvision/DefectBadge";
 import { DetectionTable } from "@/components/solarvision/DetectionTable";
 import { ConfidenceDisclaimer } from "@/components/solarvision/ConfidenceDisclaimer";
 import { ImageViewerModal } from "@/components/solarvision/ImageViewerModal";
-import { AuthGuard, SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
+import { SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
 import { isUnauthorizedError, validateUploadFileSize, BACKEND_TRANSPORT_MAX_MB } from "@/lib/auth-helpers";
 import { useInspectionSettings } from "@/lib/settings";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
+import { openOperatorLoginModal, startLogin } from "@/const";
 import { toast } from "sonner";
 
 interface DetectionResult {
@@ -75,6 +76,7 @@ export default function Inspection() {
   const [, setLocation] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [settings] = useInspectionSettings();
+  const { user, isAuthenticated } = useAuth();
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -111,9 +113,28 @@ export default function Inspection() {
     setViewMode("annotated");
   };
 
+  const loadSampleImage = async (samplePath: string, sampleName: string) => {
+    try {
+      const response = await fetch(samplePath);
+      if (!response.ok) throw new Error("Sample file not found");
+      const blob = await response.blob();
+      const sampleFile = new File([blob], sampleName, { type: "image/jpeg" });
+      chooseFile(sampleFile);
+      toast.success(`Loaded sample EL solar cell: ${sampleName}`);
+    } catch {
+      toast.error("Failed to load sample image.");
+    }
+  };
+
   const handleRunInspection = async (overrideThreshold?: number) => {
     if (!file) {
       toast.error("Please select an EL/NIR image before starting inspection.");
+      return;
+    }
+
+    if (!user) {
+      toast.info("Operator authentication required to run YOLO26n AI inspection.");
+      openOperatorLoginModal();
       return;
     }
 
@@ -133,11 +154,13 @@ export default function Inspection() {
         mimeType: string;
         base64Data: string;
         confidence?: number;
+        imageSize?: number;
       } = {
         filename: file.name,
         mimeType: file.type || "image/jpeg",
         base64Data,
         confidence: confToUse,
+        imageSize: settings.imageSize,
       };
 
       const response = await (runMutation.mutateAsync as any)(payload) as InspectionResult;
@@ -204,28 +227,48 @@ export default function Inspection() {
       : preview;
 
   return (
-    <AuthGuard
-      title="Authentication required to run inspections"
-      description="The YOLO26n AI computer vision pipeline is restricted to authenticated operators and quality engineers. Sign in to inspect cells, generate bounding box evidence, and persist results to the factory database."
-    >
-      <div>
-        <PageIntro
-          eyebrow="Computer Vision Pipeline"
-          title="Run a new inspection."
-          description="Upload an electroluminescence (EL) or near-infrared (NIR) solar cell frame to run the verified YOLO26n inference model. Results display authentic bounding boxes, confidence scores, and persist to history."
-          action={
-            <Link
-              href="/history"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#F2B941] hover:text-[#0B0909]"
-            >
-              Open history <ArrowRight className="h-4 w-4" />
-            </Link>
-          }
-        />
+    <div className="space-y-6">
+      <PageIntro
+        eyebrow="Computer Vision Pipeline"
+        title="Run a new inspection."
+        description="Upload an electroluminescence (EL) or near-infrared (NIR) solar cell frame to run the academically validated YOLO26n prototype (evaluated on PVELAD benchmark; not factory-production-certified). Results display authentic bounding boxes, confidence scores, and persist to history."
+        action={
+          <Link
+            href="/history"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#F2B941] hover:text-[#0B0909]"
+          >
+            Open history <ArrowRight className="h-4 w-4" />
+          </Link>
+        }
+      />
 
-        {executionError?.isAuth && (
-          <SessionExpiredBanner onRetry={() => handleRunInspection()} />
-        )}
+      {!isAuthenticated && (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0B0909] text-[#F2B941]">
+              <LogIn className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-xs font-semibold text-amber-950">Operator Preview Mode</p>
+              <p className="text-[11px] text-amber-800">
+                You can load test samples, adjust sensitivity thresholds, and explore image previews. Sign in as an operator to run YOLO26n AI defect detection.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => openOperatorLoginModal()}
+            className="h-8 gap-1.5 rounded-lg bg-[#0B0909] px-3.5 text-xs font-semibold text-white hover:bg-slate-800 sm:shrink-0"
+          >
+            <LogIn className="h-3 w-3 text-[#F2B941]" />
+            Sign in as Operator
+          </Button>
+        </div>
+      )}
+
+      {executionError?.isAuth && (
+        <SessionExpiredBanner onRetry={() => handleRunInspection()} />
+      )}
 
         <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
           {/* Left Column: Image Selection & Operator Controls */}
@@ -272,6 +315,37 @@ export default function Inspection() {
                 )}
               </button>
 
+              {/* Quick Test Samples */}
+              <div className="mt-3 rounded-xl border border-slate-200/60 bg-[#FAF9F0] p-3 text-left">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                  <Sparkles className="h-3.5 w-3.5 text-[#F2B941]" />
+                  <span>1-Click Test Samples (Authentic EL Solar Cells):</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => loadSampleImage("/samples/sample-el-cell-1.jpg", "el-sample-crack-01.jpg")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
+                  >
+                    Sample 1 (Micro-crack)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => loadSampleImage("/samples/sample-el-cell-2.jpg", "el-sample-finger-02.jpg")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
+                  >
+                    Sample 2 (Finger defect)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => loadSampleImage("/samples/sample-el-cell-3.jpg", "el-sample-cell-03.jpg")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
+                  >
+                    Sample 3 (Multi-defect)
+                  </button>
+                </div>
+              </div>
+
               {file && (
                 <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#F4F0D7] px-4 py-2.5">
                   <div className="flex min-w-0 items-center gap-2">
@@ -307,30 +381,42 @@ export default function Inspection() {
                   </span>
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="mt-3 grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setActiveThreshold(0.25)}
-                    className={`rounded-xl border p-2.5 text-left text-xs transition-all ${
+                    className={`rounded-xl border p-2 text-left text-xs transition-all ${
                       activeThreshold === 0.25
                         ? "border-[#F2B941] bg-[#FFF3C4] text-[#0B0909] font-medium shadow-sm"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     }`}
                   >
-                    <div className="font-semibold">Standard (0.25)</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Balanced Precision (Recommended)</div>
+                    <div className="font-semibold text-[11px]">Standard (0.25)</div>
+                    <div className="text-[9px] text-slate-500 mt-0.5">Balanced</div>
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveThreshold(0.10)}
-                    className={`rounded-xl border p-2.5 text-left text-xs transition-all ${
+                    className={`rounded-xl border p-2 text-left text-xs transition-all ${
                       activeThreshold === 0.10
                         ? "border-[#F2B941] bg-[#FFF3C4] text-[#0B0909] font-medium shadow-sm"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     }`}
                   >
-                    <div className="font-semibold">High Sensitivity (0.10)</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Catch faint cracks (+FP risk)</div>
+                    <div className="font-semibold text-[11px]">High (0.10)</div>
+                    <div className="text-[9px] text-slate-500 mt-0.5">Faint cracks</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveThreshold(0.05)}
+                    className={`rounded-xl border p-2 text-left text-xs transition-all ${
+                      activeThreshold === 0.05
+                        ? "border-[#F2B941] bg-[#FFF3C4] text-[#0B0909] font-medium shadow-sm"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="font-semibold text-[11px]">Ultra (0.05)</div>
+                    <div className="text-[9px] text-slate-500 mt-0.5">Deep debug</div>
                   </button>
                 </div>
               </div>
@@ -414,7 +500,7 @@ export default function Inspection() {
                 <div className="mt-6 flex items-center gap-3">
                   {executionError.isAuth ? (
                     <Button
-                      onClick={() => startLogin()}
+                      onClick={() => openOperatorLoginModal()}
                       className="gap-2 rounded-xl bg-[#0B0909] px-5 text-xs font-semibold text-white hover:bg-slate-800"
                     >
                       <LogIn className="h-4 w-4 text-[#F2B941]" />
@@ -597,6 +683,5 @@ export default function Inspection() {
           />
         )}
       </div>
-    </AuthGuard>
   );
 }

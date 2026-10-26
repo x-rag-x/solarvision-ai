@@ -18,7 +18,7 @@ import { getInspectionById } from "../db";
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
-    server.listen(port, () => {
+    server.listen(port, "0.0.0.0", () => {
       server.close(() => resolve(true));
     });
     server.on("error", () => resolve(false));
@@ -35,6 +35,23 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  if (process.env.NODE_ENV === "production" && !process.env.VITEST) {
+    const secret = process.env.JWT_SECRET;
+    if (
+      !secret ||
+      secret.trim().length < 32 ||
+      secret.includes("replace-with") ||
+      secret === "solarvision-ai-operator-session-secret-key-32chars-min!"
+    ) {
+      console.error(
+        "[Security FATAL] Insecure production deployment detected!\n" +
+        "In production mode (NODE_ENV=production), JWT_SECRET must be set to a cryptographically secure, random secret of at least 32 characters.\n" +
+        "Set JWT_SECRET in your environment or secrets manager before starting the application."
+      );
+      throw new Error("Insecure production configuration: JWT_SECRET must be at least 32 characters and distinct from default placeholders.");
+    }
+  }
+
   const app = express();
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads
@@ -122,21 +139,22 @@ async function startServer() {
   );
 
   // development mode uses Vite, production mode uses static files
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV?.trim() === "development" || !process.env.NODE_ENV) {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
+  const isProd = process.env.NODE_ENV === "production";
+  const preferredPort = parseInt(process.env.PORT || "3000", 10);
+  const port = isProd ? preferredPort : await findAvailablePort(preferredPort);
 
-  if (port !== preferredPort) {
+  if (!isProd && port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`Server running on http://0.0.0.0:${port}/ (NODE_ENV=${process.env.NODE_ENV || "development"})`);
   });
 }
 

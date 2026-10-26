@@ -1,10 +1,10 @@
 # SolarVision AI — Model 2 Root Cause Dataset Quality Report
 
 **Audit Status:** `DATASET_BLOCKED`  
-**Total Inspections Evaluated:** `478`  
-**Inspections Linked to Batch:** `2`  
-**Inspections Linked to Machine:** `2`  
-**Total Sensor Measurements:** `1`  
+**Total Inspections Evaluated:** `537`  
+**Inspections Linked to Batch:** `131`  
+**Inspections Linked to Machine:** `131`  
+**Total Sensor Measurements:** `181`  
 **Confirmed Ground-Truth Root Cause Labels:** `0`  
 
 ---
@@ -23,7 +23,7 @@
 
 ## 2. Sensor Telemetry Inventory
 
-- **Sensor Streams Present:** `1` / `21`
+- **Sensor Streams Present:** `3` / `21`
 - **Out-of-Bounds Sensor Measurements:** `0`
 - **Duplicate Sensor Measurements:** `0`
 
@@ -38,12 +38,10 @@
 - `lamination_temp_c` (C)
 - `lamination_vacuum_mbar` (mbar)
 - `paste_temperature_c` (C)
-- `paste_viscosity_pa_s` (Pa*s)
 - `ribbon_tension_n` (N)
 - `screen_snapoff_mm` (mm)
 - `series_resistance_mohm` (mOhm)
 - `shunt_resistance_ohm` (Ohm)
-- `soldering_temp_bottom_c` (C)
 - `squeegee_pressure_n_cm2` (N/cm2)
 - `squeegee_speed_mm_s` (mm/s)
 - `transfer_accel_max_g` (g)

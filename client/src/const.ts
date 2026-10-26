@@ -12,13 +12,23 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 // call would desync it from an in-flight login and the callback would reject it
 // with "invalid oauth state". It returns void by design, so there is no URL to
 // stash across renders.
+export const openOperatorLoginModal = () => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("solarvision:open-login"));
+  }
+};
+
+// Start the operator login workflow. If Manus OAuth portal URL is set, redirects to OAuth.
+// Otherwise, smoothly opens the interactive Operator ID Authentication dialog.
 export const startLogin = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
 
   if (!oauthPortalUrl) {
-    console.warn("[Auth] VITE_OAUTH_PORTAL_URL is not configured in this environment.");
+    // In local / factory operator environments without external OAuth portal,
+    // open the interactive Operator ID sign-in modal
+    openOperatorLoginModal();
     return;
   }
 
@@ -36,5 +46,6 @@ export const startLogin = () => {
     window.location.href = url.toString();
   } catch (err) {
     console.error("[Auth] Failed to construct OAuth redirect URL:", err);
+    openOperatorLoginModal();
   }
 };

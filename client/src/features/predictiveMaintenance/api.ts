@@ -148,13 +148,13 @@ export function calculateDerivedPhysics(
   // AI4I Physics Thresholds
   const isPowerAbnormal = powerWatts < 3500 || powerWatts > 9000;
   const isDeltaTAbnormal = deltaTemperatureK < 8.6 && Number(input.rotationalSpeedRpm) < 1380;
+  const isToolWearAbnormal = Number(input.toolWearMin) >= 200;
 
   let overstrainThreshold = 11000;
   if (input.productType === "L") overstrainThreshold = 11000;
   else if (input.productType === "M") overstrainThreshold = 12000;
   else if (input.productType === "H") overstrainThreshold = 13000;
   const isOverstrainAbnormal = overstrainProductNmMin > overstrainThreshold;
-  const isToolWearAbnormal = Number(input.toolWearMin) >= 200;
 
   return {
     powerWatts: Math.round(powerWatts * 10) / 10,
@@ -537,3 +537,4 @@ export async function fetchMaintenanceModelStatus(): Promise<{
     domainDisclaimers: VERIFIED_BENCHMARK_METADATA.limitations,
   };
 }
+

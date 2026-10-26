@@ -2,7 +2,34 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-:root { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; color: #0B0909; background: #EBE8D2; font-synthesis: none; text-rendering: optimizeLegibility; --radius: 0.8rem; }
+:root {
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  color: #0B0909;
+  background: #EBE8D2;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --radius: 0.8rem;
+  --background: #EBE8D2;
+  --foreground: #0B0909;
+  --card: #ffffff;
+  --card-foreground: #0B0909;
+  --popover: #ffffff;
+  --popover-foreground: #0B0909;
+  --primary: #0B0909;
+  --primary-foreground: #ffffff;
+  --secondary: #F2B941;
+  --secondary-foreground: #0B0909;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #F2B941;
+}
+
 * { box-sizing: border-box; }
 html { background: #EBE8D2; }
 body { margin: 0; min-width: 320px; background: #EBE8D2; }

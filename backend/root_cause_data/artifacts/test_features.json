@@ -1,6 +1,6 @@
 [
   {
-    "sample_id": "bb64fbcc-8833-486b-8b7e-a48ac5233494",
+    "sample_id": "b62aaa47-e721-4096-91a9-64edc90e1e40",
     "inspection_id": "test_insp_2_000",
     "timestamp": "2026-10-20T16:55:00Z",
     "batch_id": "BATCH_2026_003",
@@ -100,7 +100,7 @@
     "label_index": 2
   },
   {
-    "sample_id": "6443d615-cd77-4fa0-b9eb-d9e53f9f6cae",
+    "sample_id": "f3e53797-eb44-4231-bd51-f7cd9c4c8d1f",
     "inspection_id": "test_insp_2_001",
     "timestamp": "2026-10-20T16:55:12Z",
     "batch_id": "BATCH_2026_003",
@@ -200,7 +200,7 @@
     "label_index": 3
   },
   {
-    "sample_id": "77979390-b043-4f4a-b312-aca9cd727c87",
+    "sample_id": "35a669da-99b1-4094-b7bb-662c224bdd44",
     "inspection_id": "test_insp_2_002",
     "timestamp": "2026-10-20T16:55:24Z",
     "batch_id": "BATCH_2026_003",
@@ -300,7 +300,7 @@
     "label_index": 4
   },
   {
-    "sample_id": "6b9ce46f-43f5-496e-92eb-02d78f168988",
+    "sample_id": "5f854f6b-624c-4933-8432-94f4f65f6551",
     "inspection_id": "test_insp_2_003",
     "timestamp": "2026-10-20T16:55:36Z",
     "batch_id": "BATCH_2026_003",
@@ -400,7 +400,7 @@
     "label_index": 5
   },
   {
-    "sample_id": "bc1b2b42-0084-4ff0-8b15-83cd5ff6433b",
+    "sample_id": "8558f541-7c10-4908-876f-724ca3890515",
     "inspection_id": "test_insp_2_004",
     "timestamp": "2026-10-20T16:55:48Z",
     "batch_id": "BATCH_2026_003",
@@ -500,7 +500,7 @@
     "label_index": 6
   },
   {
-    "sample_id": "a483796c-7695-480e-81e8-8b131f991167",
+    "sample_id": "5ba83258-7516-4e51-b04f-f80f405eafc3",
     "inspection_id": "test_insp_2_005",
     "timestamp": "2026-10-20T16:56:00Z",
     "batch_id": "BATCH_2026_003",
@@ -600,7 +600,7 @@
     "label_index": 7
   },
   {
-    "sample_id": "f472e4a8-56d8-4e7e-8336-e0eb208b4a44",
+    "sample_id": "27ede45d-f5ec-43a1-9313-ccba48263634",
     "inspection_id": "test_insp_2_006",
     "timestamp": "2026-10-20T16:56:12Z",
     "batch_id": "BATCH_2026_003",
@@ -700,7 +700,7 @@
     "label_index": 8
   },
   {
-    "sample_id": "78509444-675d-4f04-80d3-8431d723273a",
+    "sample_id": "84714d89-9f22-4b18-bbc7-a56f6caa208a",
     "inspection_id": "test_insp_2_007",
     "timestamp": "2026-10-20T16:56:24Z",
     "batch_id": "BATCH_2026_003",
@@ -800,7 +800,7 @@
     "label_index": 0
   },
   {
-    "sample_id": "5b5dc733-5fcb-4e57-82bb-0a26587b3ff3",
+    "sample_id": "e6d8acfe-8c99-40b6-b0ad-063960783c0d",
     "inspection_id": "test_insp_2_008",
     "timestamp": "2026-10-20T16:56:36Z",
     "batch_id": "BATCH_2026_003",
@@ -900,7 +900,7 @@
     "label_index": 1
   },
   {
-    "sample_id": "201a95ee-ae2f-41d0-b32b-57264b994eb8",
+    "sample_id": "a7048379-09cb-4cf4-91f9-be7a108bfd9c",
     "inspection_id": "test_insp_2_009",
     "timestamp": "2026-10-20T16:56:48Z",
     "batch_id": "BATCH_2026_003",
@@ -1000,7 +1000,7 @@
     "label_index": 2
   },
   {
-    "sample_id": "b1060549-e6be-4bdc-a164-f7c1ea4e0589",
+    "sample_id": "f0f4b108-92f2-4180-82b8-b89a70a901e3",
     "inspection_id": "test_insp_2_010",
     "timestamp": "2026-10-20T16:57:00Z",
     "batch_id": "BATCH_2026_003",
@@ -1100,7 +1100,7 @@
     "label_index": 3
   },
   {
-    "sample_id": "c2269cd2-b4df-4e33-9622-bbf318370a4e",
+    "sample_id": "1d565595-1bda-4d2d-9df8-1e0969e04601",
     "inspection_id": "test_insp_2_011",
     "timestamp": "2026-10-20T16:57:12Z",
     "batch_id": "BATCH_2026_003",
@@ -1200,7 +1200,7 @@
     "label_index": 4
   },
   {
-    "sample_id": "1b4634b7-d809-4f49-aa3b-c718c1c170fc",
+    "sample_id": "12d04523-c6bb-4b53-9716-3cdb7572d45f",
     "inspection_id": "test_insp_2_012",
     "timestamp": "2026-10-20T16:57:24Z",
     "batch_id": "BATCH_2026_003",
@@ -1300,7 +1300,7 @@
     "label_index": 5
   },
   {
-    "sample_id": "1c28ba6c-beba-45c4-ad9c-6b0cf0ba6d48",
+    "sample_id": "bbef0bcf-2b3f-4869-b1ff-6111ae8139d1",
     "inspection_id": "test_insp_2_013",
     "timestamp": "2026-10-20T16:57:36Z",
     "batch_id": "BATCH_2026_003",
@@ -1400,7 +1400,7 @@
     "label_index": 6
   },
   {
-    "sample_id": "c657239f-9097-46f0-bbe0-b7b8ac23f232",
+    "sample_id": "f4e269c5-ad79-4699-ae82-52828b552a1a",
     "inspection_id": "test_insp_2_014",
     "timestamp": "2026-10-20T16:57:48Z",
     "batch_id": "BATCH_2026_003",

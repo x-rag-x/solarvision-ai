@@ -34,11 +34,13 @@ import type {
 export interface UseRootCauseOptions {
   initialInspection?: InspectionContext | null;
   autoCheckModelStatus?: boolean;
+  enabled?: boolean;
 }
 
 export function useRootCause({
   initialInspection = null,
   autoCheckModelStatus = true,
+  enabled = true,
 }: UseRootCauseOptions = {}) {
   const [selectedInspection, setSelectedInspection] = useState<InspectionContext | null>(
     initialInspection
@@ -108,11 +110,12 @@ export function useRootCause({
 
   // Initial setup
   useEffect(() => {
+    if (!enabled) return;
     if (autoCheckModelStatus) {
       checkModelStatus();
     }
     loadHistory();
-  }, [autoCheckModelStatus, checkModelStatus, loadHistory]);
+  }, [enabled, autoCheckModelStatus, checkModelStatus, loadHistory]);
 
   // When selected inspection changes
   useEffect(() => {

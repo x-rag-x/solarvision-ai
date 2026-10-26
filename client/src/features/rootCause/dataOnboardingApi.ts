@@ -268,26 +268,26 @@ export async function fetchDatasetReadiness(): Promise<Model2DatasetReadinessSta
         tc.annotations === 0;
 
       return {
-        status: isBlocked ? "DATASET_BLOCKED" : "DATASET_READY",
+        status: (summary.status || summary.datasetStatus || (isBlocked ? "DATASET_BLOCKED" : "DATASET_READY")) as any,
         batchesCount: tc.batches ?? 0,
         machinesCount: tc.machines ?? 0,
         sensorRecordsCount: tc.sensors ?? 0,
-        linkedInspectionsCount: 0,
+        linkedInspectionsCount: summary.linkedInspectionsCount ?? tc.linkedInspections ?? 0,
+        totalInspectionsCount: summary.totalInspectionsCount,
         expertAnnotationsCount: tc.annotations ?? 0,
         confirmedLabelsCount: tc.annotations ?? 0,
-        trainingReadyExamplesCount: Math.min(tc.batches, tc.annotations),
-        unlabeledOrInvalidCount: 130,
-        requiredMinimumExamples: 100,
-        minimumTaxonomyClassesRepresented: 5,
-        activeTaxonomyClassesCount: tc.annotations > 0 ? 1 : 0,
+        trainingReadyExamplesCount: summary.trainingReadyExamplesCount ?? tc.trainingEligible ?? Math.min(tc.batches, tc.annotations),
+        unlabeledOrInvalidCount: summary.unlabeledOrInvalidCount ?? 0,
+        requiredMinimumExamples: summary.requiredMinimumExamples ?? 100,
+        minimumTaxonomyClassesRepresented: summary.minimumTaxonomyClassesRepresented ?? 5,
+        activeTaxonomyClassesCount: summary.activeTaxonomyClassesCount ?? (tc.annotations > 0 ? 1 : 0),
         blockers:
-          Array.isArray(summary.blockingReasons) && summary.blockingReasons.length > 0
+          Array.isArray(summary.blockers) && summary.blockers.length > 0
+            ? summary.blockers
+            : Array.isArray(summary.blockingReasons) && summary.blockingReasons.length > 0
             ? summary.blockingReasons
-            : [
-                "Zero historical sensor telemetry records available in local production database.",
-                "Zero confirmed failure-analysis root cause ground truth annotations recorded.",
-              ],
-        lastAuditedAt: new Date().toISOString(),
+            : [],
+        lastAuditedAt: summary.lastAuditedAt || new Date().toISOString(),
       };
     }
   } catch {

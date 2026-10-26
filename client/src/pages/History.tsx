@@ -19,13 +19,18 @@ import { Link, useLocation } from "wouter";
 import { DataSourceNote, EmptyData, PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
 import { AuthGuard, SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
 import { isUnauthorizedError } from "@/lib/auth-helpers";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
+import { openOperatorLoginModal, startLogin } from "@/const";
 
 export default function History() {
   const [, setLocation] = useLocation();
-  const { data, isLoading, isError, error, refetch, isFetching } = trpc.inspection.history.useQuery({ limit: 100 });
+  const { isAuthenticated } = useAuth();
+  const { data, isLoading, isError, error, refetch, isFetching } = trpc.inspection.history.useQuery(
+    { limit: 100 },
+    { enabled: Boolean(isAuthenticated) }
+  );
   const rows = data ?? [];
 
   const [search, setSearch] = useState("");
@@ -272,7 +277,7 @@ export default function History() {
                 {isAuthError ? (
                   <Button
                     size="sm"
-                    onClick={() => startLogin()}
+                    onClick={() => openOperatorLoginModal()}
                     className="gap-1.5 rounded-xl bg-[#0B0909] text-xs font-semibold text-white hover:bg-slate-800"
                   >
                     <LogIn className="h-3.5 w-3.5 text-[#F2B941]" />

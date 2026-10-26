@@ -30,18 +30,22 @@ import { DataSourceNote, EmptyData, PageIntro } from "@/components/solarvision/P
 import { DEFECT_CLASSES, getDefectMeta } from "@/lib/defects";
 import { AuthGuard, SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
 import { isUnauthorizedError } from "@/lib/auth-helpers";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { startLogin } from "@/const";
 
 export default function Analytics() {
+  const { isAuthenticated } = useAuth();
   const {
     data: analyticsData,
     isLoading: analyticsLoading,
     isError: isAnalyticsError,
     error: analyticsError,
     refetch: refetchAnalytics,
-  } = trpc.analytics.defects.useQuery();
+  } = trpc.analytics.defects.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated),
+  });
 
   const {
     data: statsData,
@@ -49,7 +53,9 @@ export default function Analytics() {
     isError: isStatsError,
     error: statsError,
     refetch: refetchStats,
-  } = trpc.dashboard.stats.useQuery();
+  } = trpc.dashboard.stats.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated),
+  });
 
   const byType = analyticsData?.byType ?? [];
   const recentTrend = analyticsData?.recentTrend ?? [];

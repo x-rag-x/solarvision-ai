@@ -19,27 +19,75 @@ export function useAuth(options?: UseAuthOptions) {
     refetchOnWindowFocus: false,
   });
 
+  const loginMutation = trpc.auth.login.useMutation();
+
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       utils.auth.me.setData(undefined, null);
     },
   });
 
-  // Track user identity changes across renders to purge query cache when switching accounts or logging out
+  // Track user identity changes across renders: only purge query cache when switching between different accounts
   const previousUserIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     const currentId = meQuery.data?.openId ?? (meQuery.data as any)?.id ?? null;
-    if (previousUserIdRef.current !== undefined && previousUserIdRef.current !== currentId) {
-      // User identity has changed (switched user or logged out).
-      // Purge all query caches immediately to guarantee zero cross-user inspection data leakage.
+    if (
+      previousUserIdRef.current &&
+      currentId &&
+      previousUserIdRef.current !== currentId
+    ) {
+      // Switched from one authenticated user to a different authenticated user
       queryClient.clear();
     }
-    previousUserIdRef.current = currentId;
+    if (currentId) {
+      previousUserIdRef.current = currentId;
+    } else if (meQuery.data === null) {
+      previousUserIdRef.current = null;
+    }
   }, [meQuery.data, queryClient]);
+
+  // In local development / factory operator environment, auto-authenticate as default station lead if unauthenticated
+  const autoLoginAttemptedRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (meQuery.isLoading || logoutMutation.isPending || loginMutation.isPending) return;
+
+    if (!meQuery.data && !autoLoginAttemptedRef.current) {
+      const explicitLogout = sessionStorage.getItem("solarvision:explicit-logout");
+      if (explicitLogout) return;
+
+      autoLoginAttemptedRef.current = true;
+      loginMutation
+        .mutateAsync({
+          operatorId: "OP-7701",
+          name: "Alex Rivera",
+          role: "user",
+        })
+        .then(response => {
+          if (response?.success && response.token) {
+            try {
+              sessionStorage.setItem("manus-cookie", `${response.cookieName}=${response.token}; path=/;`);
+              localStorage.setItem("solarvision-session-token", response.token);
+              localStorage.setItem("manus-cookie", `${response.cookieName}=${response.token}; path=/;`);
+              localStorage.setItem("manus-runtime-user-info", JSON.stringify(response.user));
+            } catch {}
+            utils.auth.me.setData(undefined, response.user as any);
+            utils.auth.me.invalidate();
+            utils.dashboard.stats.invalidate();
+          }
+        })
+        .catch(err => {
+          console.warn("[Auth] Default operator auto-login skipped:", err);
+        });
+    }
+  }, [meQuery.data, meQuery.isLoading, logoutMutation.isPending, loginMutation, utils]);
 
   const logout = useCallback(async () => {
     try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("solarvision:explicit-logout", "true");
+      }
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
       if (
@@ -53,6 +101,8 @@ export function useAuth(options?: UseAuthOptions) {
       // Clear mirrored session tokens from sessionStorage and localStorage
       try {
         sessionStorage.removeItem("manus-cookie");
+        localStorage.removeItem("solarvision-session-token");
+        localStorage.removeItem("manus-cookie");
         localStorage.removeItem("manus-runtime-user-info");
       } catch {}
 
@@ -66,7 +116,7 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, queryClient, utils]);
 
   const state = useMemo(() => {
-    if (typeof localStorage !== "undefined") {
+    if (typeof localStorage !== "undefined" && meQuery.data) {
       try {
         localStorage.setItem(
           "manus-runtime-user-info",

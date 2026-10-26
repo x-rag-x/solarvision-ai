@@ -13,6 +13,7 @@ export type RunInspectionInput = {
   mimeType: string;
   base64Data: string;
   confidence?: number;
+  imageSize?: number;
   diagnostic?: boolean;
   userId?: string | null;
   operatorId?: string | null;
@@ -163,6 +164,9 @@ export async function runInspection(input: RunInspectionInput): Promise<Inspecti
       "--confidence",
       targetConfidence.toString(),
     ];
+    if (typeof input.imageSize === "number" && input.imageSize >= 32) {
+      cliArgs.push("--image-size", input.imageSize.toString());
+    }
     if (input.diagnostic) {
       cliArgs.push("--diagnostic");
     }

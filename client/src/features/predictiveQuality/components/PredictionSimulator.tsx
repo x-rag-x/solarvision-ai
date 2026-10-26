@@ -387,6 +387,11 @@ export function PredictionSimulator() {
               </div>
             </div>
 
+            {/* Threshold Calibration Notice */}
+            <div className="rounded-2xl border border-slate-200/90 bg-amber-50/40 p-3.5 text-xs text-slate-600">
+              <span className="font-semibold text-slate-800">Threshold Calibration Logic:</span> The SECOM semiconductor benchmark dataset has a 6.64% baseline fail rate (14:1 class imbalance). To prevent catastrophic false-negative rates, the decision boundary is calibrated to τ = {prediction.thresholdUsed} (7.0%). A posterior failure probability of {(prediction.probabilityFail * 100).toFixed(2)}% triggers an excursion verdict because it exceeds this calibrated 7.0% decision threshold.
+            </div>
+
             {/* Actionable Engineering Recommendation */}
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-start gap-3">

@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { startLogin } from "@/const";
+import { openOperatorLoginModal, startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, LogIn, ShieldAlert, ArrowLeft, RefreshCw } from "lucide-react";
@@ -54,7 +54,7 @@ export function AuthGuard({
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
-              onClick={() => startLogin()}
+              onClick={() => openOperatorLoginModal()}
               className="h-11 w-full gap-2 rounded-xl bg-[#0B0909] px-6 text-xs font-semibold text-white shadow-md hover:bg-slate-800 sm:w-auto"
             >
               <LogIn className="h-4 w-4 text-[#F2B941]" />
@@ -119,7 +119,7 @@ export function SessionExpiredBanner({
           )}
           <Button
             size="sm"
-            onClick={() => startLogin()}
+            onClick={() => openOperatorLoginModal()}
             className="h-9 gap-1.5 rounded-xl bg-[#0B0909] px-4 text-xs font-semibold text-white hover:bg-slate-800"
           >
             <LogIn className="h-3.5 w-3.5 text-[#F2B941]" />

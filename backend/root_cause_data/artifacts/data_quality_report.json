@@ -1,9 +1,11 @@
 {
-  "total_inspections": 478,
-  "inspections_with_batch": 2,
-  "inspections_with_machine": 2,
-  "total_sensor_readings": 1,
+  "total_inspections": 537,
+  "inspections_with_batch": 131,
+  "inspections_with_machine": 131,
+  "total_sensor_readings": 181,
   "sensor_types_present": [
+    "paste_viscosity_pa_s",
+    "soldering_temp_bottom_c",
     "soldering_temp_top_c"
   ],
   "missing_sensor_types": [
@@ -17,19 +19,17 @@
     "lamination_temp_c",
     "lamination_vacuum_mbar",
     "paste_temperature_c",
-    "paste_viscosity_pa_s",
     "ribbon_tension_n",
     "screen_snapoff_mm",
     "series_resistance_mohm",
     "shunt_resistance_ohm",
-    "soldering_temp_bottom_c",
     "squeegee_pressure_n_cm2",
     "squeegee_speed_mm_s",
     "transfer_accel_max_g",
     "voc_v"
   ],
   "confirmed_root_cause_labels_count": 0,
-  "unlabeled_inspections_count": 478,
+  "unlabeled_inspections_count": 537,
   "duplicate_telemetry_count": 0,
   "out_of_bounds_sensor_count": 0,
   "class_distribution": {

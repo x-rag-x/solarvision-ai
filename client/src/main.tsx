@@ -1,11 +1,9 @@
-import { trpc } from "@/lib/trpc";
-import { COOKIE_NAME } from '@shared/const';
+import { trpc, getAuthHeaders } from "@/lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { startLogin } from "./const";
 import { isUnauthorizedError } from "./lib/auth-helpers";
 import "./index.css";
 
@@ -21,20 +19,29 @@ const queryClient = new QueryClient({
   },
 });
 
+let isHandlingUnauthorized = false;
+let lastUnauthorizedTime = 0;
+
 const handleUnauthorizedResponse = (error: unknown) => {
   if (typeof window === "undefined") return;
   if (!isUnauthorizedError(error)) return;
 
-  console.warn("[Auth] Unauthorized or session-expired response detected. Purging user query cache.");
-  queryClient.clear();
-  startLogin();
+  const now = Date.now();
+  if (isHandlingUnauthorized || now - lastUnauthorizedTime < 3000) return;
+  isHandlingUnauthorized = true;
+  lastUnauthorizedTime = now;
+
+  console.warn("[Auth] Protected procedure returned unauthorized. Operator sign-in available.");
+
+  setTimeout(() => {
+    isHandlingUnauthorized = false;
+  }, 1000);
 };
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     handleUnauthorizedResponse(error);
-    console.error("[API Query Error]", error);
   }
 });
 
@@ -42,7 +49,6 @@ queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     handleUnauthorizedResponse(error);
-    console.error("[API Mutation Error]", error);
   }
 });
 
@@ -52,20 +58,7 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       headers() {
-        try {
-          const raw = sessionStorage.getItem("manus-cookie");
-          if (raw) {
-            const prefix = `${COOKIE_NAME}=`;
-            const pair = raw.split(";").find(s => s.trim().startsWith(prefix));
-            const token = pair?.trim().slice(prefix.length);
-            if (token) {
-              return { Authorization: `Bearer ${token}` };
-            }
-          }
-        } catch {
-          // sessionStorage unavailable
-        }
-        return {};
+        return getAuthHeaders();
       },
       fetch(input, init) {
         return globalThis.fetch(input, {

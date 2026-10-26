@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { AuthGuard } from "@/components/solarvision/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { DataImportDashboard } from "./components/DataImportDashboard";
@@ -86,6 +87,7 @@ export function RootCauseOverview({
   onSelectInspectionId,
   onOpenImageModal,
 }: RootCauseOverviewProps) {
+  const { isAuthenticated } = useAuth();
   const [, params] = useRoute("/root-cause/:inspectionId");
   const [, setLocation] = useLocation();
   const routeInspectionId = params?.inspectionId || "";
@@ -96,19 +98,25 @@ export function RootCauseOverview({
   );
   const [inputInspectionId, setInputInspectionId] = useState("");
 
-  // Query real inspections list from database
+  // Query real inspections list from database (only when authenticated)
   const { data: rawInspectionHistory, isLoading: isHistoryLoading, refetch: refetchHistory } =
-    trpc.inspection.history.useQuery({ limit: 50 });
+    trpc.inspection.history.useQuery(
+      { limit: 50 },
+      { enabled: Boolean(isAuthenticated) }
+    );
 
   const inspectionHistory: any[] = Array.isArray(rawInspectionHistory)
     ? rawInspectionHistory
     : (rawInspectionHistory as any)?.items || [];
 
-  // Query real database readiness summary via tRPC
+  // Query real database readiness summary via tRPC (only when authenticated)
   const { data: readinessData, refetch: refetchReadiness } =
-    trpc.rootCause.readiness.useQuery();
+    trpc.rootCause.readiness.useQuery(
+      undefined,
+      { enabled: Boolean(isAuthenticated) }
+    );
 
-  // Query detail for active inspection
+  // Query detail for active inspection (only when authenticated and active ID exists)
   const {
     data: detailData,
     isLoading: isDetailLoading,
@@ -116,7 +124,7 @@ export function RootCauseOverview({
     refetch: refetchDetail,
   } = trpc.inspection.detail.useQuery(
     { inspectionId: activeInspectionId || "00000000-0000-0000-0000-000000000000" },
-    { enabled: Boolean(activeInspectionId) }
+    { enabled: Boolean(isAuthenticated && activeInspectionId) }
   );
 
   const {
@@ -136,7 +144,7 @@ export function RootCauseOverview({
     checkModelStatus,
     handleVerifyCause,
     setUiStatus,
-  } = useRootCause({ initialInspection });
+  } = useRootCause({ initialInspection, enabled: Boolean(isAuthenticated) });
 
   // Sync route inspection ID into activeInspectionId
   useEffect(() => {
@@ -220,8 +228,16 @@ export function RootCauseOverview({
                   ? "Model 2 Offline"
                   : "Model 2 Not Trained"}
               </span>
-              <span className="rounded-md bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-800 border border-red-200">
-                DATASET_BLOCKED
+              <span
+                className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                  readinessData?.datasetStatus === "DATASET_READY"
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    : readinessData?.datasetStatus === "DATASET_INCOMPLETE"
+                    ? "bg-amber-100 text-amber-800 border-amber-200"
+                    : "bg-red-100 text-red-800 border-red-200"
+                }`}
+              >
+                {readinessData?.datasetStatus || "DATASET_BLOCKED"}
               </span>
             </div>
             <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
@@ -326,14 +342,28 @@ export function RootCauseOverview({
             onClick={() => setActiveTab("readiness")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap border-b-2 ${
               activeTab === "readiness"
-                ? "border-red-500 bg-white text-slate-900 shadow-sm"
+                ? readinessData?.datasetStatus === "DATASET_READY"
+                  ? "border-emerald-500 bg-white text-slate-900 shadow-sm"
+                  : "border-red-500 bg-white text-slate-900 shadow-sm"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             }`}
           >
-            <ShieldAlert className="h-4 w-4 text-red-500" />
+            {readinessData?.datasetStatus === "DATASET_READY" ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            ) : (
+              <ShieldAlert className="h-4 w-4 text-red-500" />
+            )}
             <span>Dataset Readiness</span>
-            <span className="rounded-full bg-red-100 px-1.5 py-0.2 text-[9px] font-bold text-red-700">
-              BLOCKED
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
+                readinessData?.datasetStatus === "DATASET_READY"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : readinessData?.datasetStatus === "DATASET_INCOMPLETE"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {readinessData?.datasetStatus === "DATASET_READY" ? "READY" : "BLOCKED"}
             </span>
           </button>
         </div>

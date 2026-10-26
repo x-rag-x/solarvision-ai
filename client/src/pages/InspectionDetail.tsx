@@ -23,6 +23,7 @@ import { ConfidenceDisclaimer } from "@/components/solarvision/ConfidenceDisclai
 import { ImageViewerModal } from "@/components/solarvision/ImageViewerModal";
 import { AuthGuard, SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
 import { isUnauthorizedError } from "@/lib/auth-helpers";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { startLogin } from "@/const";
@@ -31,10 +32,11 @@ import { toast } from "sonner";
 export default function InspectionDetail() {
   const [, params] = useRoute("/inspection/:inspectionId");
   const inspectionId = params?.inspectionId || "";
+  const { isAuthenticated } = useAuth();
 
   const { data, isLoading, isError, error, refetch } = trpc.inspection.detail.useQuery(
     { inspectionId: inspectionId || "00000000-0000-0000-0000-000000000000" },
-    { enabled: Boolean(inspectionId) }
+    { enabled: Boolean(isAuthenticated && inspectionId) }
   );
 
   const [viewMode, setViewMode] = useState<"annotated" | "original">("annotated");

@@ -29,7 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/auth-helpers";
 import { SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
-import { startLogin } from "@/const";
+import { openOperatorLoginModal, startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
 
 function StatCard({
@@ -79,19 +79,30 @@ export default function Home() {
     isLoading: statsLoading,
     error: statsError,
     refetch: refetchStats,
-  } = trpc.dashboard.stats.useQuery();
+  } = trpc.dashboard.stats.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated),
+  });
 
   const { data: model1Status } = trpc.model.status.useQuery();
-  const { data: model2Status } = trpc.rootCause.status.useQuery();
-  const { data: model3Status } = trpc.predictiveQuality.status.useQuery();
-  const { data: model4Status } = trpc.predictiveMaintenance.status.useQuery();
+  const { data: model2Status } = trpc.rootCause.status.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated),
+  });
+  const { data: model3Status } = trpc.predictiveQuality.status.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated),
+  });
+  const { data: model4Status } = trpc.predictiveMaintenance.status.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated),
+  });
 
   const {
     data: history,
     isLoading: historyLoading,
     error: historyError,
     refetch: refetchHistory,
-  } = trpc.inspection.history.useQuery({ limit: 5 });
+  } = trpc.inspection.history.useQuery(
+    { limit: 5 },
+    { enabled: Boolean(isAuthenticated) }
+  );
 
   const isAuthError = isUnauthorizedError(statsError) || isUnauthorizedError(historyError);
   const configured = Boolean(stats?.configured) && !isAuthError;
@@ -139,7 +150,7 @@ export default function Home() {
           </div>
           <Button
             size="sm"
-            onClick={() => startLogin()}
+            onClick={() => openOperatorLoginModal()}
             className="h-8 gap-1.5 rounded-lg bg-[#0B0909] px-3.5 text-xs font-semibold text-white hover:bg-slate-800 sm:shrink-0"
           >
             <LogIn className="h-3 w-3 text-[#F2B941]" />
@@ -217,13 +228,13 @@ export default function Home() {
                 <span className="rounded-lg bg-[#0B0909] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#F2B941]">
                   MODEL 1
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
-                  <CheckCircle2 className="h-3 w-3" /> Operational
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                  <CheckCircle2 className="h-3 w-3" /> Academic Prototype
                 </span>
               </div>
               <h3 className="mt-3 text-sm font-bold text-slate-900">Visual Defect Detection</h3>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                YOLO26n anchor-free CNN inspecting EL/NIR solar cell frames. Detects 9 defect classes with bounding boxes and confidence calibration.
+                YOLO26n anchor-free CNN inspecting EL/NIR solar cell frames. Academically validated on the PVELAD benchmark (not factory-production-certified).
               </p>
               <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
                 <div className="flex justify-between text-slate-600">
@@ -233,6 +244,10 @@ export default function Home() {
                 <div className="flex justify-between text-slate-600">
                   <span>Checkpoint:</span>
                   <span className="font-mono text-emerald-700">best.pt verified</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Validation:</span>
+                  <span className="font-medium text-amber-700">PVELAD Benchmark</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Domain:</span>

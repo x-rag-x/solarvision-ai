@@ -199,16 +199,22 @@ class YoloInferenceService:
                 "independent_metrics_status": f"Model load error: {exc}",
             }
 
-    def _predict_once(self, image: np.ndarray, confidence: float) -> tuple[list[Detection], float]:
+    def _predict_once(
+        self,
+        image: np.ndarray,
+        confidence: float,
+        image_size: int | None = None,
+    ) -> tuple[list[Detection], float]:
         processed = preprocess_image(image)
         height, width = processed.shape[:2]
+        target_imgsz = settings.image_size if image_size is None else image_size
 
         started = time.perf_counter()
         results = self.model.predict(
             source=processed,
             conf=confidence,
             iou=settings.iou_threshold,
-            imgsz=settings.image_size,
+            imgsz=target_imgsz,
             verbose=False,
         )
         elapsed_ms = (time.perf_counter() - started) * 1000
@@ -306,21 +312,27 @@ class YoloInferenceService:
         self,
         image: np.ndarray | str | Path | bytes | bytearray,
         confidence: float | None = None,
+        image_size: int | None = None,
     ) -> tuple[list[Detection], np.ndarray, float]:
         loaded_image = load_image_safely(image)
         target_confidence = settings.confidence_threshold if confidence is None else confidence
-        detections, elapsed_ms = self._predict_once(loaded_image, target_confidence)
+        detections, elapsed_ms = self._predict_once(
+            loaded_image, target_confidence, image_size=image_size
+        )
         return detections, self._annotate(loaded_image, detections), elapsed_ms
 
     def diagnostics(
         self,
         image: np.ndarray | str | Path | bytes | bytearray,
         thresholds: tuple[float, ...] = (0.25, 0.10, 0.05, 0.01),
+        image_size: int | None = None,
     ) -> dict[str, Any]:
         loaded_image = load_image_safely(image)
 
         # Candidates at lowest threshold 0.001
-        candidates, nms_time = self._predict_once(loaded_image, 0.001)
+        candidates, nms_time = self._predict_once(
+            loaded_image, 0.001, image_size=image_size
+        )
 
         comparison: list[dict[str, Any]] = []
         annotations: dict[str, np.ndarray] = {}

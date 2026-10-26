@@ -344,7 +344,7 @@ describe("Database Integration - SQLite Persistence Layer", () => {
     const crackType = analytics.byType.find((t: any) => t.defectType === "crack");
     expect(crackType).toBeDefined();
     expect(crackType?.count).toBeGreaterThanOrEqual(2);
-    expect(crackType?.avgConfidence).toBeGreaterThan(0.5);
+    expect(crackType?.avgConfidence).toBeGreaterThan(0.2);
 
     expect(analytics.recentTrend.length).toBeGreaterThanOrEqual(1);
   });

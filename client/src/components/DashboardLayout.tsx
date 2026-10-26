@@ -1,10 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
+import { openOperatorLoginModal, startLogin } from "@/const";
 import { cn } from "@/lib/utils";
 import NotificationCenter from "@/components/solarvision/NotificationCenter";
-import { Activity, BarChart3, BrainCircuit, Compass, Factory, FileClock, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Route, ScanLine, Settings2, ShieldCheck, Wrench } from "lucide-react";
+import { Activity, BarChart3, BrainCircuit, Compass, Factory, FileClock, LayoutDashboard, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Route, ScanLine, Settings2, ShieldCheck, Wrench } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
@@ -60,17 +60,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         <div className="border-t border-white/10 p-3">
           <div className={cn("flex items-center gap-3 rounded-xl px-2 py-2", collapsed && "justify-center")}>
-            <Avatar className="h-9 w-9 border border-white/15 bg-white/10"><AvatarFallback className="bg-[#143549] text-xs font-semibold text-[#F2B941]">{user?.name?.charAt(0).toUpperCase() || "O"}</AvatarFallback></Avatar>
-            {!collapsed && <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium text-white">{user?.name || "Operator"}</p><p className="truncate text-[11px] text-slate-500">{user?.email || "Preview mode"}</p></div>}
+            <Avatar className="h-9 w-9 border border-white/15 bg-white/10 cursor-pointer" onClick={() => !user && openOperatorLoginModal()}><AvatarFallback className="bg-[#143549] text-xs font-semibold text-[#F2B941]">{user?.name?.charAt(0).toUpperCase() || "O"}</AvatarFallback></Avatar>
+            {!collapsed && <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium text-white">{user?.name || "Operator"}</p><p className="truncate text-[11px] text-slate-500">{user?.role ? `${user.role.toUpperCase()} MODE` : "Preview mode"}</p></div>}
             {!collapsed && user && <button className="text-slate-500 hover:text-white" onClick={logout} aria-label="Sign out"><LogOut className="h-4 w-4" /></button>}
           </div>
-          {!collapsed && !user && <button onClick={() => startLogin()} className="mt-2 w-full rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:bg-white/5 hover:text-white">Sign in to save operator identity</button>}
+          {!collapsed && !user && (
+            <button
+              onClick={() => openOperatorLoginModal()}
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10 hover:border-white/25"
+            >
+              <LogIn className="h-3.5 w-3.5 text-[#F2B941]" />
+              Sign in as Operator
+            </button>
+          )}
         </div>
       </aside>
       <div className={cn("min-h-screen transition-[padding] duration-200 lg:pl-[272px]", collapsed && "lg:pl-[84px]")}>
         <header className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b border-slate-200/80 bg-[#EBE8D2]/90 px-5 backdrop-blur lg:px-8">
           <div className="flex items-center gap-3"><button className="rounded-lg p-2 text-slate-500 hover:bg-white lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu className="h-5 w-5" /></button><button className="hidden rounded-lg p-2 text-slate-500 hover:bg-white lg:block" onClick={() => setCollapsed(value => !value)} aria-label="Toggle navigation">{collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}</button><div><p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">SolarVision AI / Unified Quality Ops</p><p className="text-sm font-semibold text-slate-800">{menuItems.find(item => item.path === location)?.label || "Overview"}</p></div></div>
-          <div className="flex items-center gap-3"><div className="hidden items-center gap-2 rounded-full border border-[#F2B941]/20 bg-[#FFF3C4] px-3 py-1.5 text-xs font-medium text-[#087e6d] sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#F2B941] shadow-[0_0_0_4px_rgba(242,185,65,0.16)]" />Inference pipeline ready</div><NotificationCenter /><button onClick={() => navigate("/roadmap")} className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 md:flex"><Route className="h-3.5 w-3.5" />Roadmap</button></div>
+          <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-2 rounded-full border border-[#F2B941]/20 bg-[#FFF3C4] px-3 py-1.5 text-xs font-medium text-[#087e6d] sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#F2B941] shadow-[0_0_0_4px_rgba(242,185,65,0.16)]" />Inference pipeline ready</div>
+            <NotificationCenter />
+            <button onClick={() => navigate("/roadmap")} className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 md:flex"><Route className="h-3.5 w-3.5" />Roadmap</button>
+            {!user ? (
+              <Button
+                size="sm"
+                onClick={() => openOperatorLoginModal()}
+                className="h-9 gap-1.5 rounded-xl bg-[#0B0909] px-3.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-800"
+              >
+                <LogIn className="h-3.5 w-3.5 text-[#F2B941]" />
+                Sign in
+              </Button>
+            ) : (
+              <div className="hidden items-center gap-2 sm:flex">
+                <span className="rounded-xl border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  {user.name} ({user.role === "admin" ? "Admin" : "Operator"})
+                </span>
+                <button
+                  onClick={logout}
+                  className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-slate-900 transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </header>
         <main className="mx-auto max-w-[1440px] px-5 py-7 lg:px-8">{children}</main>
       </div>

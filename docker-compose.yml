@@ -1,0 +1,31 @@
+services:
+  solarvision:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solarvision-ai
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PYTHON_EXECUTABLE=python3
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set to a secure random string of at least 32 characters in production}
+      - SQLITE_DB_PATH=/app/data/solarvision.db
+      - UPLOADS_DIR=/app/data/uploads
+      - MODEL_PATH=/app/backend/models/best.pt
+      - CONFIDENCE_THRESHOLD=0.25
+      - IMAGE_SIZE=640
+    volumes:
+      - solarvision-data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/trpc/model.status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  solarvision-data:
+    driver: local

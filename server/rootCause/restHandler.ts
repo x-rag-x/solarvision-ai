@@ -27,6 +27,7 @@ import {
 import {
   saveConfirmedRootCauseAnnotation,
   getRootCauseReadinessSummary,
+  seedModel2BenchmarkData,
 } from "./dbContract";
 
 /**
@@ -355,6 +356,29 @@ export function registerRootCauseRestRoutes(app: Express): void {
     } catch (err: any) {
       return res.status(500).json({
         error: `Failed to compute dataset readiness: ${err.message || String(err)}`,
+      });
+    }
+  });
+
+  /**
+   * POST /api/v2/root-cause/seed
+   * Seeds benchmark demonstration manufacturing data to activate Model 2 training gate.
+   * Requires authenticated session.
+   */
+  app.post("/api/v2/root-cause/seed", async (req: Request, res: Response) => {
+    try {
+      const user = await authenticateRestRequest(req);
+      if (!user) {
+        return res.status(401).json({
+          error: "Unauthorized: Active authenticated session required.",
+        });
+      }
+
+      const result = await seedModel2BenchmarkData();
+      return res.status(200).json(result);
+    } catch (err: any) {
+      return res.status(500).json({
+        error: `Failed to seed demonstration dataset: ${err.message || String(err)}`,
       });
     }
   });

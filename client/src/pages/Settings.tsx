@@ -200,9 +200,9 @@ export default function Settings() {
           {/* Image & Upload Guardrails (Local Preferences) */}
           <div className="space-y-4">
             <label className="block">
-              <span className="text-xs font-semibold text-slate-700">Inference Image Resolution (Local Display Preference)</span>
+              <span className="text-xs font-semibold text-slate-700">Inference Image Resolution (YOLO imgsz)</span>
               <span className="mt-0.5 block text-[11px] text-slate-400">
-                Local operator display preference. Note: Server inference executes with the verified 640×640 letterbox pipeline and does not retrain or re-architect the backend YOLO checkpoint.
+                Configures the runtime YOLO26n inference resolution passed to `model.predict(imgsz=...)`. Standard production baseline is 640×640. Setting 1024 preserves native EL sensor resolution.
               </span>
               <select
                 value={formValues.imageSize}
