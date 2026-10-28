@@ -15,6 +15,8 @@ from .inference import image_to_data_url, inference_service, load_image_safely
 from .predictive_maintenance.api import router as predictive_maintenance_router
 from .predictive_quality.api import router as predictive_quality_router
 from .root_cause.api import router as root_cause_router
+from .sandia_performance.api import router as sandia_performance_router
+from .sandia_performance.service import sandia_performance_service
 from .schemas import (
     InferenceConfiguration,
     InspectionDiagnostics,
@@ -47,6 +49,14 @@ async def lifespan(app: FastAPI):
             "YOLO model checkpoint not found at %s. Inference requests will return 503 until best.pt is provided.",
             settings.model_path,
         )
+
+    if sandia_performance_service.loader.is_ready:
+        logger.info("Sandia solar performance model pipeline loaded successfully.")
+    else:
+        logger.info(
+            "Sandia performance model pipeline not loaded (%s). Requests will return 503.",
+            sandia_performance_service.loader.unavailability_reason,
+        )
     yield
     logger.info("SolarVision AI Inference API shut down cleanly.")
 
@@ -66,6 +76,8 @@ app.include_router(predictive_quality_router, prefix="/api")
 app.include_router(predictive_quality_router)
 app.include_router(predictive_maintenance_router, prefix="/api")
 app.include_router(predictive_maintenance_router)
+app.include_router(sandia_performance_router, prefix="/api")
+app.include_router(sandia_performance_router)
 
 
 @app.get("/health")

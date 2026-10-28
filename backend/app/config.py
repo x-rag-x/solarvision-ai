@@ -31,9 +31,25 @@ class Settings:
     request_timeout_seconds: float = float(
         os.getenv("REQUEST_TIMEOUT_SECONDS", "60.0")
     )
+    sandia_model_dir: Path = Path(
+        os.getenv("SANDIA_MODEL_DIR", str(BASE_DIR / "models" / "sandia"))
+    )
+    sandia_model_path: Path = Path(
+        os.getenv("SANDIA_MODEL_PATH", str(BASE_DIR / "models" / "sandia" / "pipeline.joblib"))
+    )
+    sandia_schema_path: Path = Path(
+        os.getenv("SANDIA_SCHEMA_PATH", str(BASE_DIR / "models" / "sandia" / "feature_schema.json"))
+    )
+    sandia_sample_input_path: Path = Path(
+        os.getenv("SANDIA_SAMPLE_INPUT_PATH", str(BASE_DIR / "models" / "sandia" / "sample_input.json"))
+    )
+    sandia_target_path: Path = Path(
+        os.getenv("SANDIA_TARGET_PATH", str(BASE_DIR / "models" / "sandia" / "target_definition.json"))
+    )
 
     def ensure_paths(self) -> None:
         self.storage_dir.mkdir(parents=True, exist_ok=True)
+        self.sandia_model_dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def supabase_configured(self) -> bool:
