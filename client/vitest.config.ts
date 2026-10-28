@@ -13,6 +13,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["client/**/*.test.ts"],
+    include: ["client/**/*.test.ts", "client/**/*.test.tsx"],
   },
 });

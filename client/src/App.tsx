@@ -32,6 +32,9 @@ function Router() {
         <Route path="/root_cause" component={RootCauseOverview} />
         <Route path="/root-cause/:inspectionId" component={RootCauseOverview} />
         <Route path="/predictive-quality" component={PredictiveQualityOverview} />
+        <Route path="/predictive-quality/sandia" component={PredictiveQualityOverview} />
+        <Route path="/predictive-quality/secom" component={PredictiveQualityOverview} />
+        <Route path="/sandia-performance" component={PredictiveQualityOverview} />
         <Route path="/predictive%20quality" component={PredictiveQualityOverview} />
         <Route path="/predictive quality" component={PredictiveQualityOverview} />
         <Route path="/predictive_quality" component={PredictiveQualityOverview} />

@@ -1,0 +1,429 @@
+/**
+ * SolarVision AI — Model 3: Sandia Solar Electrical Performance Prediction
+ * Dynamic Feature Schema-Driven Prediction Form
+ * 
+ * STRICT COMPLIANCE:
+ * - Dynamically renders fields from trainer's FeatureSchemaManifest.
+ * - Zero hardcoding of assumed features.
+ * - Validates required fields and physical sensor bounds (min_value, max_value).
+ * - Honest unavailable state when feature schema is pending trainer handoff.
+ */
+
+import React, { useEffect, useState } from "react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Cpu,
+  FileDown,
+  Info,
+  Loader2,
+  Play,
+  RotateCcw,
+  Sliders,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type {
+  FeatureSchemaManifest,
+  FeatureSpec,
+  SandiaModelStatusResponse,
+  SandiaPredictionInput,
+  TargetDefinitionManifest,
+} from "../types";
+
+interface DynamicPredictionFormProps {
+  schema: FeatureSchemaManifest | null;
+  schemaStatus: "loaded" | "pending_trainer" | "loading" | "error";
+  modelStatus: SandiaModelStatusResponse | null;
+  sampleInput: Record<string, any> | null;
+  targetDefinition: TargetDefinitionManifest | null;
+  onSubmit: (input: SandiaPredictionInput) => Promise<any>;
+  isSubmitting: boolean;
+}
+
+export function DynamicPredictionForm({
+  schema,
+  schemaStatus,
+  modelStatus,
+  sampleInput,
+  targetDefinition,
+  onSubmit,
+  isSubmitting,
+}: DynamicPredictionFormProps) {
+  const [moduleId, setModuleId] = useState<string>("PV-MOD-2026-X1");
+  const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  const isModelReady = Boolean(modelStatus?.is_ready);
+  const features = schema?.features || [];
+
+  // Initialize defaults from schema or sample input
+  useEffect(() => {
+    if (features.length > 0) {
+      const initial: Record<string, any> = {};
+      features.forEach((feat) => {
+        if (sampleInput && sampleInput[feat.name] !== undefined) {
+          initial[feat.name] = sampleInput[feat.name];
+        } else if (sampleInput?.features && sampleInput.features[feat.name] !== undefined) {
+          initial[feat.name] = sampleInput.features[feat.name];
+        } else {
+          initial[feat.name] = "";
+        }
+      });
+      setFieldValues(initial);
+    }
+  }, [schema, sampleInput]);
+
+  const handleFieldChange = (name: string, value: string, spec: FeatureSpec) => {
+    const updated = { ...fieldValues, [name]: value };
+    setFieldValues(updated);
+
+    // Validate on change
+    const errors = { ...fieldErrors };
+    if (spec.required && (value === "" || value === undefined || value === null)) {
+      errors[name] = `Feature '${spec.name}' is required by model contract.`;
+    } else if (spec.type === "float" || spec.type === "int") {
+      const num = Number(value);
+      if (value !== "" && isNaN(num)) {
+        errors[name] = `Must be a valid numeric ${spec.type}.`;
+      } else if (value !== "") {
+        if (spec.min_value !== undefined && spec.min_value !== null && num < spec.min_value) {
+          errors[name] = `Value ${num} is below physical lower bound of ${spec.min_value} ${spec.unit || ""}.`;
+        } else if (spec.max_value !== undefined && spec.max_value !== null && num > spec.max_value) {
+          errors[name] = `Value ${num} exceeds physical upper bound of ${spec.max_value} ${spec.unit || ""}.`;
+        } else {
+          delete errors[name];
+        }
+      } else {
+        delete errors[name];
+      }
+    } else {
+      delete errors[name];
+    }
+    setFieldErrors(errors);
+  };
+
+  const handleLoadSample = () => {
+    if (!sampleInput) return;
+    const sampleFeatures = sampleInput.features || sampleInput;
+    const updated: Record<string, any> = { ...fieldValues };
+    features.forEach((feat) => {
+      if (sampleFeatures[feat.name] !== undefined) {
+        updated[feat.name] = sampleFeatures[feat.name];
+      }
+    });
+    setFieldValues(updated);
+    setFieldErrors({});
+    setGeneralError(null);
+  };
+
+  const handleReset = () => {
+    const cleared: Record<string, any> = {};
+    features.forEach((feat) => {
+      cleared[feat.name] = "";
+    });
+    setFieldValues(cleared);
+    setFieldErrors({});
+    setGeneralError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGeneralError(null);
+
+    // Validate all required features
+    const errors: Record<string, string> = {};
+    const parsedFeatures: Record<string, any> = {};
+
+    features.forEach((feat) => {
+      const rawVal = fieldValues[feat.name];
+      if (feat.required && (rawVal === "" || rawVal === undefined || rawVal === null)) {
+        errors[feat.name] = `Required feature '${feat.name}' cannot be empty.`;
+      } else if (rawVal !== "" && rawVal !== undefined) {
+        if (feat.type === "float" || feat.type === "int") {
+          const num = Number(rawVal);
+          if (isNaN(num)) {
+            errors[feat.name] = "Must be a valid numeric value.";
+          } else {
+            if (feat.min_value !== null && feat.min_value !== undefined && num < feat.min_value) {
+              errors[feat.name] = `Must be >= ${feat.min_value}`;
+            }
+            if (feat.max_value !== null && feat.max_value !== undefined && num > feat.max_value) {
+              errors[feat.name] = `Must be <= ${feat.max_value}`;
+            }
+            parsedFeatures[feat.name] = feat.type === "int" ? Math.round(num) : num;
+          }
+        } else {
+          parsedFeatures[feat.name] = String(rawVal);
+        }
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setGeneralError("Please resolve missing or out-of-bounds feature fields before submitting.");
+      return;
+    }
+
+    const payload: SandiaPredictionInput = {
+      module_id: moduleId.trim() || undefined,
+      timestamp: new Date().toISOString(),
+      features: parsedFeatures,
+      metadata: {
+        submittedFrom: "SolarVision-Model3-Sandia-Dashboard",
+        schemaVersion: schema?.schema_version || "1.0.0",
+      },
+    };
+
+    await onSubmit(payload);
+  };
+
+  // State A: Schema is pending trainer delivery
+  if (schemaStatus === "pending_trainer" || (!schema && schemaStatus !== "loading")) {
+    return (
+      <Card className="rounded-3xl border border-dashed border-amber-300 bg-amber-50/50 p-8 shadow-sm">
+        <div className="flex flex-col items-center justify-center text-center max-w-xl mx-auto space-y-3">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-amber-700">
+            <Sliders className="h-6 w-6" />
+          </div>
+          <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] font-mono">
+            SCHEMA_PENDING_TRAINER
+          </Badge>
+          <h3 className="text-lg font-bold text-slate-900">
+            Feature Input Form Awaiting Trainer Contract
+          </h3>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            In accordance with zero-fabrication standards, feature input fields are generated dynamically from the trainer's <code className="font-mono text-amber-900 bg-amber-100/60 px-1 py-0.5 rounded">feature_schema.json</code>. No arbitrary sensor fields are assumed or hardcoded.
+          </p>
+          <div className="pt-2">
+            <span className="text-[11px] text-slate-500 font-mono">
+              Listening for contract delivery at: /sandia-performance/schema
+            </span>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // State B: Schema is loading
+  if (schemaStatus === "loading") {
+    return (
+      <Card className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-10 space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#F2B941]" />
+          <p className="text-xs font-semibold text-slate-600">
+            Discovering and parsing trainer feature contract...
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm sm:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#F2B941]">
+              Contract-Driven Telemetry Input
+            </span>
+            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-[10px] font-mono">
+              {features.length} Features Defined
+            </Badge>
+            {targetDefinition && (
+              <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-[10px] font-mono">
+                Target: {targetDefinition.target_name} ({targetDefinition.target_unit || "raw"})
+              </Badge>
+            )}
+          </div>
+          <h3 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
+            Dynamic Photovoltaic Operating Point Input
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Schema version: {schema?.schema_version || "1.0.0"} • Dataset: {schema?.dataset_name || "Sandia PSEL"}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {sampleInput && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleLoadSample}
+              className="gap-1.5 rounded-xl border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <FileDown className="h-3.5 w-3.5 text-[#F2B941]" />
+              Load Sample Telemetry
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="gap-1 rounded-xl text-xs text-slate-500 hover:text-slate-900"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
+          </Button>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+        {/* Module Header Input */}
+        <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/60">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="module-id" className="text-xs font-semibold text-slate-700">
+                PV Module Identifier
+              </Label>
+              <Input
+                id="module-id"
+                value={moduleId}
+                onChange={(e) => setModuleId(e.target.value)}
+                placeholder="e.g. PV-MOD-2026-X1"
+                className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs focus:ring-[#F2B941]"
+              />
+              <p className="text-[10px] text-slate-400">
+                Optional array, string, or coupon identifier for audit tracking.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">Target Output Variable</Label>
+              <div className="flex items-center h-9 px-3 rounded-xl border border-slate-200 bg-white/70 text-xs text-slate-700 font-mono">
+                {targetDefinition?.target_name || "Pmp (Maximum Power Output)"}{" "}
+                <span className="ml-1 text-slate-400">[{targetDefinition?.target_unit || "W"}]</span>
+              </div>
+              <p className="text-[10px] text-slate-400">
+                Dynamically mapped from trainer target_definition.json.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Schema Feature Grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feat) => {
+            const val = fieldValues[feat.name] ?? "";
+            const err = fieldErrors[feat.name];
+
+            return (
+              <div
+                key={feat.name}
+                className={`space-y-1.5 rounded-2xl border p-3.5 transition-colors ${
+                  err ? "border-rose-300 bg-rose-50/40" : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Label
+                      htmlFor={`feat-${feat.name}`}
+                      className="text-xs font-semibold text-slate-900 truncate"
+                      title={feat.name}
+                    >
+                      {feat.name}
+                      {feat.required && <span className="text-rose-600 ml-0.5">*</span>}
+                    </Label>
+                    {feat.description && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3 w-3 text-slate-400 shrink-0 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="text-xs max-w-xs">{feat.description}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+
+                  {feat.unit && (
+                    <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 border-slate-200 bg-slate-50 text-slate-600">
+                      {feat.unit}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <Input
+                    id={`feat-${feat.name}`}
+                    type={feat.type === "float" || feat.type === "int" ? "number" : "text"}
+                    step={feat.type === "float" ? "any" : feat.type === "int" ? "1" : undefined}
+                    value={val}
+                    onChange={(e) => handleFieldChange(feat.name, e.target.value, feat)}
+                    placeholder={`Enter ${feat.type}${feat.min_value !== undefined && feat.min_value !== null ? ` (>= ${feat.min_value})` : ""}`}
+                    className={`h-9 rounded-xl font-mono text-xs ${
+                      err ? "border-rose-400 focus:ring-rose-400" : "border-slate-300 focus:ring-[#F2B941]"
+                    }`}
+                  />
+                </div>
+
+                {/* Helper / Boundary Constraints */}
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Type: {feat.type}</span>
+                  {(feat.min_value !== undefined || feat.max_value !== undefined) && (
+                    <span>
+                      Range: [{feat.min_value ?? "-∞"}, {feat.max_value ?? "+∞"}]
+                    </span>
+                  )}
+                </div>
+
+                {err && <p className="text-[10px] text-rose-600 font-medium">{err}</p>}
+              </div>
+            );
+          })}
+        </div>
+
+        {generalError && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50/70 p-3.5 text-xs text-rose-800 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            <span>{generalError}</span>
+          </div>
+        )}
+
+        {/* Submit Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-slate-100 pt-5">
+          <div className="text-xs text-slate-500">
+            {!isModelReady ? (
+              <span className="text-amber-700 flex items-center gap-1.5 font-medium">
+                <AlertCircle className="h-3.5 w-3.5" />
+                Model pipeline unready: submissions will report HTTP 503 until artifact is loaded.
+              </span>
+            ) : (
+              <span className="text-emerald-700 flex items-center gap-1.5 font-medium">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Pipeline verified. Inferences are executed directly on trained scikit-learn pipeline.
+              </span>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting || features.length === 0}
+            className="gap-2 rounded-xl bg-[#0B0909] px-6 text-xs font-semibold text-white shadow-sm hover:bg-slate-800"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F2B941]" />
+                Executing Sandia Inference...
+              </>
+            ) : (
+              <>
+                <Zap className="h-3.5 w-3.5 text-[#F2B941]" />
+                Predict Electrical Performance
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
