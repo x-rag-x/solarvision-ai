@@ -44,17 +44,24 @@ export function useSandiaModel(): UseSandiaModelReturn {
       setStatus(statusRes);
 
       // Extract schema if present in status response
-      if (statusRes.feature_schema && statusRes.feature_schema.features?.length > 0) {
-        setSchema(statusRes.feature_schema);
+      const schemaFromStatus =
+        statusRes.feature_schema || statusRes.featureSchema;
+      if (schemaFromStatus && schemaFromStatus.features?.length > 0) {
+        setSchema(schemaFromStatus);
         setSchemaStatus("loaded");
       } else {
-        // Query /schema endpoint
+        // Query schema procedure
         const schemaRes = await sandiaApi.getSchema();
-        if (schemaRes?.status === "loaded" && schemaRes.features?.length > 0) {
+        const features = schemaRes?.features || [];
+        if (
+          (schemaRes?.status === "loaded" || features.length > 0) &&
+          features.length > 0
+        ) {
           setSchema({
-            schema_version: schemaRes.schemaVersion || "1.0.0",
-            dataset_name: schemaRes.datasetName,
-            features: schemaRes.features,
+            schema_version:
+              schemaRes.schemaVersion || schemaRes.schema_version || "1.0.0",
+            dataset_name: schemaRes.datasetName || schemaRes.dataset_name,
+            features,
             metadata: schemaRes.metadata,
           });
           setSchemaStatus("loaded");
@@ -65,24 +72,32 @@ export function useSandiaModel(): UseSandiaModelReturn {
       }
 
       // Extract target definition
-      if (statusRes.target_definition) {
-        setTargetDefinition(statusRes.target_definition);
+      const targetFromStatus =
+        statusRes.target_definition || statusRes.targetDefinition;
+      if (targetFromStatus) {
+        setTargetDefinition(targetFromStatus);
       } else {
         const targetRes = await sandiaApi.getTargetDefinition();
-        if (targetRes?.status === "loaded" && targetRes.targetDefinition) {
-          setTargetDefinition(targetRes.targetDefinition);
+        const targetDef =
+          targetRes?.targetDefinition || targetRes?.target_definition;
+        if (targetDef) {
+          setTargetDefinition(targetDef);
         } else {
           setTargetDefinition(null);
         }
       }
 
       // Extract sample input
-      if (statusRes.sample_input) {
-        setSampleInput(statusRes.sample_input);
+      const sampleFromStatus =
+        statusRes.sample_input || statusRes.sampleInput;
+      if (sampleFromStatus) {
+        setSampleInput(sampleFromStatus);
       } else {
         const sampleRes = await sandiaApi.getSampleInput();
-        if (sampleRes?.status === "loaded" && sampleRes.sampleInput) {
-          setSampleInput(sampleRes.sampleInput);
+        const sampleInputVal =
+          sampleRes?.sampleInput || sampleRes?.sample_input;
+        if (sampleInputVal) {
+          setSampleInput(sampleInputVal);
         } else {
           setSampleInput(null);
         }

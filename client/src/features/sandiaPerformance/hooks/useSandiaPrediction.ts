@@ -5,14 +5,24 @@
 
 import { useState } from "react";
 import { sandiaApi, SandiaApiError } from "../adapter";
-import type { SandiaPredictionInput, SandiaPredictionResponse } from "../types";
+import type {
+  SandiaBatchPredictionInput,
+  SandiaBatchPredictionResponse,
+  SandiaPredictionInput,
+  SandiaPredictionResponse,
+} from "../types";
 
 export interface UseSandiaPredictionReturn {
   isSubmitting: boolean;
   result: SandiaPredictionResponse | null;
   error: string | null;
   limitations: string[];
-  executePrediction: (input: SandiaPredictionInput) => Promise<SandiaPredictionResponse | null>;
+  executePrediction: (
+    input: SandiaPredictionInput
+  ) => Promise<SandiaPredictionResponse | null>;
+  executeBatchPrediction: (
+    input: SandiaBatchPredictionInput
+  ) => Promise<SandiaBatchPredictionResponse | null>;
   reset: () => void;
 }
 
@@ -22,7 +32,9 @@ export function useSandiaPrediction(): UseSandiaPredictionReturn {
   const [error, setError] = useState<string | null>(null);
   const [limitations, setLimitations] = useState<string[]>([]);
 
-  const executePrediction = async (input: SandiaPredictionInput): Promise<SandiaPredictionResponse | null> => {
+  const executePrediction = async (
+    input: SandiaPredictionInput
+  ): Promise<SandiaPredictionResponse | null> => {
     setIsSubmitting(true);
     setError(null);
     setLimitations([]);
@@ -46,6 +58,31 @@ export function useSandiaPrediction(): UseSandiaPredictionReturn {
     }
   };
 
+  const executeBatchPrediction = async (
+    input: SandiaBatchPredictionInput
+  ): Promise<SandiaBatchPredictionResponse | null> => {
+    setIsSubmitting(true);
+    setError(null);
+    setLimitations([]);
+
+    try {
+      const response = await sandiaApi.predictBatch(input);
+      if (response.limitations) {
+        setLimitations(response.limitations);
+      }
+      return response;
+    } catch (err: any) {
+      const msg = err?.message || "Batch inference execution failed.";
+      setError(msg);
+      if (err instanceof SandiaApiError && err.limitations) {
+        setLimitations(err.limitations);
+      }
+      return null;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const reset = () => {
     setResult(null);
     setError(null);
@@ -58,6 +95,7 @@ export function useSandiaPrediction(): UseSandiaPredictionReturn {
     error,
     limitations,
     executePrediction,
+    executeBatchPrediction,
     reset,
   };
 }

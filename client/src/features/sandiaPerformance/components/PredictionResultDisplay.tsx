@@ -65,9 +65,22 @@ export function PredictionResultDisplay({
   }
 
   const pred = result.prediction;
-  const isMock = Boolean(result.is_mock || pred.is_mock);
-  const targetName = pred.target_name || "Electrical Output";
-  const targetUnit = pred.target_unit || "W";
+  const isMock = Boolean(
+    result.is_mock ||
+      (result as any).isMock ||
+      pred.is_mock ||
+      (pred as any).isMock
+  );
+  const targetName =
+    pred.target_name || (pred as any).targetName || "Electrical Output";
+  const targetUnit = pred.target_unit || (pred as any).targetUnit || "W";
+  const moduleId = pred.module_id || (pred as any).moduleId || "Unspecified";
+  const modelName = result.model_name || (result as any).modelName || "";
+  const modelVersion = result.model_version || (result as any).modelVersion || "";
+  const contractVersion =
+    result.contract_version || (result as any).contractVersion || "1.0.0";
+  const processingTimeMs =
+    result.processing_time_ms ?? (result as any).processingTimeMs ?? 0;
 
   // Format prediction value cleanly
   const formattedVal =
@@ -101,7 +114,7 @@ export function PredictionResultDisplay({
               INFERENCE_SUCCESS
             </Badge>
             <span className="text-xs font-mono text-slate-400">
-              Contract v{result.contract_version}
+              Contract v{contractVersion}
             </span>
           </div>
           <h3 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
@@ -112,12 +125,12 @@ export function PredictionResultDisplay({
         <div className="flex items-center gap-3 text-xs text-slate-500 font-mono self-start sm:self-auto">
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5 text-slate-400" />
-            {result.processing_time_ms} ms
+            {processingTimeMs} ms
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
             <Layers className="h-3.5 w-3.5 text-slate-400" />
-            v{result.model_version}
+            v{modelVersion}
           </span>
         </div>
       </div>
@@ -136,9 +149,9 @@ export function PredictionResultDisplay({
               {targetUnit}
             </span>
           </div>
-          {pred.prediction_label && (
+          {(pred.prediction_label || (pred as any).predictionLabel) && (
             <p className="mt-2 text-xs text-emerald-400 font-mono">
-              Classification Tag: {pred.prediction_label}
+              Classification Tag: {pred.prediction_label || (pred as any).predictionLabel}
             </p>
           )}
         </div>
@@ -146,11 +159,11 @@ export function PredictionResultDisplay({
         <div className="border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-6 space-y-2 text-xs">
           <div className="flex items-center justify-between gap-4">
             <span className="text-slate-400">PV Module:</span>
-            <span className="font-mono text-slate-200">{pred.module_id || "Unspecified"}</span>
+            <span className="font-mono text-slate-200">{moduleId}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-slate-400">Model Pipeline:</span>
-            <span className="font-mono text-slate-200">{result.model_name}</span>
+            <span className="font-mono text-slate-200">{modelName}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-slate-400">Statistical Confidence:</span>

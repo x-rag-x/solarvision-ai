@@ -239,7 +239,7 @@ export function DynamicPredictionForm({
             </Badge>
             {targetDefinition && (
               <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-[10px] font-mono">
-                Target: {targetDefinition.target_name} ({targetDefinition.target_unit || "raw"})
+                Target: {targetDefinition.target_name || (targetDefinition as any).targetName} ({targetDefinition.target_unit || (targetDefinition as any).targetUnit || "raw"})
               </Badge>
             )}
           </div>
