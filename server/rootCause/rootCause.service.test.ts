@@ -157,15 +157,16 @@ describe("Model 2: Manufacturing Data Query APIs", () => {
   it("saves and retrieves confirmed root cause annotations", async () => {
     const { getSqliteDb } = await import("../sqlite");
     const db = getSqliteDb();
-    const existing = db.prepare("SELECT inspectionId FROM inspections LIMIT 1").get() as
-      | { inspectionId: string }
-      | undefined;
-    const testInspectionId = existing?.inspectionId || "00675a4b-2d6e-41f8-8756-3a02b1d61218";
+    const testInspectionId = "00675a4b-2d6e-41f8-8756-3a02b1d61218";
 
     // Ensure test inspection record exists in the database
     db.prepare(`
-      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, status, createdAt)
-      VALUES (?, 'fixture_test.jpg', 'completed', datetime('now'))
+      INSERT INTO inspections (
+        inspectionId, sourceFilename, modelName, status, processingTimeMs, detectionsCount, persistenceStatus, createdAt
+      ) VALUES (?, 'fixture_test.jpg', 'YOLO26n', 'completed', 20.0, 0, 'database', datetime('now'))
+      ON CONFLICT(inspectionId) DO UPDATE SET
+        userId = NULL,
+        operatorId = NULL
     `).run(testInspectionId);
 
     const annotId = await saveConfirmedRootCauseAnnotation({
@@ -370,15 +371,16 @@ describe("Model 2: Inspection Linking & Dynamic Readiness", () => {
   it("links an inspection to verified manufacturing batch and machine", async () => {
     const { getSqliteDb } = await import("../sqlite");
     const db = getSqliteDb();
-    const existing = db.prepare("SELECT inspectionId FROM inspections LIMIT 1").get() as
-      | { inspectionId: string }
-      | undefined;
-    const testInspectionId = existing?.inspectionId || "00675a4b-2d6e-41f8-8756-3a02b1d61218";
+    const testInspectionId = "00675a4b-2d6e-41f8-8756-3a02b1d61218";
 
     // Ensure test inspection record exists in the database
     db.prepare(`
-      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, status, createdAt)
-      VALUES (?, 'fixture_test.jpg', 'completed', datetime('now'))
+      INSERT INTO inspections (
+        inspectionId, sourceFilename, modelName, status, processingTimeMs, detectionsCount, persistenceStatus, createdAt
+      ) VALUES (?, 'fixture_test.jpg', 'YOLO26n', 'completed', 20.0, 0, 'database', datetime('now'))
+      ON CONFLICT(inspectionId) DO UPDATE SET
+        userId = NULL,
+        operatorId = NULL
     `).run(testInspectionId);
 
     const linkRes = await linkInspectionToBatch({
@@ -422,6 +424,29 @@ describe("Model 2: Inspection Linking & Dynamic Readiness", () => {
   });
 
   it("queries all confirmed root cause annotations", async () => {
+    const { getSqliteDb } = await import("../sqlite");
+    const db = getSqliteDb();
+    const testInspectionId = "00675a4b-2d6e-41f8-8756-3a02b1d61218";
+
+    // Ensure scoped fixture inspection and annotation exist for test isolation
+    db.prepare(`
+      INSERT INTO inspections (
+        inspectionId, sourceFilename, modelName, status, processingTimeMs, detectionsCount, persistenceStatus, createdAt
+      ) VALUES (?, 'fixture_test.jpg', 'YOLO26n', 'completed', 20.0, 0, 'database', datetime('now'))
+      ON CONFLICT(inspectionId) DO UPDATE SET
+        userId = NULL,
+        operatorId = NULL
+    `).run(testInspectionId);
+
+    await saveConfirmedRootCauseAnnotation({
+      inspectionId: testInspectionId,
+      defectId: null,
+      confirmedCause: "thermal_stress_soldering",
+      confidenceLevel: "confirmed",
+      verifiedBy: "quality_eng_01",
+      investigationNotes: "SEM analysis confirmed thermal microcrack",
+    });
+
     const annotations = await getAllConfirmedRootCauseAnnotations({ limit: 10 });
     expect(Array.isArray(annotations)).toBe(true);
     expect(annotations.length).toBeGreaterThan(0);
