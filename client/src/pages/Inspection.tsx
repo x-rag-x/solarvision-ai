@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  Clock,
   Copy,
   ExternalLink,
   Eye,
@@ -220,7 +221,14 @@ export default function Inspection() {
     setTimeout(() => setCopiedId(false), 2000);
   };
 
-  const effectiveThreshold = result?.inferenceConfiguration?.confidence_threshold ?? activeThreshold;
+  const resultThreshold = result?.inferenceConfiguration?.confidence_threshold;
+  const isStale = Boolean(
+    result &&
+    !executionError &&
+    resultThreshold !== undefined &&
+    Math.abs(resultThreshold - activeThreshold) > 0.001
+  );
+  const effectiveThreshold = resultThreshold ?? activeThreshold;
   const currentDisplayImage =
     viewMode === "annotated" && (result?.annotatedImageDataUrl || result?.annotatedImageUrl)
       ? result.annotatedImageDataUrl || result.annotatedImageUrl
@@ -326,6 +334,7 @@ export default function Inspection() {
                     type="button"
                     onClick={() => loadSampleImage("/samples/sample-el-cell-1.jpg", "el-sample-crack-01.jpg")}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
+                    title="PVELAD GT: star_crack (1 defect, conf ~0.64)"
                   >
                     Sample 1 (Micro-crack)
                   </button>
@@ -333,13 +342,15 @@ export default function Inspection() {
                     type="button"
                     onClick={() => loadSampleImage("/samples/sample-el-cell-2.jpg", "el-sample-finger-02.jpg")}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
+                    title="PVELAD GT: 3 collinear cracks (formerly mislabeled Finger defect; genuine cracks)"
                   >
-                    Sample 2 (Finger defect)
+                    Sample 2 (Segmented crack)
                   </button>
                   <button
                     type="button"
-                    onClick={() => loadSampleImage("/samples/sample-el-cell-3.jpg", "el-sample-cell-03.jpg")}
+                    onClick={() => loadSampleImage("/samples/sample-el-cell-multi.jpg", "el-sample-multi-03.jpg")}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
+                    title="PVELAD GT: 4 defects (2 cracks, 2 finger defects)"
                   >
                     Sample 3 (Multi-defect)
                   </button>
@@ -370,7 +381,7 @@ export default function Inspection() {
               )}
 
               {/* Threshold / Sensitivity Settings Selector */}
-              <div className="mt-5 rounded-xl border border-slate-200/80 bg-[#fcfcfd] p-4">
+              <div className={`mt-5 rounded-xl border p-4 transition-colors ${isStale ? "border-amber-300 bg-amber-50/50" : "border-slate-200/80 bg-[#fcfcfd]"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sliders className="h-4 w-4 text-[#F2B941]" />
@@ -419,18 +430,46 @@ export default function Inspection() {
                     <div className="text-[9px] text-slate-500 mt-0.5">Deep debug</div>
                   </button>
                 </div>
+
+                {isStale && (
+                  <div className="mt-3 flex items-center justify-between rounded-lg border border-amber-300 bg-amber-100/70 p-2.5 text-xs text-amber-950">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+                      <span className="text-[11px] truncate">
+                        Sensitivity changed to <strong>{activeThreshold.toFixed(2)}</strong>. Displayed results reflect <strong>{resultThreshold?.toFixed(2)}</strong>.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRunInspection()}
+                      disabled={runMutation.isPending}
+                      className="ml-2 shrink-0 rounded bg-[#0B0909] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
+                    >
+                      Re-run Now
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Run Button */}
               <button
                 disabled={!file || runMutation.isPending}
                 onClick={() => handleRunInspection()}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0B0909] px-4 py-3.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(7,27,41,0.14)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 ${
+                  isStale
+                    ? "bg-[#0B0909] text-white ring-2 ring-[#F2B941] shadow-[0_8px_20px_rgba(242,185,65,0.25)] hover:bg-slate-800"
+                    : "bg-[#0B0909] text-white shadow-[0_8px_20px_rgba(7,27,41,0.14)] hover:bg-slate-800"
+                }`}
               >
                 {runMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
                     Running YOLO26n Inspection Pipeline…
+                  </>
+                ) : isStale ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 text-[#F2B941]" />
+                    Re-run AI inspection (Threshold {activeThreshold.toFixed(2)})
                   </>
                 ) : (
                   <>
@@ -476,14 +515,43 @@ export default function Inspection() {
               
               {result && !executionError && (
                 <div className="flex items-center gap-2">
-                  <StatusBadge tone={result.detections.length > 0 ? "warning" : "success"}>
-                    {result.detections.length > 0
-                      ? `${result.detections.length} Defect${result.detections.length === 1 ? "" : "s"} Found`
-                      : "No Detections Above Cutoff"}
-                  </StatusBadge>
+                  {isStale ? (
+                    <StatusBadge tone="neutral">
+                      Stale ({result.detections.length} Defect{result.detections.length === 1 ? "" : "s"} @ {resultThreshold?.toFixed(2)}) · Re-run Needed
+                    </StatusBadge>
+                  ) : (
+                    <StatusBadge tone={result.detections.length > 0 ? "warning" : "success"}>
+                      {result.detections.length > 0
+                        ? `${result.detections.length} Defect${result.detections.length === 1 ? "" : "s"} Found`
+                        : "No Detections Above Cutoff"}
+                    </StatusBadge>
+                  )}
                 </div>
               )}
             </div>
+
+            {/* Stale Result Warning Banner */}
+            {isStale && !executionError && (
+              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 shadow-xs animate-in fade-in duration-200">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 shrink-0 text-amber-600" />
+                  <span>
+                    <strong>Stale View:</strong> Visual evidence reflects prior run at threshold{" "}
+                    <span className="font-mono font-semibold">{resultThreshold?.toFixed(2)}</span>. Sensitivity changed to{" "}
+                    <span className="font-mono font-semibold">{activeThreshold.toFixed(2)}</span>. Click Re-run to update.
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => handleRunInspection()}
+                  disabled={runMutation.isPending}
+                  className="h-7 shrink-0 gap-1.5 rounded-lg bg-[#0B0909] px-3 text-[11px] font-semibold text-white hover:bg-slate-800"
+                >
+                  <RefreshCw className="h-3 w-3 text-[#F2B941]" />
+                  Re-run at {activeThreshold.toFixed(2)}
+                </Button>
+              </div>
+            )}
 
             {/* Error State: Critical Guardrail so backend authorization error is NEVER shown as zero-defect result */}
             {executionError ? (
@@ -592,11 +660,17 @@ export default function Inspection() {
                       <span className="text-xs font-normal text-slate-500">ms</span>
                     </p>
                   </div>
-                  <div className="rounded-xl bg-[#F4F0D7] p-3.5">
+                  <div className={`rounded-xl p-3.5 transition-colors ${isStale ? "border border-amber-300 bg-amber-50/70" : "bg-[#F4F0D7]"}`}>
                     <p className="text-[11px] text-slate-500 font-medium">Confidence Cutoff</p>
                     <p className="mt-1 font-mono text-xl font-semibold text-slate-900">
-                      {effectiveThreshold.toFixed(2)}
+                      {resultThreshold?.toFixed(2) ?? effectiveThreshold.toFixed(2)}
                     </p>
+                    {isStale && (
+                      <p className="mt-1 text-[10px] font-medium text-amber-800 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 text-amber-600" />
+                        Pending re-run at {activeThreshold.toFixed(2)}
+                      </p>
+                    )}
                   </div>
                   <div className="rounded-xl bg-[#F4F0D7] p-3.5">
                     <p className="text-[11px] text-slate-500 font-medium">Storage Sync</p>
@@ -653,7 +727,14 @@ export default function Inspection() {
                       <AlertTriangle className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold">Detected Defects ({result.detections.length})</h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-semibold">Detected Defects ({result.detections.length})</h2>
+                        {isStale && (
+                          <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
+                            Stale (Prior Run: Conf ≥ {resultThreshold?.toFixed(2)})
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-400">
                         Real YOLO26n coordinates, class labels, and model confidence scores
                       </p>
@@ -662,6 +743,7 @@ export default function Inspection() {
 
                   <span className="text-xs text-slate-500 font-mono">
                     Engine: YOLO26n · Conf ≥ {effectiveThreshold.toFixed(2)}
+                    {isStale && ` (target: ${activeThreshold.toFixed(2)})`}
                   </span>
                 </div>
 

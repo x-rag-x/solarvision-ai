@@ -291,3 +291,70 @@ def test_sample_el_cell_3_confidence_ladder_gap() -> None:
     assert crack.confidence > 0.80
     assert crack.x1 > 800 and crack.y1 > 850
 
+
+def test_sample_el_cell_2_confidence_ladder_and_overlapping_boxes() -> None:
+    """
+    Certifies forensic finding: sample-el-cell-2.jpg (img003713) contains 3 ground-truth
+    collinear cracks, and Model 1 produces 2 overlapping crack bounding boxes at conf=0.25
+    with IoU ~0.325, progressing to 5, 8, and 17 detections across the threshold ladder.
+    """
+    sample_img = Path("client/public/samples/sample-el-cell-2.jpg")
+    if not sample_img.exists():
+        pytest.skip(f"Sample image {sample_img} not present")
+
+    d25, _, _ = inference_service.predict(sample_img, confidence=0.25, image_size=640)
+    d10, _, _ = inference_service.predict(sample_img, confidence=0.10, image_size=640)
+    d05, _, _ = inference_service.predict(sample_img, confidence=0.05, image_size=640)
+    d01, _, _ = inference_service.predict(sample_img, confidence=0.01, image_size=640)
+
+    assert len(d25) == 2, f"Expected 2 detections at conf=0.25, got {len(d25)}"
+    assert len(d10) == 5, f"Expected 5 detections at conf=0.10, got {len(d10)}"
+    assert len(d05) == 8, f"Expected 8 detections at conf=0.05, got {len(d05)}"
+    assert len(d01) == 17, f"Expected 17 detections at conf=0.01, got {len(d01)}"
+
+    # Confirm both detections at 0.25 are crack
+    for d in d25:
+        assert d.defect_type == "crack"
+        assert d.class_id == 0
+
+    # Calculate IoU between the two boxes at 0.25
+    b0, b1 = d25[0], d25[1]
+    inter_x1 = max(b0.x1, b1.x1)
+    inter_y1 = max(b0.y1, b1.y1)
+    inter_x2 = min(b0.x2, b1.x2)
+    inter_y2 = min(b0.y2, b1.y2)
+    inter_area = max(0.0, inter_x2 - inter_x1) * max(0.0, inter_y2 - inter_y1)
+    area0 = (b0.x2 - b0.x1) * (b0.y2 - b0.y1)
+    area1 = (b1.x2 - b1.x1) * (b1.y2 - b1.y1)
+    iou = inter_area / (area0 + area1 - inter_area)
+
+    # IoU is ~0.325 (< 0.70 default NMS threshold, explaining why both boxes persist)
+    assert 0.30 <= iou <= 0.35, f"Expected IoU around 0.325, got {iou:.4f}"
+
+
+def test_sample_el_cell_multi_genuine_multi_defect() -> None:
+    """
+    Certifies that the mapped multi-defect sample (sample-el-cell-multi.jpg / img003781)
+    contains 4 ground-truth defect objects (2 cracks, 2 fingers) and produces
+    multi-class detections across thresholds.
+    """
+    sample_img = Path("client/public/samples/sample-el-cell-multi.jpg")
+    if not sample_img.exists():
+        pytest.skip(f"Multi-defect sample {sample_img} not present")
+
+    d25, _, _ = inference_service.predict(sample_img, confidence=0.25, image_size=640)
+    d10, _, _ = inference_service.predict(sample_img, confidence=0.10, image_size=640)
+    d05, _, _ = inference_service.predict(sample_img, confidence=0.05, image_size=640)
+    d01, _, _ = inference_service.predict(sample_img, confidence=0.01, image_size=640)
+
+    assert len(d25) == 5, f"Expected 5 detections at conf=0.25, got {len(d25)}"
+    assert len(d10) == 6, f"Expected 6 detections at conf=0.10, got {len(d10)}"
+    assert len(d05) == 6, f"Expected 6 detections at conf=0.05, got {len(d05)}"
+    assert len(d01) == 9, f"Expected 9 detections at conf=0.01, got {len(d01)}"
+
+    # Confirm both crack and finger are detected at conf=0.25
+    defect_types = {d.defect_type for d in d25}
+    assert "crack" in defect_types, "Expected crack in multi-defect sample"
+    assert "finger" in defect_types, "Expected finger in multi-defect sample"
+
+
