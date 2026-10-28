@@ -3,6 +3,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import type { detections, inspections } from "../drizzle/schema";
+import { ensureSandiaPerformanceSchema } from "./sandiaPerformance/persistence/schema";
 
 const require = createRequire(import.meta.url);
 const { DatabaseSync: DatabaseSyncConstructor } = require("node:sqlite") as {
@@ -291,11 +292,17 @@ function initSqliteSchema(db: DatabaseSync) {
 
   // Ensure Model 3 Predictive Quality schema and migrations are active
   ensureQualitySchema(db);
+
+  // Ensure Model 3 Sandia Solar Electrical Performance schema and migrations are active
+  ensureSandiaPerformanceSchema(db);
 }
 
 export const MODEL3_ADDITIVE_COLUMNS = [
   { name: "userId", type: "TEXT" },
-  { name: "machineId", type: "TEXT REFERENCES manufacturing_machines(id) ON DELETE SET NULL" },
+  {
+    name: "machineId",
+    type: "TEXT REFERENCES manufacturing_machines(id) ON DELETE SET NULL",
+  },
   { name: "waferId", type: "TEXT" },
   { name: "modelVersion", type: "TEXT" },
   { name: "domain", type: "TEXT NOT NULL DEFAULT 'solar_cell_manufacturing'" },
@@ -406,7 +413,11 @@ export function ensureQualitySchema(db: DatabaseSync): void {
   `);
 
   // Idempotently apply additive columns
-  migrateTableColumns(db, "predictive_quality_forecasts", MODEL3_ADDITIVE_COLUMNS);
+  migrateTableColumns(
+    db,
+    "predictive_quality_forecasts",
+    MODEL3_ADDITIVE_COLUMNS
+  );
 
   // Safely lift legacy NOT NULL constraints without data loss
   try {
@@ -414,7 +425,7 @@ export function ensureQualitySchema(db: DatabaseSync): void {
       .prepare("PRAGMA table_info(predictive_quality_forecasts)")
       .all() as Array<{ name: string; notnull: number }>;
     const hasLegacyNotNull = tableInfo.some(
-      (c) =>
+      c =>
         (c.name === "predictedYield" ||
           c.name === "batchId" ||
           c.name === "predictedDefectRate") &&
@@ -462,23 +473,51 @@ export function ensureQualitySchema(db: DatabaseSync): void {
         `);
 
         const allColNames = [
-          "id", "batchId", "machineId", "waferId", "userId", "modelVersionId",
-          "modelVersion", "domain", "isBenchmark", "dataSource", "provenance",
-          "qualityOutcome", "riskLevel", "failureProbability", "predictedDefectRate",
-          "predictedYield", "confidence", "confidenceIntervalLow", "confidenceIntervalHigh",
-          "confidenceInterval", "forecastHorizonHours", "forecastHorizon",
-          "dominantRiskDefect", "predictedLossPercentage", "topRiskFactors", "factors",
-          "probabilities", "inputReference", "recommendedAction", "createdAt", "generatedAt"
+          "id",
+          "batchId",
+          "machineId",
+          "waferId",
+          "userId",
+          "modelVersionId",
+          "modelVersion",
+          "domain",
+          "isBenchmark",
+          "dataSource",
+          "provenance",
+          "qualityOutcome",
+          "riskLevel",
+          "failureProbability",
+          "predictedDefectRate",
+          "predictedYield",
+          "confidence",
+          "confidenceIntervalLow",
+          "confidenceIntervalHigh",
+          "confidenceInterval",
+          "forecastHorizonHours",
+          "forecastHorizon",
+          "dominantRiskDefect",
+          "predictedLossPercentage",
+          "topRiskFactors",
+          "factors",
+          "probabilities",
+          "inputReference",
+          "recommendedAction",
+          "createdAt",
+          "generatedAt",
         ];
-        const existingNames = new Set(tableInfo.map((c) => c.name));
-        const sharedCols = allColNames.filter((c) => existingNames.has(c));
+        const existingNames = new Set(tableInfo.map(c => c.name));
+        const sharedCols = allColNames.filter(c => existingNames.has(c));
 
         if (sharedCols.length > 0) {
           const sharedStr = sharedCols.join(", ");
-          db.exec(`INSERT INTO predictive_quality_forecasts_canonical (${sharedStr}) SELECT ${sharedStr} FROM predictive_quality_forecasts;`);
+          db.exec(
+            `INSERT INTO predictive_quality_forecasts_canonical (${sharedStr}) SELECT ${sharedStr} FROM predictive_quality_forecasts;`
+          );
         }
         db.exec("DROP TABLE predictive_quality_forecasts;");
-        db.exec("ALTER TABLE predictive_quality_forecasts_canonical RENAME TO predictive_quality_forecasts;");
+        db.exec(
+          "ALTER TABLE predictive_quality_forecasts_canonical RENAME TO predictive_quality_forecasts;"
+        );
         db.exec("COMMIT;");
       } catch (err) {
         db.exec("ROLLBACK;");
@@ -519,10 +558,12 @@ export function ensureQualitySchema(db: DatabaseSync): void {
 export function migrateTableColumns(
   db: DatabaseSync,
   tableName: string,
-  columnsToAdd: Array<{ name: string; type: string }>,
+  columnsToAdd: Array<{ name: string; type: string }>
 ) {
   try {
-    const existing = db.prepare(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>;
+    const existing = db
+      .prepare(`PRAGMA table_info(${tableName})`)
+      .all() as Array<{ name: string }>;
     const existingNames = new Set(existing.map(col => col.name));
     for (const col of columnsToAdd) {
       if (!existingNames.has(col.name)) {
@@ -530,21 +571,24 @@ export function migrateTableColumns(
       }
     }
   } catch (err) {
-    console.warn(`[SQLite Migration] Column migration for ${tableName} noticed:`, err);
+    console.warn(
+      `[SQLite Migration] Column migration for ${tableName} noticed:`,
+      err
+    );
   }
 }
 
 export function saveSqliteInspection(
   input: typeof inspections.$inferInsert,
-  items: Array<typeof detections.$inferInsert>,
+  items: Array<typeof detections.$inferInsert>
 ): boolean {
   const db = getSqliteDb();
   const createdAtStr =
     input.createdAt instanceof Date
       ? input.createdAt.toISOString()
       : typeof input.createdAt === "string"
-      ? input.createdAt
-      : new Date().toISOString();
+        ? input.createdAt
+        : new Date().toISOString();
 
   // Explicit immediate transaction for atomic write and orphan prevention
   db.exec("BEGIN IMMEDIATE;");
@@ -590,11 +634,13 @@ export function saveSqliteInspection(
       (input as any).machineId ?? null,
       (input as any).modelVersionId ?? null,
       (input as any).operatorId ?? null,
-      (input as any).isFlagged ? 1 : 0,
+      (input as any).isFlagged ? 1 : 0
     );
 
     // 2. Clean previous detections if this is a retry/upsert to prevent duplicate clutter
-    db.prepare(`DELETE FROM detections WHERE inspectionId = ?`).run(input.inspectionId);
+    db.prepare(`DELETE FROM detections WHERE inspectionId = ?`).run(
+      input.inspectionId
+    );
 
     // 3. Insert detections
     if (items.length > 0) {
@@ -614,7 +660,7 @@ export function saveSqliteInspection(
           Number(item.y1),
           Number(item.x2),
           Number(item.y2),
-          createdAtStr,
+          createdAtStr
         );
       }
     }
@@ -628,7 +674,10 @@ export function saveSqliteInspection(
   }
 }
 
-export function getSqliteRecentInspections(limit = 25, requester?: RequesterContext) {
+export function getSqliteRecentInspections(
+  limit = 25,
+  requester?: RequesterContext
+) {
   const db = getSqliteDb();
   const safeLimit = Math.max(1, Math.min(limit, 5000));
 
@@ -682,7 +731,10 @@ export function getSqliteRecentInspections(limit = 25, requester?: RequesterCont
   }));
 }
 
-export function getSqliteInspectionById(inspectionId: string, requester?: RequesterContext) {
+export function getSqliteInspectionById(
+  inspectionId: string,
+  requester?: RequesterContext
+) {
   const db = getSqliteDb();
   const inspectionStmt = db.prepare(`
     SELECT * FROM inspections WHERE inspectionId = ? LIMIT 1
@@ -720,14 +772,20 @@ export function getSqliteInspectionById(inspectionId: string, requester?: Reques
       modelName: String(inspection.modelName),
       status: inspection.status as "completed" | "failed",
       processingTimeMs: Number(inspection.processingTimeMs),
-      inputImageUrl: inspection.inputImageUrl ? String(inspection.inputImageUrl) : null,
-      annotatedImageUrl: inspection.annotatedImageUrl ? String(inspection.annotatedImageUrl) : null,
+      inputImageUrl: inspection.inputImageUrl
+        ? String(inspection.inputImageUrl)
+        : null,
+      annotatedImageUrl: inspection.annotatedImageUrl
+        ? String(inspection.annotatedImageUrl)
+        : null,
       detectionsCount: Number(inspection.detectionsCount),
       persistenceStatus: String(inspection.persistenceStatus),
       createdAt: new Date(inspection.createdAt),
       batchId: inspection.batchId ? String(inspection.batchId) : null,
       machineId: inspection.machineId ? String(inspection.machineId) : null,
-      modelVersionId: inspection.modelVersionId ? String(inspection.modelVersionId) : null,
+      modelVersionId: inspection.modelVersionId
+        ? String(inspection.modelVersionId)
+        : null,
       operatorId: inspection.operatorId ? String(inspection.operatorId) : null,
       isFlagged: Boolean(inspection.isFlagged),
     },
@@ -753,33 +811,50 @@ export function getSqliteDashboardStats(requester?: RequesterContext) {
 
   if (requester?.userId && requester.role !== "admin") {
     // User-scoped dashboard stats
-    inspectionStats = db.prepare(`
+    inspectionStats = db
+      .prepare(
+        `
       SELECT COUNT(*) as count, AVG(processingTimeMs) as avgTime 
       FROM inspections 
       WHERE userId = ? OR operatorId = ?
-    `).get(requester.userId, requester.userId) as any;
+    `
+      )
+      .get(requester.userId, requester.userId) as any;
 
-    detectionStats = db.prepare(`
+    detectionStats = db
+      .prepare(
+        `
       SELECT COUNT(*) as count, COUNT(DISTINCT defectType) as typesCount 
       FROM detections 
       WHERE inspectionId IN (
         SELECT inspectionId FROM inspections WHERE userId = ? OR operatorId = ?
       )
-    `).get(requester.userId, requester.userId) as any;
+    `
+      )
+      .get(requester.userId, requester.userId) as any;
   } else {
     // System-wide dashboard stats (Admin or unauthenticated global overview)
-    inspectionStats = db.prepare(`
+    inspectionStats = db
+      .prepare(
+        `
       SELECT COUNT(*) as count, AVG(processingTimeMs) as avgTime FROM inspections
-    `).get() as any;
+    `
+      )
+      .get() as any;
 
-    detectionStats = db.prepare(`
+    detectionStats = db
+      .prepare(
+        `
       SELECT COUNT(*) as count, COUNT(DISTINCT defectType) as typesCount FROM detections
-    `).get() as any;
+    `
+      )
+      .get() as any;
   }
 
   const inspectionCount = Number(inspectionStats?.count ?? 0);
   const avgProcessingTimeMs =
-    inspectionStats?.avgTime != null && !Number.isNaN(Number(inspectionStats.avgTime))
+    inspectionStats?.avgTime != null &&
+    !Number.isNaN(Number(inspectionStats.avgTime))
       ? Number(inspectionStats.avgTime)
       : null;
   const detectionCount = Number(detectionStats?.count ?? 0);
@@ -802,7 +877,9 @@ export function getSqliteDefectAnalytics(requester?: RequesterContext) {
 
   if (requester?.userId && requester.role !== "admin") {
     // User-scoped defect analytics
-    typeRows = db.prepare(`
+    typeRows = db
+      .prepare(
+        `
       SELECT defectType, COUNT(*) as count, AVG(confidence) as avgConfidence
       FROM detections
       WHERE inspectionId IN (
@@ -811,33 +888,47 @@ export function getSqliteDefectAnalytics(requester?: RequesterContext) {
       GROUP BY defectType
       ORDER BY count DESC
       LIMIT 50
-    `).all(requester.userId, requester.userId) as any[];
+    `
+      )
+      .all(requester.userId, requester.userId) as any[];
 
-    trendRows = db.prepare(`
+    trendRows = db
+      .prepare(
+        `
       SELECT substr(createdAt, 1, 10) as day, COUNT(*) as inspections, SUM(detectionsCount) as detections
       FROM inspections
       WHERE userId = ? OR operatorId = ?
       GROUP BY day
       ORDER BY day DESC
       LIMIT 14
-    `).all(requester.userId, requester.userId) as any[];
+    `
+      )
+      .all(requester.userId, requester.userId) as any[];
   } else {
     // System-wide defect analytics
-    typeRows = db.prepare(`
+    typeRows = db
+      .prepare(
+        `
       SELECT defectType, COUNT(*) as count, AVG(confidence) as avgConfidence
       FROM detections
       GROUP BY defectType
       ORDER BY count DESC
       LIMIT 50
-    `).all() as any[];
+    `
+      )
+      .all() as any[];
 
-    trendRows = db.prepare(`
+    trendRows = db
+      .prepare(
+        `
       SELECT substr(createdAt, 1, 10) as day, COUNT(*) as inspections, SUM(detectionsCount) as detections
       FROM inspections
       GROUP BY day
       ORDER BY day DESC
       LIMIT 14
-    `).all() as any[];
+    `
+      )
+      .all() as any[];
   }
 
   const byType = typeRows.map(r => ({

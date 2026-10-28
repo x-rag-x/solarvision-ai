@@ -16,6 +16,7 @@ import { isSupabaseConfigured } from "./inspection/supabase";
 import { rootCauseRouter } from "./rootCause";
 import { predictiveQualityRouter } from "./predictiveQuality";
 import { predictiveMaintenanceRouter } from "./predictiveMaintenance";
+import { sandiaPerformanceRouter } from "./sandiaPerformance";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { existsSync } from "node:fs";
@@ -35,18 +36,20 @@ const inspectionInput = z.object({
  * Strictly checks ctx.user without synthetic test harness bypasses.
  * Callers must supply an explicit authenticated session context.
  */
-export const authenticatedProcedure = publicProcedure.use(async ({ ctx, next }) => {
-  if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
-  }
+export const authenticatedProcedure = publicProcedure.use(
+  async ({ ctx, next }) => {
+    if (!ctx.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+    }
 
-  return next({
-    ctx: {
-      ...ctx,
-      user: ctx.user,
-    },
-  });
-});
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }
+);
 
 export const appRouter = router({
   system: systemRouter,
@@ -62,7 +65,9 @@ export const appRouter = router({
       )
       .mutation(async ({ input, ctx }) => {
         const openId = input.operatorId.trim();
-        const role = input.role || (openId.toLowerCase().includes("admin") ? "admin" : "user");
+        const role =
+          input.role ||
+          (openId.toLowerCase().includes("admin") ? "admin" : "user");
         const name = input.name?.trim() || openId;
         const email = `${openId.toLowerCase().replace(/[^a-z0-9_-]/g, "")}@solarvision.local`;
 
@@ -102,58 +107,77 @@ export const appRouter = router({
   }),
   dashboard: router({
     stats: authenticatedProcedure.query(({ ctx }) =>
-      getDashboardStats({ userId: ctx.user.openId || String(ctx.user.id), role: ctx.user.role })
+      getDashboardStats({
+        userId: ctx.user.openId || String(ctx.user.id),
+        role: ctx.user.role,
+      })
     ),
   }),
   rootCause: rootCauseRouter,
   predictiveQuality: predictiveQualityRouter,
   predictiveMaintenance: predictiveMaintenanceRouter,
+  sandiaPerformance: sandiaPerformanceRouter,
+  sandia: sandiaPerformanceRouter,
   inspection: router({
-    run: authenticatedProcedure.input(inspectionInput).mutation(async ({ input, ctx }) => {
-      try {
-        const effectiveUserId = ctx.user.openId || String(ctx.user.id);
-        return await runInspection({
-          ...input,
-          userId: effectiveUserId,
-          operatorId: effectiveUserId,
-        });
-      } catch (error) {
-        if (error instanceof TRPCError) throw error;
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: error instanceof Error ? error.message : "Inspection failed",
-        });
-      }
-    }),
+    run: authenticatedProcedure
+      .input(inspectionInput)
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const effectiveUserId = ctx.user.openId || String(ctx.user.id);
+          return await runInspection({
+            ...input,
+            userId: effectiveUserId,
+            operatorId: effectiveUserId,
+          });
+        } catch (error) {
+          if (error instanceof TRPCError) throw error;
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message:
+              error instanceof Error ? error.message : "Inspection failed",
+          });
+        }
+      }),
     history: authenticatedProcedure
-      .input(z.object({ limit: z.number().int().min(1).max(100).default(25) }).optional())
+      .input(
+        z
+          .object({ limit: z.number().int().min(1).max(100).default(25) })
+          .optional()
+      )
       .query(({ input, ctx }) =>
-        getRecentInspections(
-          input?.limit ?? 25,
-          { userId: ctx.user.openId || String(ctx.user.id), role: ctx.user.role }
-        )
+        getRecentInspections(input?.limit ?? 25, {
+          userId: ctx.user.openId || String(ctx.user.id),
+          role: ctx.user.role,
+        })
       ),
     detail: authenticatedProcedure
       .input(z.object({ inspectionId: z.string().uuid() }))
       .query(async ({ input, ctx }) => {
-        const result = await getInspectionById(
-          input.inspectionId,
-          { userId: ctx.user.openId || String(ctx.user.id), role: ctx.user.role }
-        );
+        const result = await getInspectionById(input.inspectionId, {
+          userId: ctx.user.openId || String(ctx.user.id),
+          role: ctx.user.role,
+        });
         return result;
       }),
   }),
   analytics: router({
     defects: authenticatedProcedure.query(({ ctx }) =>
-      getDefectAnalytics({ userId: ctx.user.openId || String(ctx.user.id), role: ctx.user.role })
+      getDefectAnalytics({
+        userId: ctx.user.openId || String(ctx.user.id),
+        role: ctx.user.role,
+      })
     ),
   }),
   model: router({
     status: publicProcedure.query(() => {
-      const modelPath = process.env.MODEL_PATH || resolve(process.cwd(), "backend/models/best.pt");
+      const modelPath =
+        process.env.MODEL_PATH ||
+        resolve(process.cwd(), "backend/models/best.pt");
       const exists = existsSync(modelPath);
       return {
-        status: exists ? "checkpoint_present_runtime_inference_requires_python" : "model_missing",
+        status: exists
+          ? "checkpoint_present_runtime_inference_requires_python"
+          : "model_missing",
         modelPath,
         exists,
         modelName: "YOLO26n",

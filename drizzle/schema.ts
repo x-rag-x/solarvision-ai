@@ -1,4 +1,15 @@
-import { boolean, double, float, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  double,
+  float,
+  int,
+  json,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -127,39 +138,46 @@ export const rootCausePredictions = mysqlTable("root_cause_predictions", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export const predictiveQualityForecasts = mysqlTable("predictive_quality_forecasts", {
-  id: varchar("id", { length: 64 }).primaryKey(),
-  batchId: varchar("batchId", { length: 64 }),
-  machineId: varchar("machineId", { length: 64 }),
-  waferId: varchar("waferId", { length: 64 }),
-  userId: varchar("userId", { length: 64 }),
-  modelVersionId: varchar("modelVersionId", { length: 64 }),
-  modelVersion: varchar("modelVersion", { length: 64 }),
-  domain: varchar("domain", { length: 64 }).default("solar_cell_manufacturing").notNull(),
-  isBenchmark: boolean("isBenchmark").default(false).notNull(),
-  dataSource: varchar("dataSource", { length: 64 }),
-  provenance: varchar("provenance", { length: 128 }),
-  qualityOutcome: varchar("qualityOutcome", { length: 32 }).default("unknown").notNull(),
-  riskLevel: varchar("riskLevel", { length: 32 }).default("low").notNull(),
-  failureProbability: float("failureProbability"),
-  predictedDefectRate: float("predictedDefectRate"),
-  predictedYield: float("predictedYield"),
-  confidence: float("confidence"),
-  confidenceIntervalLow: float("confidenceIntervalLow"),
-  confidenceIntervalHigh: float("confidenceIntervalHigh"),
-  confidenceInterval: text("confidenceInterval"),
-  forecastHorizonHours: int("forecastHorizonHours").default(24),
-  forecastHorizon: text("forecastHorizon"),
-  dominantRiskDefect: text("dominantRiskDefect"),
-  predictedLossPercentage: float("predictedLossPercentage"),
-  topRiskFactors: json("topRiskFactors"),
-  factors: json("factors"),
-  probabilities: json("probabilities"),
-  inputReference: text("inputReference"),
-  recommendedAction: text("recommendedAction"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  generatedAt: timestamp("generatedAt"),
-});
+export const predictiveQualityForecasts = mysqlTable(
+  "predictive_quality_forecasts",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    batchId: varchar("batchId", { length: 64 }),
+    machineId: varchar("machineId", { length: 64 }),
+    waferId: varchar("waferId", { length: 64 }),
+    userId: varchar("userId", { length: 64 }),
+    modelVersionId: varchar("modelVersionId", { length: 64 }),
+    modelVersion: varchar("modelVersion", { length: 64 }),
+    domain: varchar("domain", { length: 64 })
+      .default("solar_cell_manufacturing")
+      .notNull(),
+    isBenchmark: boolean("isBenchmark").default(false).notNull(),
+    dataSource: varchar("dataSource", { length: 64 }),
+    provenance: varchar("provenance", { length: 128 }),
+    qualityOutcome: varchar("qualityOutcome", { length: 32 })
+      .default("unknown")
+      .notNull(),
+    riskLevel: varchar("riskLevel", { length: 32 }).default("low").notNull(),
+    failureProbability: float("failureProbability"),
+    predictedDefectRate: float("predictedDefectRate"),
+    predictedYield: float("predictedYield"),
+    confidence: float("confidence"),
+    confidenceIntervalLow: float("confidenceIntervalLow"),
+    confidenceIntervalHigh: float("confidenceIntervalHigh"),
+    confidenceInterval: text("confidenceInterval"),
+    forecastHorizonHours: int("forecastHorizonHours").default(24),
+    forecastHorizon: text("forecastHorizon"),
+    dominantRiskDefect: text("dominantRiskDefect"),
+    predictedLossPercentage: float("predictedLossPercentage"),
+    topRiskFactors: json("topRiskFactors"),
+    factors: json("factors"),
+    probabilities: json("probabilities"),
+    inputReference: text("inputReference"),
+    recommendedAction: text("recommendedAction"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    generatedAt: timestamp("generatedAt"),
+  }
+);
 
 export const maintenancePredictions = mysqlTable("maintenance_predictions", {
   id: varchar("id", { length: 64 }).primaryKey(),
@@ -188,6 +206,33 @@ export const alertRecords = mysqlTable("alert_records", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+export const sandiaPerformancePredictions = mysqlTable(
+  "sandia_performance_predictions",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    userId: varchar("userId", { length: 64 }),
+    moduleId: varchar("moduleId", { length: 64 }),
+    inputFeatures: json("inputFeatures").notNull(),
+    predictedValue: double("predictedValue").notNull(),
+    predictionLabel: varchar("predictionLabel", { length: 64 }),
+    targetName: varchar("targetName", { length: 64 }).notNull(),
+    targetUnit: varchar("targetUnit", { length: 32 }),
+    confidence: float("confidence"),
+    uncertainty: float("uncertainty"),
+    featuresUsed: json("featuresUsed"),
+    modelVersion: varchar("modelVersion", { length: 64 })
+      .default("1.0.0")
+      .notNull(),
+    datasetProvenance: varchar("datasetProvenance", { length: 128 })
+      .default("Sandia National Laboratories PV Performance Modeling Telemetry")
+      .notNull(),
+    isMock: boolean("isMock").default(false).notNull(),
+    warnings: json("warnings"),
+    metadata: json("metadata"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  }
+);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Inspection = typeof inspections.$inferSelect;
@@ -200,16 +245,25 @@ export type InsertModelVersion = typeof modelVersions.$inferInsert;
 export type ManufacturingBatch = typeof manufacturingBatches.$inferSelect;
 export type InsertManufacturingBatch = typeof manufacturingBatches.$inferInsert;
 export type ManufacturingMachine = typeof manufacturingMachines.$inferSelect;
-export type InsertManufacturingMachine = typeof manufacturingMachines.$inferInsert;
+export type InsertManufacturingMachine =
+  typeof manufacturingMachines.$inferInsert;
 export type SensorMeasurement = typeof sensorMeasurements.$inferSelect;
 export type InsertSensorMeasurement = typeof sensorMeasurements.$inferInsert;
 export type ProductionEvent = typeof productionEvents.$inferSelect;
 export type InsertProductionEvent = typeof productionEvents.$inferInsert;
 export type RootCausePrediction = typeof rootCausePredictions.$inferSelect;
-export type InsertRootCausePrediction = typeof rootCausePredictions.$inferInsert;
-export type PredictiveQualityForecast = typeof predictiveQualityForecasts.$inferSelect;
-export type InsertPredictiveQualityForecast = typeof predictiveQualityForecasts.$inferInsert;
+export type InsertRootCausePrediction =
+  typeof rootCausePredictions.$inferInsert;
+export type PredictiveQualityForecast =
+  typeof predictiveQualityForecasts.$inferSelect;
+export type InsertPredictiveQualityForecast =
+  typeof predictiveQualityForecasts.$inferInsert;
 export type MaintenancePrediction = typeof maintenancePredictions.$inferSelect;
-export type InsertMaintenancePrediction = typeof maintenancePredictions.$inferInsert;
+export type InsertMaintenancePrediction =
+  typeof maintenancePredictions.$inferInsert;
 export type AlertRecord = typeof alertRecords.$inferSelect;
 export type InsertAlertRecord = typeof alertRecords.$inferInsert;
+export type SandiaPerformancePrediction =
+  typeof sandiaPerformancePredictions.$inferSelect;
+export type InsertSandiaPerformancePrediction =
+  typeof sandiaPerformancePredictions.$inferInsert;
