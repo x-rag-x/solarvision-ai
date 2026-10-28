@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "model_id": "model3_sandia_reference_power_v1",
+  "artifact_name": "pipeline.joblib",
+  "sha256": "045f9a15b7981c3e88ac18011dfa1b16821874bf211fa582cf148840e5dbf373",
+  "size_bytes": 1246515,
+  "framework": "scikit-learn",
+  "training_contract": {
+    "target": "power_retention_pct",
+    "output": "predicted_power_retention_pct",
+    "task": "reference_normalized_pv_performance_regression"
+  },
+  "environment": {
+    "python": "3.13.16",
+    "scikit-learn": "1.6.1",
+    "pandas": "2.2.3",
+    "numpy": "2.1.3",
+    "joblib": "1.6.0"
+  },
+  "metrics": {
+    "test_mae_pct_points": 0.7926771127023492,
+    "test_rmse_pct_points": 1.106999014175013,
+    "test_r2": 0.5806090645778728
+  }
+}

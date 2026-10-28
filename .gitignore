@@ -76,6 +76,7 @@ runs/
 *.onnx
 *.safetensors
 *.ckpt
+*.joblib
 !backend/models/best.pt
 
 # Databases

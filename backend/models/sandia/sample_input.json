@@ -1,0 +1,14 @@
+{
+  "module_id": "MOD-10085",
+  "features": {
+    "Total_Exposure": null,
+    "Nameplate_Pmp_(W)": 270.0,
+    "Nameplate_Isc_(A)": 9.18,
+    "Nameplate_Voc_(V)": 38.4,
+    "Nameplate_Imp_(A)": 8.7,
+    "Nameplate_Vmp_(V)": 31.0,
+    "Make": "35",
+    "Model": "1",
+    "Cell_Wafer_Type": "mono-Si module"
+  }
+}

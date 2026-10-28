@@ -13,6 +13,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
     import joblib
 except ImportError:
     joblib = None
@@ -272,11 +277,12 @@ class SandiaModelLoader:
     def extract_features(
         self,
         input_data: SandiaPredictionInput,
-    ) -> Tuple[np.ndarray, List[str], List[str]]:
+    ) -> Tuple[Union[np.ndarray, Any], List[str], List[str]]:
         """
         Validates named input features strictly against trainer feature_schema.json.
         Rejects missing required features and unexpected features.
-        Returns: (feature_matrix_2d, feature_names_used, list_of_warnings)
+        Preserves trained pipeline preprocessing for missing optional values (np.nan).
+        Returns: (feature_data, feature_names_used, list_of_warnings)
         """
         warnings: List[str] = []
 
@@ -308,18 +314,35 @@ class SandiaModelLoader:
                 f"All required features specified in trainer feature_schema.json must be provided."
             )
 
-        # 3. Build ordered feature vector and validate ranges
-        row_vals: List[float] = []
+        row_dict: Dict[str, Any] = {}
+        mock_row: List[float] = []
+
         for spec in ordered_specs:
-            if spec.name not in input_data.features:
-                row_vals.append(0.0)
-            else:
-                val = input_data.features[spec.name]
+            is_present = spec.name in input_data.features
+            raw_val = input_data.features.get(spec.name) if is_present else None
+
+            if not is_present or raw_val is None:
+                if spec.required:
+                    raise ValueError(
+                        f"Missing required feature(s): ['{spec.name}']. "
+                        f"All required features specified in trainer feature_schema.json must be provided and non-null."
+                    )
+                # Missing optional feature (e.g. Total_Exposure)
+                # Preserve model's trained missing-value preprocessing (np.nan for numerical, None for categorical)
+                if spec.type in ("float", "int", "number"):
+                    row_dict[spec.name] = np.nan
+                    mock_row.append(0.0)
+                else:
+                    row_dict[spec.name] = None
+                    mock_row.append(0.0)
+                continue
+
+            if spec.type in ("float", "int", "number"):
                 try:
-                    float_val = float(val)
+                    float_val = float(raw_val)
                 except (TypeError, ValueError) as err:
                     raise ValueError(
-                        f"Feature '{spec.name}' value '{val}' could not be converted to float: {err}"
+                        f"Feature '{spec.name}' value '{raw_val}' could not be converted to float: {err}"
                     ) from err
 
                 # Physical range boundaries (non-fatal telemetry warnings)
@@ -331,9 +354,28 @@ class SandiaModelLoader:
                     warnings.append(
                         f"Feature '{spec.name}' value {float_val} exceeds physical maximum {spec.max_value} {spec.unit or ''}".strip()
                     )
-                row_vals.append(float_val)
+                row_dict[spec.name] = float_val
+                mock_row.append(float_val)
+            else:
+                str_val = str(raw_val)
+                row_dict[spec.name] = str_val
+                try:
+                    mock_row.append(float(str_val))
+                except (TypeError, ValueError):
+                    mock_row.append(0.0)
 
-        feature_matrix = np.array([row_vals], dtype=np.float64)
+        # For mock predictor compatibility, return a numeric 2D array if mock is active
+        if self._mock_predictor is not None:
+            feature_matrix = np.array([mock_row], dtype=np.float64)
+            return feature_matrix, expected_names, warnings
+
+        # For real pipeline execution:
+        # Build pandas DataFrame with named columns when pandas is available
+        if pd is not None:
+            df = pd.DataFrame([row_dict], columns=expected_names)
+            return df, expected_names, warnings
+
+        feature_matrix = np.array([mock_row], dtype=np.float64)
         return feature_matrix, expected_names, warnings
 
     def predict(self, input_data: SandiaPredictionInput) -> SandiaPredictionItem:
@@ -367,7 +409,20 @@ class SandiaModelLoader:
             )
 
         # Real scikit-learn pipeline execution
-        raw_pred = self._pipeline.predict(X)
+        # If pipeline expects named columns (feature_names_in_), supply DataFrame directly.
+        # If pipeline was fitted on pure numpy array, convert DataFrame to numpy array.
+        if pd is not None and isinstance(X, pd.DataFrame):
+            if not hasattr(self._pipeline, "feature_names_in_"):
+                try:
+                    pipeline_input = X.to_numpy(dtype=np.float64)
+                except Exception:
+                    pipeline_input = X
+            else:
+                pipeline_input = X
+        else:
+            pipeline_input = X
+
+        raw_pred = self._pipeline.predict(pipeline_input)
 
         # Extract scalar if single regression output
         if isinstance(raw_pred, np.ndarray):
@@ -387,7 +442,7 @@ class SandiaModelLoader:
 
         if hasattr(self._pipeline, "predict_uncertainty"):
             try:
-                uncertainty = float(self._pipeline.predict_uncertainty(X)[0])
+                uncertainty = float(self._pipeline.predict_uncertainty(pipeline_input)[0])
             except Exception:
                 uncertainty = None
 

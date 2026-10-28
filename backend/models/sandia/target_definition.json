@@ -1,0 +1,20 @@
+{
+  "target_name": "power_retention_pct",
+  "target_type": "regression",
+  "target_unit": "%",
+  "description": "Current measured PV module electrical power retention relative to initial reference curve (percentage of reference Pmp). Prediction errors are measured in percentage points.",
+  "min_value": null,
+  "max_value": null,
+  "metadata": {
+    "output": "predicted_power_retention_pct",
+    "prediction_unit": "%",
+    "error_unit": "percentage_points",
+    "task": "reference_normalized_pv_performance_regression",
+    "model_id": "model3_sandia_reference_power_v1",
+    "evaluation_metrics": {
+      "MAE_pct_points": 0.7926771127023492,
+      "RMSE_pct_points": 1.106999014175013,
+      "R2": 0.5806090645778728
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_name": "Sandia PV-IV-EL (OEDI submission 8378)",
+  "features": [
+    {
+      "name": "Total_Exposure",
+      "type": "float",
+      "required": false,
+      "unit": null,
+      "min_value": null,
+      "max_value": null,
+      "description": "Total outdoor exposure (can be null/missing)"
+    },
+    {
+      "name": "Nameplate_Pmp_(W)",
+      "type": "float",
+      "required": true,
+      "unit": "W",
+      "min_value": null,
+      "max_value": null,
+      "description": "Nameplate maximum power rating"
+    },
+    {
+      "name": "Nameplate_Isc_(A)",
+      "type": "float",
+      "required": true,
+      "unit": "A",
+      "min_value": null,
+      "max_value": null,
+      "description": "Nameplate short-circuit current"
+    },
+    {
+      "name": "Nameplate_Voc_(V)",
+      "type": "float",
+      "required": true,
+      "unit": "V",
+      "min_value": null,
+      "max_value": null,
+      "description": "Nameplate open-circuit voltage"
+    },
+    {
+      "name": "Nameplate_Imp_(A)",
+      "type": "float",
+      "required": true,
+      "unit": "A",
+      "min_value": null,
+      "max_value": null,
+      "description": "Nameplate maximum power current"
+    },
+    {
+      "name": "Nameplate_Vmp_(V)",
+      "type": "float",
+      "required": true,
+      "unit": "V",
+      "min_value": null,
+      "max_value": null,
+      "description": "Nameplate maximum power voltage"
+    },
+    {
+      "name": "Make",
+      "type": "string",
+      "required": true,
+      "unit": null,
+      "min_value": null,
+      "max_value": null,
+      "description": "Module manufacturer identifier"
+    },
+    {
+      "name": "Model",
+      "type": "string",
+      "required": true,
+      "unit": null,
+      "min_value": null,
+      "max_value": null,
+      "description": "Module model identifier"
+    },
+    {
+      "name": "Cell_Wafer_Type",
+      "type": "string",
+      "required": true,
+      "unit": null,
+      "min_value": null,
+      "max_value": null,
+      "description": "PV cell and wafer technology type"
+    }
+  ],
+  "metadata": {
+    "model_id": "model3_sandia_reference_power_v1",
+    "target": "power_retention_pct",
+    "output": "predicted_power_retention_pct",
+    "target_unit": "percentage_points",
+    "schema_note": "Feature names must match exactly; no actual IV/EL measured outcomes among inputs"
+  }
+}
