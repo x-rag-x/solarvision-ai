@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import time
+_import_start_time = time.perf_counter()
+
 from contextlib import asynccontextmanager
 import logging
 import os
@@ -37,31 +40,65 @@ logger = logging.getLogger("solarvision.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    lifespan_start = time.perf_counter()
     settings.ensure_paths()
-    logger.info("Initializing SolarVision AI Inference API...")
-    logger.info("Configured model path: %s", settings.model_path)
-    if settings.model_path.exists():
-        try:
-            inference_service.load()
-            logger.info("YOLO model checkpoint loaded successfully. Readiness verified.")
-        except Exception as exc:
-            logger.error("Failed to initialize YOLO model checkpoint: %s", exc, exc_info=True)
+    logger.info("[TIMING:LIFESPAN] Starting SolarVision AI Inference API lifespan startup...")
+    logger.info("Configured YOLO model path: %s (lazy_load=%s)", settings.model_path, settings.yolo_lazy_load)
+
+    # 1. Sandia Model 3 status check
+    t_sandia_0 = time.perf_counter()
+    sandia_ready = sandia_performance_service.loader.is_ready
+    is_mock = sandia_performance_service.loader.is_mock
+    sandia_time_ms = (time.perf_counter() - t_sandia_0) * 1000
+    if sandia_ready and not is_mock:
+        logger.info(
+            "[STARTUP:SANDIA] Genuine Model 3 Sandia pipeline verified and ready in %.1f ms (target=%s, dim=%s).",
+            sandia_time_ms,
+            getattr(sandia_performance_service.loader.target_definition, "target_name", "sandia_v1"),
+            sandia_performance_service.loader.expected_dim,
+        )
+    elif sandia_ready and is_mock:
+        logger.warning(
+            "[STARTUP:SANDIA] Sandia model loaded in MOCK mode (synthetic predictor). Genuine checkpoint required for production."
+        )
     else:
         logger.warning(
-            "YOLO model checkpoint not found at %s. Inference requests will return 503 until best.pt is provided.",
+            "[STARTUP:SANDIA] Sandia performance model pipeline not loaded (%s). Requests will return 503.",
+            sandia_performance_service.loader.unavailability_reason,
+        )
+
+    # 2. YOLO Model 1 initialization check (lazy vs eager)
+    if settings.model_path.exists():
+        if settings.yolo_lazy_load:
+            logger.info(
+                "[STARTUP:YOLO] YOLO model checkpoint present at %s. Lazy-loading active (deferred to first inference request).",
+                settings.model_path,
+            )
+        else:
+            logger.info("[STARTUP:YOLO] Eager loading YOLO model checkpoint from %s...", settings.model_path)
+            t_yolo_0 = time.perf_counter()
+            try:
+                inference_service.load()
+                yolo_time_ms = (time.perf_counter() - t_yolo_0) * 1000
+                logger.info(
+                    "[STARTUP:YOLO] YOLO model checkpoint loaded eagerly in %.1f ms. Readiness verified.",
+                    yolo_time_ms,
+                )
+            except Exception as exc:
+                logger.error("[STARTUP:YOLO] Failed to eagerly initialize YOLO model checkpoint: %s", exc, exc_info=True)
+    else:
+        logger.warning(
+            "[STARTUP:YOLO] YOLO model checkpoint not found at %s. Inference requests will return 503 until best.pt is provided.",
             settings.model_path,
         )
 
-    if sandia_performance_service.loader.is_ready:
-        logger.info("Sandia solar performance model pipeline loaded successfully.")
-    else:
-        logger.info(
-            "Sandia performance model pipeline not loaded (%s). Requests will return 503.",
-            sandia_performance_service.loader.unavailability_reason,
-        )
+    total_lifespan_ms = (time.perf_counter() - lifespan_start) * 1000
+    logger.info(
+        "[TIMING:LIFESPAN] FastAPI lifespan startup completed in %.1f ms. Server listening on loopback.",
+        total_lifespan_ms,
+    )
     yield
-    logger.info("SolarVision AI Inference API shut down cleanly.")
-
+    logger.info("[SHUTDOWN] SolarVision AI Inference API shut down cleanly.")
 
 app = FastAPI(
     title="SolarVision AI Inference API",
@@ -80,6 +117,10 @@ app.include_router(predictive_maintenance_router, prefix="/api")
 app.include_router(predictive_maintenance_router)
 app.include_router(sandia_performance_router, prefix="/api")
 app.include_router(sandia_performance_router)
+
+_import_elapsed_ms = (time.perf_counter() - _import_start_time) * 1000
+logger.info("[TIMING:IMPORT] Python backend modules imported and routes mounted in %.1f ms", _import_elapsed_ms)
+
 
 
 @app.get("/health")

@@ -39,6 +39,21 @@ services:
       - key: PORT
         value: 10000
 
+      # Configurable FastAPI readiness timeout for slow container starts (120-180s)
+      - key: FASTAPI_READINESS_TIMEOUT_SECS
+        value: "120"
+
+      # Lazy-load Model 1 YOLO checkpoint to avoid blocking container boot
+      - key: YOLO_LAZY_LOAD
+        value: "true"
+
+      # Thread and memory bounds for co-located stability on Render Starter
+      - key: TORCH_NUM_THREADS
+        value: "1"
+
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=256"
+
       # Persistent storage paths on mounted volume
       - key: SQLITE_DB_PATH
         value: /app/data/solarvision.db

@@ -52,6 +52,10 @@ class Settings:
         self.sandia_model_dir.mkdir(parents=True, exist_ok=True)
 
     @property
+    def yolo_lazy_load(self) -> bool:
+        return os.getenv("YOLO_LAZY_LOAD", "true").lower() in ("true", "1", "yes")
+
+    @property
     def supabase_configured(self) -> bool:
         return bool(
             self.supabase_url and self.supabase_service_role_key

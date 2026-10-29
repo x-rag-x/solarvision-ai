@@ -63,6 +63,15 @@ RUN chmod +x /app/scripts/staging-entrypoint.sh
 ENV NODE_ENV=production \
     PYTHON_EXECUTABLE=/opt/venv/bin/python \
     PORT=3000 \
+    FASTAPI_READINESS_TIMEOUT_SECS=120 \
+    YOLO_LAZY_LOAD=true \
+    TORCH_NUM_THREADS=1 \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 \
+    MALLOC_ARENA_MAX=2 \
+    NODE_OPTIONS="--max-old-space-size=256" \
     SQLITE_DB_PATH=/app/data/solarvision.db \
     UPLOADS_DIR=/app/data/uploads \
     SANDIA_MODEL_PATH=/app/backend/models/sandia/pipeline.joblib \
@@ -79,7 +88,7 @@ VOLUME ["/app/data"]
 EXPOSE 3000
 
 # Container readiness healthcheck against Express /healthz endpoint
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
   CMD curl -f "http://127.0.0.1:${PORT:-3000}/healthz" || exit 1
 
 # Process supervisor managing both FastAPI and Node

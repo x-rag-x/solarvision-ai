@@ -42,16 +42,43 @@ In this staging configuration, the entire SolarVision AI platform runs inside a 
 ```
 
 ### Architectural Guarantees:
-1. **Public Port Isolation:** Only the Node.js application listens on the external `0.0.0.0:$PORT` provided by Render.
-2. **Internal Loopback Binding:** Python FastAPI binds strictly to `127.0.0.1:8000` (inaccessible from outside the container).
-3. **Internal Node API URL:** Node communicates internally via `http://127.0.0.1:8000`.
-4. **Process Supervision & Clean Exit:** `dumb-init` and `staging-entrypoint.sh` trap `SIGTERM`/`SIGINT`, orchestrate graceful shutdown across child processes, and terminate the container immediately if either process crashes.
-5. **Strict Deployment Gate (/healthz):** Render tests container readiness against `http://0.0.0.0:$PORT/healthz`. If any runtime dependency (SQLite, uploads directory, FastAPI, or Sandia model) is unready, it returns HTTP 503, failing deployment transparently.
-6. **Minimal Public Health Surface:** Responses on `/healthz` and `/health` reveal strictly overall status and generic component states (`"ok"`, `"unready"`, `"error"`). Filesystem paths, internal URLs, environment variables, and stack traces are never exposed to public callers.
+1. **Public Port Isolation & Early Port Binding:** Only the Node.js application listens on the external `0.0.0.0:$PORT` provided by Render. Node starts immediately at container boot so Render can detect the listening port without timeout.
+2. **True Readiness Gate (/healthz):** While Python FastAPI and machine learning pipelines initialize, Node's `/healthz` returns `HTTP 503` (Service Unavailable). It transitions to `HTTP 200` only when SQLite, storage, FastAPI, and Sandia Model 3 are fully operational.
+3. **Internal Loopback Binding:** Python FastAPI binds strictly to `127.0.0.1:8000` (inaccessible from outside the container). Node communicates internally via `http://127.0.0.1:8000`.
+4. **Process Supervision & Mutual Termination:** `dumb-init` and `staging-entrypoint.sh` trap `SIGTERM`/`SIGINT`, orchestrate graceful shutdown across child processes, and terminate both services immediately if either process crashes or fails during startup.
+5. **Configurable Readiness Timeout:** Staging boots with a configurable FastAPI readiness timeout (`FASTAPI_READINESS_TIMEOUT_SECS`, default 120s, recommended 120–180s) to comfortably accommodate Python ML runtime initialization.
+6. **Thread-Safe YOLO Lazy Loading:** Model 1 (YOLO26n defect detection) loads lazily on first inspection request by default (`YOLO_LAZY_LOAD=true`), eliminating blocking cold-start latency and conserving memory.
+7. **Minimal Public Health Surface:** Responses on `/healthz` and `/health` reveal strictly overall status and generic component states (`"ok"`, `"unready"`, `"error"`). Filesystem paths, internal URLs, environment variables, and stack traces are never exposed to public callers.
 
 ---
 
-## 2. Machine Learning Environment & Model 3 Sandia Specifications
+## 2. FastAPI Startup Lifecycle, Lazy Loading & Memory Optimization
+
+### Startup Log Stages
+The container startup lifecycle outputs structured log markers distinguishing each subsystem:
+
+1. **Python Import Timing:** `[TIMING:IMPORT] Python backend modules imported and routes mounted in <ms>`
+2. **FastAPI Lifespan Startup:** `[TIMING:LIFESPAN] Starting SolarVision AI Inference API lifespan startup...`
+3. **Model 3 Sandia Verification:** `[STARTUP:SANDIA] Genuine Model 3 Sandia pipeline verified and ready in <ms>`
+4. **Model 1 YOLO State:** `[STARTUP:YOLO] YOLO model checkpoint present. Lazy-loading active (deferred to first inference request).`
+5. **Lifespan HTTP Readiness:** `[TIMING:LIFESPAN] FastAPI lifespan startup completed in <ms>. Server listening on loopback.`
+6. **Supervisor Readiness Polling:** `[STAGING:READINESS] Waiting for Python FastAPI readiness on 127.0.0.1:8000 (timeout: 120s)...`
+7. **Full Platform Health:** `[STAGING:READINESS] Node /healthz returned HTTP 200. All runtime components confirmed healthy.`
+
+### Lazy vs. Eager YOLO Loading
+- **Default (Lazy):** `YOLO_LAZY_LOAD=true`. The heavy PyTorch runtime and YOLO weights are not loaded into memory until an actual image inspection request (`POST /inspect` or `/api/inspections`) is received. A mutex (`threading.Lock`) guarantees thread-safe, single-execution loading on the first request.
+- **Eager (Optional):** Setting `YOLO_LAZY_LOAD=false` forces checkpoint loading synchronously inside the FastAPI lifespan before HTTP serving begins. The 120–180s supervisor readiness timeout accommodates eager loading even on limited CPU tiers.
+
+### Memory & Thread Safeguards for Render Starter (512 MB RAM)
+When co-locating Node.js 22, FastAPI, PyTorch, and scikit-learn, memory footprint is strictly controlled:
+1. **PyTorch & OpenBLAS CPU Thread Limit:** `TORCH_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`. Prevents worker thread explosions that multiply memory allocations.
+2. **Node Old-Space Ceiling:** `NODE_OPTIONS="--max-old-space-size=256"`. Enforces early garbage collection in Node.js before memory limits are reached.
+3. **Memory Allocator Fragmentation Guard:** `MALLOC_ARENA_MAX=2`. Restricts glibc allocation arenas to mitigate memory fragmentation in Linux containers.
+4. **Compact CPU PyTorch Wheels:** Installed via `--index-url https://download.pytorch.org/whl/cpu --no-deps` to eliminate CUDA overhead.
+
+---
+
+## 3. Machine Learning Environment & Model 3 Sandia Specifications
 
 The container Python runtime is explicitly matched to the model trainer environment:
 
@@ -73,7 +100,7 @@ The container Python runtime is explicitly matched to the model trainer environm
 
 ---
 
-## 3. Secure Artifact Download & Zero-Leakage Verification
+## 4. Secure Artifact Download & Zero-Leakage Verification
 
 Large model binaries (`pipeline.joblib`) are excluded from Git to prevent repository bloat. At container boot, `backend/app/sandia_performance/artifact_fetcher.py` handles acquisition and verification:
 
@@ -86,7 +113,7 @@ Large model binaries (`pipeline.joblib`) are excluded from Git to prevent reposi
 
 ---
 
-## 4. Staging Access Control & Standalone Operator Mode Hardening
+## 5. Staging Access Control & Standalone Operator Mode Hardening
 
 When deploying on Render Staging without external OAuth SSO (`OAUTH_SERVER_URL` unset), the application operates in **Standalone Operator Mode**.
 
@@ -102,7 +129,7 @@ To prevent arbitrary public internet visitors from calling `auth.login` and gain
 
 ---
 
-## 5. Complete Environment Variables Checklist
+## 6. Complete Environment Variables Checklist
 
 Configure these variables in your Render Staging Web Service Dashboard under **Environment**:
 
@@ -112,6 +139,10 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
 | `PORT` | Integer | System | *(Assigned by Render, e.g. 10000)* | Port on which Node web application listens |
 | `JWT_SECRET` | Secret | **Yes** | *(≥32 random characters)* | Cryptographic key for operator session JWT signing |
 | `OPERATOR_PASSCODE` | Secret | **Yes** | *(≥16 random characters)* | Staging access passcode to prevent public visitor login |
+| `FASTAPI_READINESS_TIMEOUT_SECS` | Integer | Optional | `120` | Timeout in seconds waiting for FastAPI readiness (120–180s) |
+| `YOLO_LAZY_LOAD` | Boolean | Optional | `true` | Defers YOLO model loading to first inference request |
+| `TORCH_NUM_THREADS` | Integer | Optional | `1` | CPU threads allocated to PyTorch tensor operations |
+| `NODE_OPTIONS` | String | Optional | `--max-old-space-size=256` | Caps Node heap to prevent container OOM killer |
 | `SQLITE_DB_PATH` | Path | **Yes** | `/app/data/solarvision.db` | Persistent SQLite database file on mounted disk |
 | `UPLOADS_DIR` | Path | **Yes** | `/app/data/uploads` | Persistent directory for private inspection images |
 | `SANDIA_API_URL` | URL | **Yes** | `http://127.0.0.1:8000` | Loopback URL for Node -> Python Sandia requests |
@@ -126,7 +157,7 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
 
 ---
 
-## 6. Render Staging Deployment Steps
+## 7. Render Staging Deployment Steps
 
 ### Option 1: Blueprint Deployment via `render.yaml` (Recommended)
 
@@ -148,40 +179,13 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
 
 ---
 
-### Option 2: Manual Web Service Setup via Render Dashboard
+## 8. Staging Verification Runbook
 
-1. Navigate to [dashboard.render.com](https://dashboard.render.com/) and click **New +** -> **Web Service**.
-2. Select your repository and choose branch: `agent/model3-render-staging`.
-3. Configure service details:
-   - **Name:** `solarvision-staging`
-   - **Region:** Choose preferred region (e.g., `Oregon (US West)` or `Frankfurt (EU)`)
-   - **Runtime:** `Docker`
-   - **Dockerfile Path:** `Dockerfile.render-staging`
-   - **Docker Context:** `.` (root directory)
-   - **Instance Type:** `Starter` (or `Standard` with ≥2 GB RAM)
-4. Add Persistent Disk:
-   - Click **Disks** -> **Add Disk**
-   - **Name:** `solarvision-staging-data`
-   - **Mount Path:** `/app/data`
-   - **Size:** `5 GB`
-5. Configure Health Check:
-   - **Health Check Path:** `/healthz`
-6. Add Environment Variables according to Section 5.
-7. Click **Create Web Service**.
-
----
-
-## 7. Post-Deployment Verification Runbook
-
-Once the deployment completes and Render indicates **Service is live**:
-
-### 1. Verify Deployment Health Check
-Query the public health check endpoint:
+### Step 1: Verify Public Readiness Gate
 ```bash
-curl -fsS https://<your-render-subdomain>.onrender.com/healthz
+curl -i https://<your-render-subdomain>.onrender.com/healthz
 ```
-
-Expected minimal JSON response (HTTP 200, zero filesystem paths, zero internal URLs):
+Expected HTTP 200 response:
 ```json
 {
   "status": "healthy",
@@ -195,38 +199,15 @@ Expected minimal JSON response (HTTP 200, zero filesystem paths, zero internal U
 }
 ```
 
-### 2. Verify Access Control Restriction
-Verify that unauthenticated visitors cannot access protected procedures:
-```bash
-# Attempt to query dashboard stats without session -> Must return UNAUTHORIZED
-curl -s https://<your-render-subdomain>.onrender.com/api/trpc/dashboard.stats
-```
-Expected output:
-```json
-{"error":{"message":"UNAUTHORIZED: Authentication required to access protected SolarVision procedures."}}
-```
-
-Attempting login without `OPERATOR_PASSCODE`:
+### Step 2: Establish Authenticated Session via Passcode
 ```bash
 curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/auth.login \
   -H "Content-Type: application/json" \
-  -d '{"operatorId":"admin","role":"admin"}'
-```
-Expected output:
-```json
-{"error":{"message":"Invalid or missing operator passcode. Operator access is restricted."}}
+  -c cookies.txt \
+  -d '{"passcode": "<YOUR_OPERATOR_PASSCODE>"}'
 ```
 
-### 3. Authenticate with Operator Passcode
-```bash
-curl -c cookies.txt -X POST https://<your-render-subdomain>.onrender.com/api/trpc/auth.login \
-  -H "Content-Type: application/json" \
-  -d '{"operatorId":"OP-7701","name":"Alex Rivera","role":"user","passcode":"<YOUR_OPERATOR_PASSCODE>"}'
-```
-Returns valid session token and sets `solarvision_session` cookie.
-
-### 4. Execute Verification Inference with Trainer Sample
-Using the authenticated session cookie:
+### Step 3: Verify Sandia Model 3 Live Inference
 ```bash
 curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/sandiaPerformance.predict \
   -b cookies.txt \
@@ -260,10 +241,12 @@ Confirmation: Prediction matches trainer benchmark (`~99.5076%`).
 
 ---
 
-## 8. Troubleshooting & Failure Recovery
+## 9. Troubleshooting & Failure Recovery
 
 | Issue | Symptom | Root Cause | Solution |
 | :--- | :--- | :--- | :--- |
+| **FastAPI Startup Timeout** | `[FATAL] Timed out waiting for Python FastAPI to become healthy` | Checkpoint loading or ML library import took longer than readiness window | Increase `FASTAPI_READINESS_TIMEOUT_SECS` to 180s. Ensure `YOLO_LAZY_LOAD=true`. |
+| **No open ports detected** | Render times out scanning for port | Node was not listening on `$PORT` | Node now starts early before FastAPI wait loop; verify `PORT` env var is assigned by Render |
 | **503 on /healthz** | Render deployment fails or restarts repeatedly | Sandia model missing or unverified | Check `SANDIA_MODEL_URL` in Render settings. Verify the hosted artifact matches hash `045f9a15b798...` |
 | **503 on /healthz** | `FastAPI unavailable` | Python syntax or dependency error | Check container logs for uvicorn traceback |
 | **401 on /api/trpc/auth.login** | `Invalid or missing operator passcode` | `OPERATOR_PASSCODE` mismatch | Ensure operator supplies the configured `OPERATOR_PASSCODE` set in Render environment variables |

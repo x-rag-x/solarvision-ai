@@ -3,6 +3,8 @@ from __future__ import annotations
 import base64
 import hashlib
 import logging
+import os
+import threading
 from pathlib import Path
 import time
 from typing import Any
@@ -107,32 +109,59 @@ class YoloInferenceService:
         self._load_error: str | None = None
         self._sha256: str | None = None
         self._param_count: int | None = None
+        self._lock = threading.Lock()
+        self._load_duration_ms: float | None = None
 
     def load(self) -> None:
-        if not settings.model_path.exists():
-            self._load_error = f"Checkpoint not found at {settings.model_path}"
-            raise FileNotFoundError("YOLO model not found. Please place best.pt in the configured model path.")
-        try:
-            from ultralytics import YOLO
-            logger.info("Loading YOLO model from %s", settings.model_path)
-            self._model = YOLO(str(settings.model_path))
-            self._load_error = None
-            # Compute sha256 and parameter count
+        if self._model is not None and self._load_error is None:
+            return
+
+        with self._lock:
+            if self._model is not None and self._load_error is None:
+                return
+
+            if not settings.model_path.exists():
+                self._load_error = f"Checkpoint not found at {settings.model_path}"
+                raise FileNotFoundError("YOLO model not found. Please place best.pt in the configured model path.")
+
+            start_t = time.perf_counter()
             try:
-                self._sha256 = hashlib.sha256(settings.model_path.read_bytes()).hexdigest()
-            except Exception as e:
-                logger.warning("Could not compute checkpoint sha256: %s", e)
-                self._sha256 = None
-            try:
-                self._param_count = sum(p.numel() for p in self._model.model.parameters())
-            except Exception as e:
-                logger.warning("Could not compute parameter count: %s", e)
-                self._param_count = None
-            logger.info("Model loaded successfully. Checksum: %s, Params: %s", self._sha256, self._param_count)
-        except Exception as exc:
-            self._load_error = str(exc)
-            logger.error("Failed to load YOLO model: %s", exc, exc_info=True)
-            raise RuntimeError(f"Unable to load YOLO model: {exc}") from exc
+                # Bound PyTorch CPU threads to conserve memory in container
+                try:
+                    import torch
+                    torch_threads = int(os.getenv("TORCH_NUM_THREADS", "1"))
+                    torch.set_num_threads(torch_threads)
+                except Exception:
+                    pass
+
+                from ultralytics import YOLO
+                logger.info("[YOLO] Loading YOLO model from %s...", settings.model_path)
+                self._model = YOLO(str(settings.model_path))
+                self._load_error = None
+
+                # Compute sha256 and parameter count
+                try:
+                    self._sha256 = hashlib.sha256(settings.model_path.read_bytes()).hexdigest()
+                except Exception as e:
+                    logger.warning("[YOLO] Could not compute checkpoint sha256: %s", e)
+                    self._sha256 = None
+                try:
+                    self._param_count = sum(p.numel() for p in self._model.model.parameters())
+                except Exception as e:
+                    logger.warning("[YOLO] Could not compute parameter count: %s", e)
+                    self._param_count = None
+
+                self._load_duration_ms = (time.perf_counter() - start_t) * 1000
+                logger.info(
+                    "[YOLO] Model checkpoint loaded successfully in %.1f ms. Checksum: %s, Params: %s",
+                    self._load_duration_ms,
+                    self._sha256,
+                    self._param_count,
+                )
+            except Exception as exc:
+                self._load_error = str(exc)
+                logger.error("[YOLO] Failed to load YOLO model: %s", exc, exc_info=True)
+                raise RuntimeError(f"Unable to load YOLO model: {exc}") from exc
 
     def is_ready(self) -> bool:
         return bool(self._model is not None and self._load_error is None and settings.model_path.exists())
@@ -144,11 +173,12 @@ class YoloInferenceService:
         return self._model
 
     def class_names(self) -> list[str]:
-        names = getattr(self.model, "names", {}) or {}
-        if isinstance(names, dict) and names:
-            return [str(names[idx]) for idx in sorted(names)]
-        if isinstance(names, (list, tuple)) and names:
-            return [str(name) for name in names]
+        if self._model is not None:
+            names = getattr(self._model, "names", {}) or {}
+            if isinstance(names, dict) and names:
+                return [str(names[idx]) for idx in sorted(names)]
+            if isinstance(names, (list, tuple)) and names:
+                return [str(name) for name in names]
         return [DEFAULT_CLASS_NAMES[i] for i in sorted(DEFAULT_CLASS_NAMES)]
 
     def model_info(self) -> dict[str, Any]:
