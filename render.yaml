@@ -1,0 +1,77 @@
+# ==============================================================================
+# SolarVision AI — Render Staging Deployment Blueprint (Infrastructure-as-Code)
+# ==============================================================================
+# Blueprint specification for deploying the verified staging container on Render.
+# Uses Dockerfile.render-staging with co-located Node.js and Python FastAPI runtimes.
+# ==============================================================================
+
+services:
+  - type: web
+    name: solarvision-staging
+    env: docker
+    dockerfilePath: Dockerfile.render-staging
+    dockerContext: .
+    plan: starter
+    autoDeploy: false
+    healthCheckPath: /healthz
+
+    # Persistent disk for SQLite database and uploaded inspection imagery
+    disk:
+      name: solarvision-staging-data
+      mountPath: /app/data
+      sizeGB: 5
+
+    # Environment Variables Specification
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Secret key for operator session JWT authentication (auto-generated 32+ chars)
+      - key: JWT_SECRET
+        generateValue: true
+
+      # Exposed port assigned dynamically by Render; Node web app binds here
+      - key: PORT
+        value: 10000
+
+      # Persistent storage paths on mounted volume
+      - key: SQLITE_DB_PATH
+        value: /app/data/solarvision.db
+
+      - key: UPLOADS_DIR
+        value: /app/data/uploads
+
+      # Internal communication URLs: Node -> Python FastAPI loopback
+      - key: SANDIA_API_URL
+        value: http://127.0.0.1:8000
+
+      - key: PYTHON_BACKEND_URL
+        value: http://127.0.0.1:8000
+
+      - key: FASTAPI_URL
+        value: http://127.0.0.1:8000
+
+      # Model 3 Sandia pipeline artifact configuration
+      - key: SANDIA_MODEL_PATH
+        value: /app/backend/models/sandia/pipeline.joblib
+
+      # Strict staging healthcheck: fails deployment if Sandia pipeline is unready
+      - key: REQUIRE_SANDIA_MODEL
+        value: "true"
+
+      # Configurable artifact download location (S3 / GCS presigned URL or artifact server)
+      # Set in Render Dashboard -> Environment Variables
+      - key: SANDIA_MODEL_URL
+        sync: false
+
+      # Optional Bearer token or credentials header for private artifact storage
+      - key: SANDIA_ARTIFACT_AUTH_TOKEN
+        sync: false
+
+      # Confidence threshold default for Model 1 YOLO defect detection
+      - key: CONFIDENCE_THRESHOLD
+        value: "0.25"
+
+      # Inference image resolution for Model 1
+      - key: IMAGE_SIZE
+        value: "640"

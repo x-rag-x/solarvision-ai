@@ -1,0 +1,86 @@
+# ==============================================================================
+# SolarVision AI — Render Staging Deployment Dockerfile
+#
+# Staging Container Architecture:
+# - Co-located Node.js 22 Web/tRPC application and Python FastAPI Inference API.
+# - Node listens on Render-assigned $PORT (0.0.0.0:$PORT) and is publicly exposed.
+# - Python FastAPI binds strictly to 127.0.0.1:8000 (loopback internal communication).
+# - Supervised by dumb-init and /app/scripts/staging-entrypoint.sh with graceful signal handling.
+# - Verified Python environment compatible with trainer scikit-learn 1.6.1, pandas 2.2.3, numpy, joblib.
+# - Pre-deserialization SHA-256 cryptographic verification for Model 3 pipeline.joblib.
+# ==============================================================================
+
+FROM node:22-slim
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Install OS libraries, Python 3, venv, curl, dumb-init, and OpenCV runtime dependencies
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+     python3 \
+     python3-pip \
+     python3-venv \
+     libgl1 \
+     libglib2.0-0 \
+     curl \
+     dumb-init \
+     ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Set up isolated Python virtual environment to conform to PEP 668 and prevent system contamination
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+
+# 1. Install Node.js dependencies
+COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
+RUN corepack enable && corepack pnpm install --frozen-lockfile
+
+# 2. Install Python dependencies compatible with scikit-learn 1.6.1 trainer contract
+COPY backend/requirements.txt ./backend/requirements.txt
+
+# Use compact CPU PyTorch wheels to avoid multi-gigabyte CUDA runtime overhead
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu --no-deps torch torchvision \
+  && pip install --no-cache-dir -r /app/backend/requirements.txt \
+  && pip uninstall -y opencv-python opencv-contrib-python 2>/dev/null || true \
+  && pip install --no-cache-dir --force-reinstall --no-deps opencv-python-headless==4.12.0.88 \
+  && python -c "import sklearn, pandas, joblib, numpy, torch, cv2; print('Python ML environment OK: sklearn', sklearn.__version__, 'pandas', pandas.__version__, 'numpy', numpy.__version__, 'joblib', joblib.__version__)"
+
+# 3. Copy full project source
+COPY . .
+
+# 4. Build frontend client bundle & compile server TypeScript
+RUN corepack pnpm run build
+
+# 5. Make entrypoint supervisor executable
+RUN chmod +x /app/scripts/staging-entrypoint.sh
+
+# 6. Configure Runtime Environment Defaults
+ENV NODE_ENV=production \
+    PYTHON_EXECUTABLE=/opt/venv/bin/python \
+    PORT=3000 \
+    SQLITE_DB_PATH=/app/data/solarvision.db \
+    UPLOADS_DIR=/app/data/uploads \
+    SANDIA_MODEL_PATH=/app/backend/models/sandia/pipeline.joblib \
+    SANDIA_API_URL=http://127.0.0.1:8000 \
+    PYTHON_BACKEND_URL=http://127.0.0.1:8000 \
+    FASTAPI_URL=http://127.0.0.1:8000 \
+    REQUIRE_SANDIA_MODEL=true
+
+# Persistent storage mount point for SQLite database and uploaded imagery
+RUN mkdir -p /app/data /app/data/uploads /app/backend/models/sandia
+VOLUME ["/app/data"]
+
+# Expose ONLY the Node web application port (Render routes inbound traffic here)
+EXPOSE 3000
+
+# Container readiness healthcheck against Express /healthz endpoint
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -f "http://127.0.0.1:${PORT:-3000}/healthz" || exit 1
+
+# Process supervisor managing both FastAPI and Node
+ENTRYPOINT ["dumb-init", "--", "/app/scripts/staging-entrypoint.sh"]

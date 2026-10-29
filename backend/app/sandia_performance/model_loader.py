@@ -23,6 +23,11 @@ except ImportError:
     joblib = None
 
 from ..config import settings
+from .artifact_fetcher import (
+    EXPECTED_SANDIA_SHA256,
+    calculate_file_sha256,
+    download_and_verify_artifact,
+)
 from .schemas import (
     FeatureSchemaManifest,
     FeatureSpec,
@@ -197,6 +202,10 @@ class SandiaModelLoader:
         self._pipeline = None
 
         if not self.artifact_path.exists():
+            # Attempt secure download and verification from configured artifact storage location
+            download_and_verify_artifact(target_path=self.artifact_path)
+
+        if not self.artifact_path.exists():
             self._unavailability_reason = (
                 f"Sandia solar performance model artifact ({self.artifact_name}) not found. "
                 "Scikit-learn .joblib pipeline training is pending dataset preparation by trainer."
@@ -214,29 +223,33 @@ class SandiaModelLoader:
             return False
 
         try:
-            # Check manifest for SHA-256 integrity verification
+            # Determine expected SHA-256 checksum
+            expected_sha = EXPECTED_SANDIA_SHA256
             manifest_path = self.artifact_path.parent / "manifest.json"
             if manifest_path.exists():
                 try:
                     with open(manifest_path, "r", encoding="utf-8") as mf:
                         self._manifest_meta = json.load(mf)
-                    expected_sha = self._manifest_meta.get("sha256")
-                    if expected_sha:
-                        raw_bytes = self.artifact_path.read_bytes()
-                        computed_sha = hashlib.sha256(raw_bytes).hexdigest()
-                        if computed_sha != expected_sha:
-                            self._unavailability_reason = (
-                                "Model artifact integrity verification failed: SHA-256 checksum mismatch."
-                            )
-                            logger.error(
-                                "Sandia model artifact SHA-256 mismatch: computed '%s', expected '%s'",
-                                computed_sha,
-                                expected_sha,
-                            )
-                            return False
+                    manifest_sha = self._manifest_meta.get("sha256")
+                    if manifest_sha:
+                        expected_sha = manifest_sha
                     self._model_version = str(self._manifest_meta.get("version", "1.0.0"))
                 except Exception as m_exc:
                     logger.warning("Failed to parse manifest: %s", m_exc)
+
+            # Strict SHA-256 cryptographic verification BEFORE deserialization
+            computed_sha = calculate_file_sha256(self.artifact_path)
+            if computed_sha.lower() != expected_sha.lower():
+                self._unavailability_reason = (
+                    "Model artifact integrity verification failed: SHA-256 checksum mismatch."
+                )
+                logger.error(
+                    "SECURITY ALERT: Sandia model artifact SHA-256 mismatch: computed '%s', expected '%s'. "
+                    "Deserialization rejected.",
+                    computed_sha,
+                    expected_sha,
+                )
+                return False
 
             # Load the complete trained pipeline via joblib
             loaded_obj = joblib.load(self.artifact_path)

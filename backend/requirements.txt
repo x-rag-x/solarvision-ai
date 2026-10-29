@@ -8,6 +8,7 @@ pillow==11.3.0
 ultralytics==8.3.198
 scipy>=1.13.0
 pytest>=8.0.0
-joblib>=1.4.0
-scikit-learn>=1.5.0
-
+joblib>=1.4.0,<=1.6.0
+scikit-learn==1.6.1
+pandas==2.2.3
+requests>=2.31.0

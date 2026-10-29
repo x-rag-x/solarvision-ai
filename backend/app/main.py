@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 import logging
+import os
+from typing import Any
 from pathlib import Path
 import time
 import uuid
@@ -89,6 +91,29 @@ def health() -> dict[str, str | bool]:
         "model_path": str(settings.model_path),
         "storage_available": settings.storage_dir.exists(),
         "model_ready": inference_service.is_ready(),
+    }
+
+
+@app.get("/health/ready")
+@app.get("/api/health/ready")
+def health_ready() -> dict[str, Any]:
+    require_sandia = os.getenv("REQUIRE_SANDIA_MODEL", "false").lower() in ("true", "1", "yes")
+    sandia_ready = sandia_performance_service.loader.is_ready
+    is_mock = sandia_performance_service.loader.is_mock
+
+    if require_sandia and (not sandia_ready or is_mock):
+        raise HTTPException(
+            status_code=503,
+            detail=f"Required Sandia model is unavailable: {sandia_performance_service.loader.unavailability_reason}",
+        )
+
+    return {
+        "status": "ready",
+        "sandia_ready": sandia_ready,
+        "sandia_mock": is_mock,
+        "sandia_model_id": getattr(sandia_performance_service.loader.target_definition, "target_name", "sandia_v1"),
+        "yolo_ready": inference_service.is_ready(),
+        "storage_available": settings.storage_dir.exists(),
     }
 
 
