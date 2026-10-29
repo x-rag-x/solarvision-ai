@@ -213,3 +213,24 @@ export type MaintenancePrediction = typeof maintenancePredictions.$inferSelect;
 export type InsertMaintenancePrediction = typeof maintenancePredictions.$inferInsert;
 export type AlertRecord = typeof alertRecords.$inferSelect;
 export type InsertAlertRecord = typeof alertRecords.$inferInsert;
+
+export const cellScreeningPredictions = mysqlTable("cell_screening_predictions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: varchar("userId", { length: 64 }),
+  modelVersionId: varchar("modelVersionId", { length: 64 }).default("solarvision_m2_elpv_binary_v1").notNull(),
+  sourceFilename: varchar("sourceFilename", { length: 255 }).notNull(),
+  imageUrl: text("imageUrl"),
+  predictedClass: varchar("predictedClass", { length: 32 }).notNull(),
+  defectiveProbability: float("defectiveProbability").notNull(),
+  threshold: float("threshold").notNull(),
+  decision: varchar("decision", { length: 64 }).default("screening_only").notNull(),
+  reviewStatus: varchar("reviewStatus", { length: 64 }).default("pending").notNull(),
+  requiresManualReview: boolean("requiresManualReview").default(true).notNull(),
+  dataProvenance: varchar("dataProvenance", { length: 64 }).default("ELPV").notNull(),
+  warning: text("warning"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CellScreeningPrediction = typeof cellScreeningPredictions.$inferSelect;
+export type InsertCellScreeningPrediction = typeof cellScreeningPredictions.$inferInsert;

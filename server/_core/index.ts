@@ -13,7 +13,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { sdk } from "./sdk";
 import { safeCanonicalKey } from "../storage";
-import { getInspectionById } from "../db";
+import { getInspectionById, getCellScreeningById } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -106,6 +106,28 @@ async function startServer() {
     }
 
     // Inspection ownership scoping for private inspection captures
+        // Cell screening ownership scoping for private cell screening captures
+    const cellMatch = rawRelPath.match(/^cell-screenings\/([a-zA-Z0-9_-]+)/);
+    if (cellMatch && cellMatch[1]) {
+      const screeningId = cellMatch[1];
+      const requester = {
+        userId: user.openId || String(user.id),
+        role: user.role,
+      };
+
+      const screening = await getCellScreeningById(screeningId, requester);
+      if (!screening) {
+        const existsGlobally = await getCellScreeningById(screeningId, { role: "admin" });
+        if (existsGlobally) {
+          return res.status(403).json({
+            error: "Forbidden",
+            message: "Access denied to private cell screening image.",
+          });
+        }
+        return res.status(404).send("Screening not found");
+      }
+    }
+
     const match = rawRelPath.match(/^(?:solarvision|inspections)\/([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
       const inspectionId = match[1];

@@ -160,12 +160,12 @@ describe("Model 2: Manufacturing Data Query APIs", () => {
     const existing = db.prepare("SELECT inspectionId FROM inspections LIMIT 1").get() as
       | { inspectionId: string }
       | undefined;
-    const testInspectionId = existing?.inspectionId || "00675a4b-2d6e-41f8-8756-3a02b1d61218";
+    const testInspectionId = "00675a4b-2d6e-41f8-8756-3a02b1d61218";
 
     // Ensure test inspection record exists in the database
     db.prepare(`
-      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, status, createdAt)
-      VALUES (?, 'fixture_test.jpg', 'completed', datetime('now'))
+      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, modelName, status, processingTimeMs, persistenceStatus, createdAt)
+      VALUES (?, 'fixture_test.jpg', 'YOLO26n', 'completed', 10.0, 'sqlite_local', datetime('now'))
     `).run(testInspectionId);
 
     const annotId = await saveConfirmedRootCauseAnnotation({
@@ -373,12 +373,12 @@ describe("Model 2: Inspection Linking & Dynamic Readiness", () => {
     const existing = db.prepare("SELECT inspectionId FROM inspections LIMIT 1").get() as
       | { inspectionId: string }
       | undefined;
-    const testInspectionId = existing?.inspectionId || "00675a4b-2d6e-41f8-8756-3a02b1d61218";
+    const testInspectionId = "00675a4b-2d6e-41f8-8756-3a02b1d61218";
 
     // Ensure test inspection record exists in the database
     db.prepare(`
-      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, status, createdAt)
-      VALUES (?, 'fixture_test.jpg', 'completed', datetime('now'))
+      INSERT OR IGNORE INTO inspections (inspectionId, sourceFilename, modelName, status, processingTimeMs, persistenceStatus, createdAt)
+      VALUES (?, 'fixture_test.jpg', 'YOLO26n', 'completed', 10.0, 'sqlite_local', datetime('now'))
     `).run(testInspectionId);
 
     const linkRes = await linkInspectionToBatch({

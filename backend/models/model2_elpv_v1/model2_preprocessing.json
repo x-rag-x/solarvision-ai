@@ -1,0 +1,39 @@
+{
+  "model_id": "solarvision_m2_elpv_binary_v1",
+  "architecture": "efficientnet_b0",
+  "input": "single cropped solar cell electroluminescence image; grayscale preferred",
+  "input_size": [
+    224,
+    224
+  ],
+  "color_transform": "PIL convert L -> resize 224x224 -> replicate grayscale to RGB",
+  "normalization": {
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "classes": {
+    "0": "expert-confident healthy",
+    "1": "expert-confident defective"
+  },
+  "threshold_defective": 0.5499999999999999,
+  "expert_uncertain_scores_not_training_labels": [
+    0.3333333333333333,
+    0.6666666666666666
+  ],
+  "training_data": "ELPV 1.0.0.post1, CC BY-NC-SA 4.0 images",
+  "evaluation_scope": "ELPV blocked proxy; physical module IDs unavailable",
+  "not_validated_for": [
+    "root cause",
+    "physical severity",
+    "accept/rework/reject",
+    "manufacturing deployment"
+  ]
+}

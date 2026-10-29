@@ -287,6 +287,29 @@ function initSqliteSchema(db: DatabaseSync) {
     CREATE INDEX IF NOT EXISTS idx_root_cause_inspection ON root_cause_predictions(inspectionId);
     CREATE INDEX IF NOT EXISTS idx_maintenance_machine ON maintenance_predictions(machineId, urgency);
     CREATE INDEX IF NOT EXISTS idx_alerts_unack ON alert_records(acknowledged, severity, createdAt DESC);
+
+    CREATE TABLE IF NOT EXISTS cell_screening_predictions (
+      id TEXT PRIMARY KEY,
+      userId TEXT,
+      modelVersionId TEXT NOT NULL DEFAULT 'solarvision_m2_elpv_binary_v1',
+      sourceFilename TEXT NOT NULL,
+      imageUrl TEXT,
+      predictedClass TEXT NOT NULL,
+      defectiveProbability REAL NOT NULL,
+      threshold REAL NOT NULL,
+      decision TEXT NOT NULL DEFAULT 'screening_only',
+      reviewStatus TEXT NOT NULL DEFAULT 'pending',
+      requiresManualReview INTEGER NOT NULL DEFAULT 1,
+      dataProvenance TEXT NOT NULL DEFAULT 'ELPV',
+      warning TEXT,
+      metadata TEXT,
+      createdAt TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_cell_screening_created_at ON cell_screening_predictions(createdAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_cell_screening_user_id ON cell_screening_predictions(userId);
+    CREATE INDEX IF NOT EXISTS idx_cell_screening_class ON cell_screening_predictions(predictedClass);
+
   `);
 
   // Ensure Model 3 Predictive Quality schema and migrations are active
@@ -856,5 +879,130 @@ export function getSqliteDefectAnalytics(requester?: RequesterContext) {
     configured: true,
     byType,
     recentTrend,
+  };
+}
+
+export type CellScreeningRecord = {
+  id: string;
+  userId?: string | null;
+  modelVersionId: string;
+  sourceFilename: string;
+  imageUrl?: string | null;
+  predictedClass: "healthy" | "defective";
+  defectiveProbability: number;
+  threshold: number;
+  decision: string;
+  reviewStatus: string;
+  requiresManualReview: boolean;
+  dataProvenance: string;
+  warning?: string | null;
+  metadata?: any;
+  createdAt: string;
+};
+
+export function saveSqliteCellScreening(record: {
+  id: string;
+  userId?: string | null;
+  modelVersionId?: string;
+  sourceFilename: string;
+  imageUrl?: string | null;
+  predictedClass: string;
+  defectiveProbability: number;
+  threshold: number;
+  decision?: string;
+  reviewStatus?: string;
+  requiresManualReview?: boolean;
+  dataProvenance?: string;
+  warning?: string | null;
+  metadata?: any;
+  createdAt?: string;
+}): void {
+  const db = getSqliteDb();
+  db.prepare(`
+    INSERT INTO cell_screening_predictions (
+      id, userId, modelVersionId, sourceFilename, imageUrl,
+      predictedClass, defectiveProbability, threshold, decision,
+      reviewStatus, requiresManualReview, dataProvenance, warning,
+      metadata, createdAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    record.id,
+    record.userId ?? null,
+    record.modelVersionId ?? 'solarvision_m2_elpv_binary_v1',
+    record.sourceFilename,
+    record.imageUrl ?? null,
+    record.predictedClass,
+    record.defectiveProbability,
+    record.threshold,
+    record.decision ?? 'screening_only',
+    record.reviewStatus ?? 'pending',
+    record.requiresManualReview !== false ? 1 : 0,
+    record.dataProvenance ?? 'ELPV',
+    record.warning ?? null,
+    record.metadata ? JSON.stringify(record.metadata) : null,
+    record.createdAt ?? new Date().toISOString()
+  );
+}
+
+export function getSqliteCellScreenings(limit = 50, requester?: RequesterContext): CellScreeningRecord[] {
+  const db = getSqliteDb();
+  let rows: any[];
+  if (requester?.userId && requester.role !== "admin") {
+    rows = db.prepare(`
+      SELECT * FROM cell_screening_predictions
+      WHERE userId = ?
+      ORDER BY createdAt DESC
+      LIMIT ?
+    `).all(requester.userId, limit);
+  } else {
+    rows = db.prepare(`
+      SELECT * FROM cell_screening_predictions
+      ORDER BY createdAt DESC
+      LIMIT ?
+    `).all(limit);
+  }
+
+  return rows.map(r => ({
+    id: String(r.id),
+    userId: r.userId ? String(r.userId) : null,
+    modelVersionId: String(r.modelVersionId),
+    sourceFilename: String(r.sourceFilename),
+    imageUrl: r.imageUrl ? String(r.imageUrl) : null,
+    predictedClass: r.predictedClass as "healthy" | "defective",
+    defectiveProbability: Number(r.defectiveProbability),
+    threshold: Number(r.threshold),
+    decision: String(r.decision),
+    reviewStatus: String(r.reviewStatus),
+    requiresManualReview: Boolean(r.requiresManualReview),
+    dataProvenance: String(r.dataProvenance),
+    warning: r.warning ? String(r.warning) : null,
+    metadata: r.metadata ? JSON.parse(r.metadata) : null,
+    createdAt: String(r.createdAt),
+  }));
+}
+
+export function getSqliteCellScreeningById(id: string, requester?: RequesterContext): CellScreeningRecord | null {
+  const db = getSqliteDb();
+  const row = db.prepare("SELECT * FROM cell_screening_predictions WHERE id = ?").get(id) as any;
+  if (!row) return null;
+  if (requester?.userId && requester.role !== "admin" && row.userId && row.userId !== requester.userId) {
+    return null;
+  }
+  return {
+    id: String(row.id),
+    userId: row.userId ? String(row.userId) : null,
+    modelVersionId: String(row.modelVersionId),
+    sourceFilename: String(row.sourceFilename),
+    imageUrl: row.imageUrl ? String(row.imageUrl) : null,
+    predictedClass: row.predictedClass as "healthy" | "defective",
+    defectiveProbability: Number(row.defectiveProbability),
+    threshold: Number(row.threshold),
+    decision: String(row.decision),
+    reviewStatus: String(row.reviewStatus),
+    requiresManualReview: Boolean(row.requiresManualReview),
+    dataProvenance: String(row.dataProvenance),
+    warning: row.warning ? String(row.warning) : null,
+    metadata: row.metadata ? JSON.parse(row.metadata) : null,
+    createdAt: String(row.createdAt),
   };
 }

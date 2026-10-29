@@ -14,6 +14,10 @@ import {
   getSqliteInspectionById,
   getSqliteRecentInspections,
   saveSqliteInspection,
+  saveSqliteCellScreening,
+  getSqliteCellScreenings,
+  getSqliteCellScreeningById,
+  type CellScreeningRecord,
   setSqliteDbPath,
   resetSqliteDb,
   getSqliteDbPath,
@@ -21,7 +25,7 @@ import {
 } from "./sqlite";
 
 export { setSqliteDbPath, resetSqliteDb, getSqliteDbPath };
-export type { RequesterContext };
+export type { RequesterContext, CellScreeningRecord };
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -384,4 +388,17 @@ export async function getDefectAnalytics(requester?: RequesterContext) {
     console.warn("[MySQL] getDefectAnalytics fallback to SQLite:", error);
     return getSqliteDefectAnalytics(requester);
   }
+}
+
+
+export async function saveCellScreening(record: Parameters<typeof saveSqliteCellScreening>[0]): Promise<void> {
+  saveSqliteCellScreening(record);
+}
+
+export async function getCellScreenings(limit = 50, requester?: RequesterContext): Promise<CellScreeningRecord[]> {
+  return getSqliteCellScreenings(limit, requester);
+}
+
+export async function getCellScreeningById(id: string, requester?: RequesterContext): Promise<CellScreeningRecord | null> {
+  return getSqliteCellScreeningById(id, requester);
 }

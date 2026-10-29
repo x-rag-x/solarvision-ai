@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { openOperatorLoginModal, startLogin } from "@/const";
 import { cn } from "@/lib/utils";
 import NotificationCenter from "@/components/solarvision/NotificationCenter";
-import { Activity, BarChart3, BrainCircuit, Compass, Factory, FileClock, LayoutDashboard, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Route, ScanLine, Settings2, ShieldCheck, Wrench } from "lucide-react";
+import { Activity, BarChart3, BrainCircuit, Compass, Factory, FileClock, LayoutDashboard, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Route, Scan, ScanLine, Settings2, ShieldCheck, Wrench } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/" },
   { icon: ScanLine, label: "New inspection", path: "/inspection" },
+  { icon: Scan, label: "Cell screening (Model 2)", path: "/cell-screening" },
   { icon: FileClock, label: "Inspection history", path: "/history" },
   { icon: Compass, label: "Root cause analysis", path: "/root-cause" },
   { icon: Activity, label: "Predictive quality", path: "/predictive-quality" },
