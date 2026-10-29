@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 from fastapi import APIRouter, HTTPException, status
+from starlette.concurrency import run_in_threadpool
 
 from .schemas import (
     MAX_BATCH_SIZE,
@@ -45,7 +46,7 @@ async def predict_sandia_performance(payload: SandiaPredictionInput) -> Dict[str
             detail=loader.unavailability_reason,
         )
 
-    response: SandiaPredictionResponse = sandia_performance_service.predict(payload)
+    response: SandiaPredictionResponse = await run_in_threadpool(sandia_performance_service.predict, payload)
     if response.status == SandiaModelStatus.VALIDATION_ERROR:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -79,7 +80,7 @@ async def predict_batch_sandia_performance(payload: SandiaBatchPredictionInput) 
             detail=loader.unavailability_reason,
         )
 
-    response = sandia_performance_service.predict_batch(payload)
+    response = await run_in_threadpool(sandia_performance_service.predict_batch, payload)
     if response.status == SandiaModelStatus.VALIDATION_ERROR:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

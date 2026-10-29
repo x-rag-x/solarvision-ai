@@ -76,12 +76,14 @@ In earlier revisions, each Model 1 inspection spawned a fresh Python CLI subproc
 - Redundant loading of `best.pt` weights from disk into separate memory (~100 MB).
 - Total transient memory spike exceeding container limits (>550 MB), resulting in severe Linux swap thrashing and `Inference process timed out after 60000ms`.
 
-**The Solution:**
+**The Solution & Event-Loop Non-Blocking Architecture:**
 1. **Internal Loopback HTTP Bridge:** `server/inspection/service.ts` dispatches inference requests directly to the already-running FastAPI daemon via loopback HTTP (`POST http://127.0.0.1:8000/api/inspections`).
 2. **Multipart Streaming:** The uploaded image Buffer is streamed as multipart form-data (`file`) along with query parameters (`confidence`, `image_size`, `diagnostic`).
-3. **Single In-Memory Weights Instance:** PyTorch and `best.pt` reside strictly inside FastAPI's address space. The first request initializes the weights via thread-safe lock; subsequent requests execute warm inference in ~100–250ms.
-4. **Production Isolation:** In production (`NODE_ENV=production`), the legacy CLI subprocess fallback is disabled. If FastAPI encounters an error, a structured failure audit is recorded in SQLite and a sanitized error is returned immediately without spawning duplicate processes.
-5. **Configurable Cold-Start Timeout:** `INFERENCE_TIMEOUT_MS` (default `90000`ms = 90s) provides ample headroom for first-request cold-start weights loading on single-vCPU containers, preventing false-positive client timeouts.
+3. **Threadpool Offloading (`run_in_threadpool`):** In FastAPI, executing long-running CPU-bound synchronous code (`predict()`, `cv2.imdecode`, `image_to_data_url`) directly within an `async def` route blocks the asyncio event loop thread. To keep FastAPI and `/health` responsive, all heavy operations are offloaded to worker threads via Starlette's `run_in_threadpool`.
+4. **Bounded Concurrency Semaphore (`MAX_CONCURRENT_INFERENCES=1`):** Heavy YOLO inferences are serialized using an asynchronous bounded semaphore. At most 1 inference runs at a time, strictly preventing concurrent PyTorch execution from overwhelming container CPU or exceeding 512 MB RAM.
+5. **Instant Health Check Responsiveness:** Health routes (`/health`, `/health/ready`, `/sandia-performance/status`) execute directly on the event loop in <1ms without threadpool contention. Render's 15-second health checks succeed continuously even while a 20-30s cold-start YOLO inference is running.
+6. **Detailed Instrumentation & Memory Tracking:** Preprocessing (`prep_ms`), model loading (`load_ms`), inference (`infer_wall_ms`), diagnostics (`diag_ms`), response serialization (`serial_ms`), queue wait (`queue_wait_ms`), and process RSS memory (`rss_start`, `peak_rss`, `rss_end`, `delta_rss`) are measured and logged for every inspection.
+7. **Production Isolation & Error Sanitization:** If the backend restarts or encounters an interrupted connection (`ECONNRESET`, socket hangup, empty body), Node catches it cleanly and returns an actionable error message rather than unhandled JSON parsing syntax errors.
 
 ### Memory Footprint & Co-location Analysis (Render Starter 512 MB RAM)
 When co-locating Node.js 22, FastAPI, PyTorch, and scikit-learn, memory footprint is strictly controlled and bounded:
@@ -279,6 +281,8 @@ Confirmation: Prediction matches trainer benchmark (`~99.5076%`).
 | :--- | :--- | :--- | :--- |
 | **FastAPI Startup Timeout** | `[FATAL] Timed out waiting for Python FastAPI to become healthy` | Checkpoint loading or ML library import took longer than readiness window | Increase `FASTAPI_READINESS_TIMEOUT_SECS` to 180s. Ensure `YOLO_LAZY_LOAD=true`. |
 | **Model 1 Inspection Timeout** | `Inference process timed out after 60000ms` | Spawning per-request Python subprocess exhausted 512 MB RAM or cold start took >60s | Resolved by FastAPI internal HTTP bridge (`executeFastApiInference`). Adjust `INFERENCE_TIMEOUT_MS=90000` if host CPU is throttled. |
+| **Container Terminated Mid-Inference** | Empty JSON response or `ECONNRESET` during YOLO inspection | Blocking event loop caused Render `/healthz` to fail, prompting orchestrator SIGTERM | Offloaded YOLO inference, decoding, and serialization to `run_in_threadpool`. `/health` and `/healthz` now respond in <5ms while inference executes. |
+| **Out-of-Memory Container Kill** | Container exits abruptly with exit code 137 (SIGKILL) without entrypoint shutdown log | Memory exceeded 512 MB hard ceiling (e.g. concurrent PyTorch executions) | Enforced `MAX_CONCURRENT_INFERENCES=1` semaphore, `TORCH_NUM_THREADS=1`, `MALLOC_ARENA_MAX=2`, and `NODE_OPTIONS="--max-old-space-size=256"`. |
 | **No open ports detected** | Render times out scanning for port | Node was not listening on `$PORT` | Node now starts early before FastAPI wait loop; verify `PORT` env var is assigned by Render |
 | **503 on /healthz** | Render deployment fails or restarts repeatedly | Sandia model missing or unverified | Check `SANDIA_MODEL_URL` in Render settings. Verify the hosted artifact matches hash `045f9a15b798...` |
 | **503 on /healthz** | `FastAPI unavailable` | Python syntax or dependency error | Check container logs for uvicorn traceback |

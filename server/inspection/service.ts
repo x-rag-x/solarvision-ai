@@ -216,8 +216,16 @@ async function executeFastApiInference(
     }
   );
 
-  if (response.status !== 200 || !response.data) {
-    throw new Error(`FastAPI inference endpoint returned status ${response.status}`);
+  if (
+    response.status !== 200 ||
+    !response.data ||
+    typeof response.data !== "object" ||
+    !("status" in response.data) ||
+    !("detections" in response.data)
+  ) {
+    throw new Error(
+      `FastAPI inference returned an empty or incomplete response (status ${response.status}). The inference service may have been interrupted or terminated by resource limits.`
+    );
   }
 
   return response.data;
@@ -344,6 +352,20 @@ export async function runInspection(input: RunInspectionInput): Promise<Inspecti
       httpErr?.code === "ECONNABORTED" ||
       httpErr?.code === "ETIMEDOUT" ||
       (typeof httpErr?.message === "string" && httpErr.message.toLowerCase().includes("timeout"));
+
+    const isInterrupted =
+      httpErr?.code === "ECONNRESET" ||
+      httpErr?.code === "EPIPE" ||
+      httpErr?.code === "ERR_BAD_RESPONSE" ||
+      httpErr?.code === "ECONNABORTED_RESET" ||
+      (typeof httpErr?.message === "string" &&
+        (httpErr.message.toLowerCase().includes("unexpected end of json") ||
+         httpErr.message.toLowerCase().includes("socket hang up") ||
+         httpErr.message.toLowerCase().includes("premature close") ||
+         httpErr.message.toLowerCase().includes("empty or incomplete response") ||
+         httpErr.message.toLowerCase().includes("connection reset") ||
+         httpErr.message.toLowerCase().includes("interrupted")));
+
     const isConnRefused = httpErr?.code === "ECONNREFUSED" || httpErr?.code === "ENOTFOUND";
 
     // Only allow CLI fallback in non-production local/test environments if FastAPI is entirely offline
@@ -357,6 +379,16 @@ export async function runInspection(input: RunInspectionInput): Promise<Inspecti
       );
       await recordFailedAudit("timeout");
       throw new Error(timeoutMsg);
+    }
+
+    if (isInterrupted) {
+      const interruptedMsg =
+        "Inference connection was interrupted or closed unexpectedly before completing. This usually occurs when the backend container restarts or experiences resource limits. Please retry the inspection.";
+      console.error(
+        `[Inspection] Model 1 inference interrupted for file="${safeName}": ${httpErr?.message || httpErr?.code}`
+      );
+      await recordFailedAudit("connection_interrupted");
+      throw new Error(interruptedMsg);
     }
 
     if (!allowCliFallback) {

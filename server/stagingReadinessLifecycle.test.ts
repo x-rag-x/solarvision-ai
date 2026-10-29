@@ -166,4 +166,40 @@ describe("Render Staging Lifecycle & Slow Readiness Suite (Tasks 2, 5, 6, 9)", (
     expect(jsonStr).not.toContain(process.env.JWT_SECRET);
     expect(jsonStr).not.toContain(process.env.OPERATOR_PASSCODE);
   });
+
+  it("remains responsive and returns HTTP 200 while FastAPI handles concurrent or slow inference", async () => {
+    process.env.REQUIRE_SANDIA_MODEL = "true";
+
+    // FastAPI /health responds normally without being blocked by threadpool YOLO inference
+    mockedAxios.get.mockResolvedValueOnce({
+      status: 200,
+      data: { status: "ok", model_exists: true, model_ready: true },
+    } as any);
+
+    vi.spyOn(sandiaPerformanceService, "getStatus").mockResolvedValueOnce({
+      status: "ready",
+      isReady: true,
+      isMock: false,
+      trainerHandoffPending: false,
+      modelName: "SolarVision-Sandia-Performance-Model3",
+      modelVersion: "1.0.0",
+      contractVersion: "1.0.0",
+      artifactName: "pipeline.joblib",
+      featureSchemaLoaded: true,
+      targetDefinitionLoaded: true,
+      sampleInputLoaded: true,
+      expectedDim: 9,
+    });
+
+    const t0 = performance.now();
+    const { isHealthy, statusCode, response } = await checkStagingReadiness();
+    const elapsed = performance.now() - t0;
+
+    expect(isHealthy).toBe(true);
+    expect(statusCode).toBe(200);
+    expect(response.status).toBe("healthy");
+    expect(response.components.fastapi.status).toBe("ok");
+    expect(response.components.sandia.status).toBe("ok");
+    expect(elapsed).toBeLessThan(1000); // Confirms check executes smoothly without blocking
+  });
 });

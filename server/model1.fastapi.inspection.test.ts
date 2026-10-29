@@ -399,4 +399,66 @@ describe("Model 1 YOLO Defect Detection — FastAPI HTTP Bridge & Regression Sui
     const found = recentInspections.some(r => r.inspectionId === res.inspectionId);
     expect(found).toBe(true);
   });
+
+  it("8. Interrupted Connection: gracefully handles connection reset / container termination with actionable error", async () => {
+    const resetErr = new Error("read ECONNRESET");
+    (resetErr as any).code = "ECONNRESET";
+    vi.spyOn(axios, "post").mockRejectedValueOnce(resetErr);
+
+    await expect(
+      runInspection({
+        filename: "terminated_mid_inference.jpg",
+        mimeType: "image/jpeg",
+        base64Data: dummyBase64,
+        userId: "user-interrupted",
+      })
+    ).rejects.toThrow(
+      "Inference connection was interrupted or closed unexpectedly before completing. This usually occurs when the backend container restarts or experiences resource limits. Please retry the inspection."
+    );
+
+    // Verify failed audit record in database
+    const db = getSqliteDb();
+    const rows = db
+      .prepare(
+        "SELECT * FROM inspections WHERE userId = ? AND status = 'failed' ORDER BY createdAt DESC LIMIT 1"
+      )
+      .all("user-interrupted") as any[];
+
+    expect(rows.length).toBe(1);
+    expect(rows[0].status).toBe("failed");
+    expect(rows[0].persistenceStatus).toBe("failed_inference:connection_interrupted");
+    trackedInspectionIds.push(rows[0].inspectionId);
+  });
+
+  it("9. Empty or Incomplete Response: gracefully handles truncated/empty JSON without unhandled parsing crashes", async () => {
+    // Simulate HTTP 200 with empty body/object (e.g. truncated connection or killed worker)
+    vi.spyOn(axios, "post").mockResolvedValueOnce({
+      status: 200,
+      data: {} as any,
+    });
+
+    await expect(
+      runInspection({
+        filename: "empty_response.jpg",
+        mimeType: "image/jpeg",
+        base64Data: dummyBase64,
+        userId: "user-empty-resp",
+      })
+    ).rejects.toThrow(
+      "Inference connection was interrupted or closed unexpectedly before completing."
+    );
+
+    // Verify failed audit record
+    const db = getSqliteDb();
+    const rows = db
+      .prepare(
+        "SELECT * FROM inspections WHERE userId = ? AND status = 'failed' ORDER BY createdAt DESC LIMIT 1"
+      )
+      .all("user-empty-resp") as any[];
+
+    expect(rows.length).toBe(1);
+    expect(rows[0].status).toBe("failed");
+    expect(rows[0].persistenceStatus).toBe("failed_inference:connection_interrupted");
+    trackedInspectionIds.push(rows[0].inspectionId);
+  });
 });
