@@ -43,6 +43,10 @@ services:
       - key: FASTAPI_READINESS_TIMEOUT_SECS
         value: "120"
 
+      # Configurable Model 1 inference timeout for cold-starts
+      - key: INFERENCE_TIMEOUT_MS
+        value: "90000"
+
       # Lazy-load Model 1 YOLO checkpoint to avoid blocking container boot
       - key: YOLO_LAZY_LOAD
         value: "true"

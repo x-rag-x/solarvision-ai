@@ -69,12 +69,31 @@ The container startup lifecycle outputs structured log markers distinguishing ea
 - **Default (Lazy):** `YOLO_LAZY_LOAD=true`. The heavy PyTorch runtime and YOLO weights are not loaded into memory until an actual image inspection request (`POST /inspect` or `/api/inspections`) is received. A mutex (`threading.Lock`) guarantees thread-safe, single-execution loading on the first request.
 - **Eager (Optional):** Setting `YOLO_LAZY_LOAD=false` forces checkpoint loading synchronously inside the FastAPI lifespan before HTTP serving begins. The 120–180s supervisor readiness timeout accommodates eager loading even on limited CPU tiers.
 
-### Memory & Thread Safeguards for Render Starter (512 MB RAM)
-When co-locating Node.js 22, FastAPI, PyTorch, and scikit-learn, memory footprint is strictly controlled:
-1. **PyTorch & OpenBLAS CPU Thread Limit:** `TORCH_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`. Prevents worker thread explosions that multiply memory allocations.
-2. **Node Old-Space Ceiling:** `NODE_OPTIONS="--max-old-space-size=256"`. Enforces early garbage collection in Node.js before memory limits are reached.
-3. **Memory Allocator Fragmentation Guard:** `MALLOC_ARENA_MAX=2`. Restricts glibc allocation arenas to mitigate memory fragmentation in Linux containers.
-4. **Compact CPU PyTorch Wheels:** Installed via `--index-url https://download.pytorch.org/whl/cpu --no-deps` to eliminate CUDA overhead.
+### Model 1 YOLO Internal HTTP Bridge Architecture
+In earlier revisions, each Model 1 inspection spawned a fresh Python CLI subprocess (`infer_cli.py`). On Render Starter (512 MB RAM), spawning a concurrent Python process triggered:
+- Simultaneous duplicate Python VM runtime (~40 MB).
+- Cold-import of heavy machine learning libraries (PyTorch, torchvision, Ultralytics: ~180 MB).
+- Redundant loading of `best.pt` weights from disk into separate memory (~100 MB).
+- Total transient memory spike exceeding container limits (>550 MB), resulting in severe Linux swap thrashing and `Inference process timed out after 60000ms`.
+
+**The Solution:**
+1. **Internal Loopback HTTP Bridge:** `server/inspection/service.ts` dispatches inference requests directly to the already-running FastAPI daemon via loopback HTTP (`POST http://127.0.0.1:8000/api/inspections`).
+2. **Multipart Streaming:** The uploaded image Buffer is streamed as multipart form-data (`file`) along with query parameters (`confidence`, `image_size`, `diagnostic`).
+3. **Single In-Memory Weights Instance:** PyTorch and `best.pt` reside strictly inside FastAPI's address space. The first request initializes the weights via thread-safe lock; subsequent requests execute warm inference in ~100–250ms.
+4. **Production Isolation:** In production (`NODE_ENV=production`), the legacy CLI subprocess fallback is disabled. If FastAPI encounters an error, a structured failure audit is recorded in SQLite and a sanitized error is returned immediately without spawning duplicate processes.
+5. **Configurable Cold-Start Timeout:** `INFERENCE_TIMEOUT_MS` (default `90000`ms = 90s) provides ample headroom for first-request cold-start weights loading on single-vCPU containers, preventing false-positive client timeouts.
+
+### Memory Footprint & Co-location Analysis (Render Starter 512 MB RAM)
+When co-locating Node.js 22, FastAPI, PyTorch, and scikit-learn, memory footprint is strictly controlled and bounded:
+1. **Node.js 22 Runtime + Express + tRPC:** ~90–120 MB RSS (bounded by `NODE_OPTIONS="--max-old-space-size=256"`).
+2. **FastAPI Engine + Model 3 Sandia Pipeline:** ~120–150 MB RSS (scikit-learn 1.6.1 + pandas + numpy).
+3. **PyTorch YOLO Runtime (when loaded warm):** ~160–200 MB RSS (CPU PyTorch + `best.pt` tensors).
+4. **Total Combined Steady-State Container RSS:** ~370–470 MB RSS.
+5. **Available Margin on 512 MB Plan:** ~42–142 MB safety buffer.
+6. **Thread and Allocator Safeguards:**
+   - `TORCH_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`: Eliminates multi-thread memory multiplication.
+   - `MALLOC_ARENA_MAX=2`: Restricts glibc virtual memory arena proliferation.
+   - Compact CPU PyTorch wheels without CUDA bloat.
 
 ---
 
@@ -140,6 +159,7 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
 | `JWT_SECRET` | Secret | **Yes** | *(≥32 random characters)* | Cryptographic key for operator session JWT signing |
 | `OPERATOR_PASSCODE` | Secret | **Yes** | *(≥16 random characters)* | Staging access passcode to prevent public visitor login |
 | `FASTAPI_READINESS_TIMEOUT_SECS` | Integer | Optional | `120` | Timeout in seconds waiting for FastAPI readiness (120–180s) |
+| `INFERENCE_TIMEOUT_MS` | Integer | Optional | `90000` | Timeout in milliseconds for Model 1 YOLO defect detection (default 90s) |
 | `YOLO_LAZY_LOAD` | Boolean | Optional | `true` | Defers YOLO model loading to first inference request |
 | `TORCH_NUM_THREADS` | Integer | Optional | `1` | CPU threads allocated to PyTorch tensor operations |
 | `NODE_OPTIONS` | String | Optional | `--max-old-space-size=256` | Caps Node heap to prevent container OOM killer |
@@ -207,7 +227,19 @@ curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/auth.login \
   -d '{"passcode": "<YOUR_OPERATOR_PASSCODE>"}'
 ```
 
-### Step 3: Verify Sandia Model 3 Live Inference
+### Step 3: Verify Model 1 YOLO Defect Detection Live Inference
+```bash
+# Upload a test image or sample base64 payload via authenticated tRPC
+curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/inspection.run   -b cookies.txt   -H "Content-Type: application/json"   -d '{
+    "filename": "sample-el-cell-3.jpg",
+    "mimeType": "image/jpeg",
+    "base64Data": "<BASE64_IMAGE_DATA>",
+    "confidence": 0.25
+  }'
+```
+Expected Output: HTTP 200 with `status: "completed"`, bounding box detections (`x1`, `y1`, `x2`, `y2`, `defect_type: "crack"`), and `bridge: "fastapi_http"`.
+
+### Step 4: Verify Sandia Model 3 Live Inference
 ```bash
 curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/sandiaPerformance.predict \
   -b cookies.txt \
@@ -246,6 +278,7 @@ Confirmation: Prediction matches trainer benchmark (`~99.5076%`).
 | Issue | Symptom | Root Cause | Solution |
 | :--- | :--- | :--- | :--- |
 | **FastAPI Startup Timeout** | `[FATAL] Timed out waiting for Python FastAPI to become healthy` | Checkpoint loading or ML library import took longer than readiness window | Increase `FASTAPI_READINESS_TIMEOUT_SECS` to 180s. Ensure `YOLO_LAZY_LOAD=true`. |
+| **Model 1 Inspection Timeout** | `Inference process timed out after 60000ms` | Spawning per-request Python subprocess exhausted 512 MB RAM or cold start took >60s | Resolved by FastAPI internal HTTP bridge (`executeFastApiInference`). Adjust `INFERENCE_TIMEOUT_MS=90000` if host CPU is throttled. |
 | **No open ports detected** | Render times out scanning for port | Node was not listening on `$PORT` | Node now starts early before FastAPI wait loop; verify `PORT` env var is assigned by Render |
 | **503 on /healthz** | Render deployment fails or restarts repeatedly | Sandia model missing or unverified | Check `SANDIA_MODEL_URL` in Render settings. Verify the hosted artifact matches hash `045f9a15b798...` |
 | **503 on /healthz** | `FastAPI unavailable` | Python syntax or dependency error | Check container logs for uvicorn traceback |
