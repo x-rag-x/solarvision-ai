@@ -13,6 +13,7 @@ import hashlib
 import logging
 import os
 from pathlib import Path
+import re
 import shutil
 import sys
 from typing import Optional
@@ -46,6 +47,27 @@ def sanitize_url_for_logging(raw_url: str) -> str:
         return f"{parsed.scheme}://{host}{port}{clean_path}"
     except Exception:
         return "[sanitized_url]"
+
+
+def sanitize_log_message(msg: str, raw_url: Optional[str] = None, token: Optional[str] = None) -> str:
+    """
+    Sanitizes exception or log messages to prevent credentials, tokens, or
+    presigned signature query strings from leaking into container logs.
+    """
+    clean = str(msg)
+    if token and len(token) > 0:
+        clean = clean.replace(token, "[REDACTED_AUTH_TOKEN]")
+    if raw_url:
+        clean_url = sanitize_url_for_logging(raw_url)
+        clean = clean.replace(raw_url, clean_url)
+    # Strip any query parameters or auth parameters if present
+    clean = re.sub(
+        r"([?&](?:sig|signature|token|access_token|key|api_key|auth|credential|secret|X-Amz-[^=]+)=)[^&\s'\"]+",
+        r"\1[REDACTED]",
+        clean,
+        flags=re.IGNORECASE,
+    )
+    return clean
 
 
 def calculate_file_sha256(file_path: Path, chunk_size: int = 65536) -> str:
@@ -157,7 +179,7 @@ def download_and_verify_artifact(
         if url.startswith("file://") or Path(url).exists():
             local_src = Path(url[7:] if url.startswith("file://") else url)
             if not local_src.exists():
-                logger.error("Local artifact source does not exist: %s", local_src)
+                logger.error("Local artifact source does not exist: %s", local_src.name)
                 return False
             with open(local_src, "rb") as f_in, open(temp_path, "wb") as f_out:
                 while True:
@@ -227,7 +249,8 @@ def download_and_verify_artifact(
         return True
 
     except Exception as exc:
-        logger.error("Artifact download encountered exception: %s", exc)
+        sanitized_exc = sanitize_log_message(str(exc), raw_url=url, token=token)
+        logger.error("Artifact download encountered exception: %s", sanitized_exc)
         if temp_path.exists():
             try:
                 temp_path.unlink()
@@ -248,30 +271,28 @@ def main() -> int:
     parser.add_argument("--url", type=str, default="", help="Download URL")
     parser.add_argument("--token", type=str, default="", help="Bearer token for download authentication")
     parser.add_argument("--require", action="store_true", help="Fail with exit code 1 if artifact is unavailable")
+
     args = parser.parse_args()
 
-    target_path = Path(args.target) if args.target else settings.sandia_model_path
-    require_artifact = args.require or os.getenv("REQUIRE_SANDIA_MODEL", "false").lower() in ("true", "1", "yes")
+    target = Path(args.target) if args.target else settings.sandia_model_path
+    url = args.url or None
+    token = args.token or None
 
+    logger.info("Verifying Sandia model artifact at target: %s", target.name)
     success = download_and_verify_artifact(
-        target_path=target_path,
-        source_url=args.url or None,
-        auth_token=args.token or None,
+        target_path=target,
+        source_url=url,
+        auth_token=token,
     )
 
     if success:
-        logger.info("[SUCCESS] Sandia model pipeline verified ready.")
+        logger.info("Sandia model artifact ready.")
         return 0
 
-    if require_artifact:
-        logger.error(
-            "[FATAL] Required Sandia model artifact (%s) is unavailable or failed integrity check. "
-            "Staging deployment cannot proceed without genuine verified checkpoint.",
-            target_path.name,
-        )
+    if args.require:
+        logger.error("Sandia model artifact is missing or corrupt and --require was specified.")
         return 1
 
-    logger.warning("[WARNING] Sandia model artifact is unavailable, but --require was not specified.")
     return 0
 
 

@@ -30,6 +30,11 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
+      # Operator access passcode for Standalone Operator Mode in staging
+      # Protects all tRPC procedures against unauthorized public access
+      - key: OPERATOR_PASSCODE
+        generateValue: true
+
       # Exposed port assigned dynamically by Render; Node web app binds here
       - key: PORT
         value: 10000

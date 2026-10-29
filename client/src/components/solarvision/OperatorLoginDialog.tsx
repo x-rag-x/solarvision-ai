@@ -82,6 +82,11 @@ export function OperatorLoginDialog() {
 
   const utils = trpc.useUtils();
   const loginMutation = trpc.auth.login.useMutation();
+  const authConfigQuery = trpc.auth.config.useQuery();
+  const passcodeRequired = Boolean(authConfigQuery.data?.passcodeRequired);
+  const [passcode, setPasscode] = useState(
+    () => sessionStorage.getItem("solarvision:operator-passcode") || ""
+  );
 
   useEffect(() => {
     const handleOpen = () => setOpen(true);
@@ -95,9 +100,14 @@ export function OperatorLoginDialog() {
         operatorId,
         name,
         role,
+        passcode: passcode.trim() || undefined,
       });
 
       if (response.success && response.token) {
+        if (passcode.trim()) {
+          sessionStorage.setItem("solarvision:operator-passcode", passcode.trim());
+        }
+
         // 1. Mirror token into storage for persistent and cross-tab session support
         try {
           sessionStorage.removeItem("solarvision:explicit-logout");
@@ -153,8 +163,33 @@ export function OperatorLoginDialog() {
           </DialogDescription>
         </DialogHeader>
 
+        {/* Staging Access Control: Operator Passcode */}
+        <div className="mt-3 rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <Label htmlFor="operator-passcode" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <KeyRound className="h-3.5 w-3.5 text-[#F2B941]" />
+              Operator Access Passcode
+            </Label>
+            {passcodeRequired ? (
+              <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 border border-amber-300">
+                Required in Staging
+              </span>
+            ) : (
+              <span className="text-[10px] text-slate-400 font-mono">Optional</span>
+            )}
+          </div>
+          <Input
+            id="operator-passcode"
+            type="password"
+            value={passcode}
+            onChange={e => setPasscode(e.target.value)}
+            placeholder={passcodeRequired ? "Enter operator passcode configured in Render" : "Enter passcode if configured"}
+            className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs"
+          />
+        </div>
+
         {/* Tab Selection */}
-        <div className="mt-4 flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+        <div className="mt-3 flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveTab("presets")}

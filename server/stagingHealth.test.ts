@@ -6,7 +6,7 @@ import { sandiaPerformanceService } from "./sandiaPerformance/service";
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios, true);
 
-describe("Staging Health & Readiness Verification (Requirement 12)", () => {
+describe("Staging Health & Readiness Verification (Requirement 1 & 3)", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe("Staging Health & Readiness Verification (Requirement 12)", () => {
     process.env = originalEnv;
   });
 
-  it("returns 200 Healthy when SQLite, storage, FastAPI, and genuine Sandia model are ready", async () => {
+  it("returns minimal 200 Healthy when SQLite, storage, FastAPI, and genuine Sandia model are ready", async () => {
     process.env.REQUIRE_SANDIA_MODEL = "true";
 
     // Mock FastAPI /health 200 response
@@ -54,14 +54,21 @@ describe("Staging Health & Readiness Verification (Requirement 12)", () => {
     expect(response.components.storage.status).toBe("ok");
     expect(response.components.fastapi.status).toBe("ok");
     expect(response.components.sandia.status).toBe("ok");
-    expect(response.components.sandia.isReady).toBe(true);
-    expect(response.components.sandia.isMock).toBe(false);
+
+    // Security check: strictly minimal, NO internal info leakage
+    const responseJson = JSON.stringify(response);
+    expect(responseJson).not.toMatch(/[a-zA-Z]:\\|\/app\/|\/data|solarvision\.db/);
+    expect(responseJson).not.toContain("127.0.0.1");
+    expect(responseJson).not.toContain("8000");
+    expect(responseJson).not.toContain("http://");
+    expect((response as any).uptimeSeconds).toBeUndefined();
+    expect((response as any).environment).toBeUndefined();
+    expect((response as any).timestamp).toBeUndefined();
   });
 
-  it("fails staging deployment with HTTP 503 when internal FastAPI is unreachable", async () => {
+  it("fails staging deployment with HTTP 503 and generic error when FastAPI is unreachable", async () => {
     process.env.REQUIRE_SANDIA_MODEL = "true";
 
-    // Mock FastAPI network failure (ECONNREFUSED)
     mockedAxios.get.mockRejectedValueOnce(
       new Error("connect ECONNREFUSED 127.0.0.1:8000")
     );
@@ -70,13 +77,22 @@ describe("Staging Health & Readiness Verification (Requirement 12)", () => {
       new Error("Internal service unreachable")
     );
 
-    const { isHealthy, statusCode, response } = await checkStagingReadiness();
+    const { isHealthy, statusCode, response, internalDiagnostics } = await checkStagingReadiness();
 
     expect(isHealthy).toBe(false);
     expect(statusCode).toBe(503);
     expect(response.status).toBe("unhealthy");
     expect(response.components.fastapi.status).toBe("error");
-    expect(response.error).toContain("Python FastAPI service unavailable");
+
+    // Public error message must be generic, NO URL leakage
+    expect(response.error).toBe("One or more required runtime services are unavailable.");
+    const responseJson = JSON.stringify(response);
+    expect(responseJson).not.toContain("127.0.0.1");
+    expect(responseJson).not.toContain("8000");
+    expect(responseJson).not.toContain("ECONNREFUSED");
+
+    // Internal diagnostics preserves server-side debugging details
+    expect(internalDiagnostics.failures.some(f => f.includes("FastAPI"))).toBe(true);
   });
 
   it("fails staging deployment with HTTP 503 when Sandia model is unready / not loaded", async () => {
@@ -96,20 +112,27 @@ describe("Staging Health & Readiness Verification (Requirement 12)", () => {
       modelVersion: "none",
       contractVersion: "1.0.0",
       artifactName: "pipeline.joblib",
-      unavailabilityReason: "pipeline.joblib not found on disk",
+      unavailabilityReason: "pipeline.joblib not found at /app/backend/models/sandia/pipeline.joblib",
       featureSchemaLoaded: true,
       targetDefinitionLoaded: true,
       sampleInputLoaded: true,
       expectedDim: 9,
     });
 
-    const { isHealthy, statusCode, response } = await checkStagingReadiness();
+    const { isHealthy, statusCode, response, internalDiagnostics } = await checkStagingReadiness();
 
     expect(isHealthy).toBe(false);
     expect(statusCode).toBe(503);
     expect(response.status).toBe("unhealthy");
     expect(response.components.sandia.status).toBe("unready");
-    expect(response.error).toContain("Sandia Model 3 is not ready");
+    expect(response.error).toBe("One or more required runtime services are unavailable.");
+
+    // Verify no filesystem paths are leaked in the public response
+    const responseJson = JSON.stringify(response);
+    expect(responseJson).not.toContain("/app/backend/models/sandia");
+
+    // Internal diagnostic retains detailed reason for server-side logs
+    expect(internalDiagnostics.failures.some(f => f.includes("Sandia Model 3 is not ready"))).toBe(true);
   });
 
   it("fails staging deployment with HTTP 503 when Sandia model is mock in staging", async () => {
@@ -141,5 +164,6 @@ describe("Staging Health & Readiness Verification (Requirement 12)", () => {
     expect(statusCode).toBe(503);
     expect(response.status).toBe("unhealthy");
     expect(response.components.sandia.status).toBe("unready");
+    expect(response.error).toBe("One or more required runtime services are unavailable.");
   });
 });

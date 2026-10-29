@@ -20,7 +20,7 @@ import { sandiaPerformanceRouter } from "./sandiaPerformance";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 
 const inspectionInput = z.object({
   filename: z.string().min(1).max(255),
@@ -55,15 +55,41 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    config: publicProcedure.query(() => {
+      const configuredPasscode =
+        process.env.OPERATOR_PASSCODE ||
+        process.env.STAGING_OPERATOR_ACCESS_CODE ||
+        process.env.OPERATOR_ACCESS_CODE;
+      return {
+        passcodeRequired: Boolean(configuredPasscode),
+        oauthEnabled: Boolean(process.env.OAUTH_SERVER_URL),
+      };
+    }),
     login: publicProcedure
       .input(
         z.object({
           operatorId: z.string().min(1).max(64),
           name: z.string().min(1).max(128).optional(),
           role: z.enum(["user", "admin"]).optional(),
+          passcode: z.string().optional(),
         })
       )
       .mutation(async ({ input, ctx }) => {
+        // Enforce staging operator access control when OPERATOR_PASSCODE is configured
+        const configuredPasscode =
+          process.env.OPERATOR_PASSCODE ||
+          process.env.STAGING_OPERATOR_ACCESS_CODE ||
+          process.env.OPERATOR_ACCESS_CODE;
+
+        if (configuredPasscode) {
+          if (!input.passcode || input.passcode !== configuredPasscode) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "Invalid or missing operator passcode. Operator access is restricted.",
+            });
+          }
+        }
+
         const openId = input.operatorId.trim();
         const role =
           input.role ||
@@ -178,7 +204,7 @@ export const appRouter = router({
         status: exists
           ? "checkpoint_present_runtime_inference_requires_python"
           : "model_missing",
-        modelPath,
+        modelPath: basename(modelPath),
         exists,
         modelName: "YOLO26n",
         classNames: [],

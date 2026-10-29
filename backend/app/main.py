@@ -88,7 +88,6 @@ def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "model_exists": settings.model_path.exists(),
-        "model_path": str(settings.model_path),
         "storage_available": settings.storage_dir.exists(),
         "model_ready": inference_service.is_ready(),
     }
@@ -102,9 +101,13 @@ def health_ready() -> dict[str, Any]:
     is_mock = sandia_performance_service.loader.is_mock
 
     if require_sandia and (not sandia_ready or is_mock):
+        logger.warning(
+            "Sandia model unavailable for ready check: %s",
+            sandia_performance_service.loader.unavailability_reason,
+        )
         raise HTTPException(
             status_code=503,
-            detail=f"Required Sandia model is unavailable: {sandia_performance_service.loader.unavailability_reason}",
+            detail="Required Sandia performance model is unavailable.",
         )
 
     return {

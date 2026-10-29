@@ -47,6 +47,7 @@ In this staging configuration, the entire SolarVision AI platform runs inside a 
 3. **Internal Node API URL:** Node communicates internally via `http://127.0.0.1:8000`.
 4. **Process Supervision & Clean Exit:** `dumb-init` and `staging-entrypoint.sh` trap `SIGTERM`/`SIGINT`, orchestrate graceful shutdown across child processes, and terminate the container immediately if either process crashes.
 5. **Strict Deployment Gate (/healthz):** Render tests container readiness against `http://0.0.0.0:$PORT/healthz`. If any runtime dependency (SQLite, uploads directory, FastAPI, or Sandia model) is unready, it returns HTTP 503, failing deployment transparently.
+6. **Minimal Public Health Surface:** Responses on `/healthz` and `/health` reveal strictly overall status and generic component states (`"ok"`, `"unready"`, `"error"`). Filesystem paths, internal URLs, environment variables, and stack traces are never exposed to public callers.
 
 ---
 
@@ -81,11 +82,27 @@ Large model binaries (`pipeline.joblib`) are excluded from Git to prevent reposi
 3. **Atomic Verification:** The artifact is streamed to a temporary file (`.tmp_<uuid>_pipeline.joblib`). SHA-256 is computed dynamically.
 4. **Pre-Deserialization Gate:** The file is atomically renamed to `pipeline.joblib` **ONLY if** the SHA-256 matches `045f9a15b7981c3e88ac18011dfa1b16821874bf211fa582cf148840e5dbf373`.
 5. **Rejection & Zero Deserialization:** If the hash mismatches or download fails, the temporary file is purged instantly. Deserialization (`joblib.load`) is **never executed** on unverified bytes.
-6. **Zero Credential Exposure:** Query parameters (e.g., presigned AWS signatures) and bearer tokens are masked during logging. Credentials are never written to disk, build layers, or container logs.
+6. **Zero Credential Exposure:** Query parameters (e.g., presigned AWS signatures) and bearer tokens are masked during logging. Credentials are never written to disk, build layers, public responses, or container logs.
 
 ---
 
-## 4. Complete Environment Variables Checklist
+## 4. Staging Access Control & Standalone Operator Mode Hardening
+
+When deploying on Render Staging without external OAuth SSO (`OAUTH_SERVER_URL` unset), the application operates in **Standalone Operator Mode**.
+
+To prevent arbitrary public internet visitors from calling `auth.login` and gaining access to protected tRPC procedures:
+
+1. **Enforce `OPERATOR_PASSCODE`:** Configure a strong, secret passcode via the `OPERATOR_PASSCODE` environment variable in the Render Dashboard.
+2. **Access Code Verification:** When `OPERATOR_PASSCODE` is set, `auth.login` strictly requires `passcode: "<OPERATOR_PASSCODE>"`.
+   - Any login request without the passcode or with an incorrect passcode is rejected with HTTP 401 / `TRPCError({ code: "UNAUTHORIZED", message: "Invalid or missing operator passcode." })`.
+3. **Protected Procedures Enforcement:** All sensitive tRPC procedures (`inspection.run`, `inspection.history`, `inspection.detail`, `dashboard.stats`, `analytics.defects`, `sandiaPerformance.predict`, `sandiaPerformance.predictBatch`, `sandiaPerformance.history`, etc.) are guarded by `authenticatedProcedure`.
+   - Anonymous visitors attempting to invoke these procedures receive `UNAUTHORIZED: Authentication required`.
+4. **Private Uploads Protection:** The `/uploads/*` image endpoint validates requester session token and inspection record ownership. Anonymous visitors receive HTTP 401 Unauthorized.
+5. **Operator Console Usage:** Operators accessing the staging UI will see the **Operator Access Passcode** input field in the Operator Login Dialog. Entering the configured passcode unlocks 1-click operator credentials and session establishment.
+
+---
+
+## 5. Complete Environment Variables Checklist
 
 Configure these variables in your Render Staging Web Service Dashboard under **Environment**:
 
@@ -94,6 +111,7 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
 | `NODE_ENV` | String | **Yes** | `production` | Enforces production bundle serving & security checks |
 | `PORT` | Integer | System | *(Assigned by Render, e.g. 10000)* | Port on which Node web application listens |
 | `JWT_SECRET` | Secret | **Yes** | *(≥32 random characters)* | Cryptographic key for operator session JWT signing |
+| `OPERATOR_PASSCODE` | Secret | **Yes** | *(≥16 random characters)* | Staging access passcode to prevent public visitor login |
 | `SQLITE_DB_PATH` | Path | **Yes** | `/app/data/solarvision.db` | Persistent SQLite database file on mounted disk |
 | `UPLOADS_DIR` | Path | **Yes** | `/app/data/uploads` | Persistent directory for private inspection images |
 | `SANDIA_API_URL` | URL | **Yes** | `http://127.0.0.1:8000` | Loopback URL for Node -> Python Sandia requests |
@@ -108,7 +126,7 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
 
 ---
 
-## 5. Render Staging Deployment Steps
+## 6. Render Staging Deployment Steps
 
 ### Option 1: Blueprint Deployment via `render.yaml` (Recommended)
 
@@ -122,7 +140,8 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
    - Health Check Path: `/healthz`
    - Persistent Disk: 5 GB mounted at `/app/data`
 5. In the environment setup screen, supply:
-   - `JWT_SECRET`: Generate a secure 32+ character key (or let Render auto-generate).
+   - `JWT_SECRET`: Auto-generated by Render blueprint.
+   - `OPERATOR_PASSCODE`: Auto-generated by Render blueprint (copy this for operator login).
    - `SANDIA_MODEL_URL`: Presigned URL or storage location hosting genuine `pipeline.joblib`.
    - `SANDIA_ARTIFACT_AUTH_TOKEN`: If using private bucket/repository.
 6. Click **Apply**. Render will build the Docker staging image and verify deployment.
@@ -147,12 +166,12 @@ Configure these variables in your Render Staging Web Service Dashboard under **E
    - **Size:** `5 GB`
 5. Configure Health Check:
    - **Health Check Path:** `/healthz`
-6. Add Environment Variables according to Section 4.
+6. Add Environment Variables according to Section 5.
 7. Click **Create Web Service**.
 
 ---
 
-## 6. Post-Deployment Verification Runbook
+## 7. Post-Deployment Verification Runbook
 
 Once the deployment completes and Render indicates **Service is live**:
 
@@ -162,42 +181,56 @@ Query the public health check endpoint:
 curl -fsS https://<your-render-subdomain>.onrender.com/healthz
 ```
 
-Expected JSON response:
+Expected minimal JSON response (HTTP 200, zero filesystem paths, zero internal URLs):
 ```json
 {
   "status": "healthy",
-  "timestamp": "2026-10-29T...",
-  "uptimeSeconds": 42,
-  "environment": "production",
   "components": {
     "node": { "status": "ok" },
-    "database": { "status": "ok", "path": "/app/data/solarvision.db", "alive": true },
-    "storage": { "status": "ok", "uploadsDir": "/app/data/uploads" },
-    "fastapi": { "status": "ok", "url": "http://127.0.0.1:8000", "modelReady": true },
-    "sandia": {
-      "status": "ok",
-      "is_ready": true,
-      "is_mock": false,
-      "model_id": "model3_sandia_reference_power_v1",
-      "model_version": "1.0.0",
-      "artifact_name": "pipeline.joblib"
-    }
+    "database": { "status": "ok" },
+    "storage": { "status": "ok" },
+    "fastapi": { "status": "ok" },
+    "sandia": { "status": "ok" }
   }
 }
 ```
 
-### 2. Verify Sandia Model 3 Status via tRPC
+### 2. Verify Access Control Restriction
+Verify that unauthenticated visitors cannot access protected procedures:
 ```bash
-curl -fsS https://<your-render-subdomain>.onrender.com/api/trpc/sandiaPerformance.status
+# Attempt to query dashboard stats without session -> Must return UNAUTHORIZED
+curl -s https://<your-render-subdomain>.onrender.com/api/trpc/dashboard.stats
 ```
-Verify `is_ready: true`, `is_mock: false`, and `status: "ready"`.
+Expected output:
+```json
+{"error":{"message":"UNAUTHORIZED: Authentication required to access protected SolarVision procedures."}}
+```
 
-### 3. Execute Verification Inference with Trainer Sample
-Send the sample payload:
+Attempting login without `OPERATOR_PASSCODE`:
+```bash
+curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/auth.login \
+  -H "Content-Type: application/json" \
+  -d '{"operatorId":"admin","role":"admin"}'
+```
+Expected output:
+```json
+{"error":{"message":"Invalid or missing operator passcode. Operator access is restricted."}}
+```
+
+### 3. Authenticate with Operator Passcode
+```bash
+curl -c cookies.txt -X POST https://<your-render-subdomain>.onrender.com/api/trpc/auth.login \
+  -H "Content-Type: application/json" \
+  -d '{"operatorId":"OP-7701","name":"Alex Rivera","role":"user","passcode":"<YOUR_OPERATOR_PASSCODE>"}'
+```
+Returns valid session token and sets `solarvision_session` cookie.
+
+### 4. Execute Verification Inference with Trainer Sample
+Using the authenticated session cookie:
 ```bash
 curl -X POST https://<your-render-subdomain>.onrender.com/api/trpc/sandiaPerformance.predict \
+  -b cookies.txt \
   -H "Content-Type: application/json" \
-  -H "Cookie: solarvision_session=<session_token>" \
   -d '{
     "moduleId": "MOD-10085",
     "features": {
@@ -227,11 +260,12 @@ Confirmation: Prediction matches trainer benchmark (`~99.5076%`).
 
 ---
 
-## 7. Troubleshooting & Failure Recovery
+## 8. Troubleshooting & Failure Recovery
 
 | Issue | Symptom | Root Cause | Solution |
 | :--- | :--- | :--- | :--- |
 | **503 on /healthz** | Render deployment fails or restarts repeatedly | Sandia model missing or unverified | Check `SANDIA_MODEL_URL` in Render settings. Verify the hosted artifact matches hash `045f9a15b798...` |
 | **503 on /healthz** | `FastAPI unavailable` | Python syntax or dependency error | Check container logs for uvicorn traceback |
+| **401 on /api/trpc/auth.login** | `Invalid or missing operator passcode` | `OPERATOR_PASSCODE` mismatch | Ensure operator supplies the configured `OPERATOR_PASSCODE` set in Render environment variables |
 | **SQLite I/O error** | `/app/data permission denied` | Disk mount missing or permissions incorrect | Ensure disk is mounted at `/app/data` with 5GB |
 | **SHA-256 Mismatch** | `SECURITY ALERT: SHA-256 mismatch` | Uploaded artifact file corrupted or altered | Re-export `pipeline.joblib` from trusted trainer storage and verify hash with `sha256sum` |

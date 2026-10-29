@@ -15,6 +15,7 @@ from backend.app.sandia_performance.artifact_fetcher import (
     calculate_file_sha256,
     download_and_verify_artifact,
     main as fetcher_main,
+    sanitize_log_message,
     sanitize_url_for_logging,
     verify_file_integrity,
 )
@@ -31,6 +32,21 @@ class TestSandiaArtifactFetcherSecurity:
         assert "token=abc" not in sanitized
         assert "X-Amz-Signature" not in sanitized
         assert sanitized == "https://s3.us-west-2.amazonaws.com/model-bucket/pipeline.joblib"
+
+    def test_sanitize_log_message_redacts_auth_token_and_query_parameters(self):
+        """Ensures exception messages redact bearer tokens, signatures, and raw URLs."""
+        raw_url = "https://artifacts.internal/model.joblib?token=supersecret123&sig=abcdef"
+        raw_token = "supersecret123"
+        raw_msg = (
+            "HTTPConnectionPool(host='artifacts.internal', port=443): "
+            "Max retries exceeded with url: /model.joblib?token=supersecret123&sig=abcdef "
+            "Authorization: Bearer supersecret123"
+        )
+
+        sanitized = sanitize_log_message(raw_msg, raw_url=raw_url, token=raw_token)
+        assert "supersecret123" not in sanitized
+        assert "abcdef" not in sanitized
+        assert "[REDACTED_AUTH_TOKEN]" in sanitized or "[REDACTED]" in sanitized
 
     def test_verify_file_integrity_valid_matches_expected_hash(self):
         """Verifies calculation on genuine content matching expected SHA-256."""
