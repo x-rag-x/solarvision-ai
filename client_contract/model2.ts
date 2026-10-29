@@ -14,5 +14,6 @@ export interface Model2ScreeningResult {
     Do not bypass existing auth by calling an unauthenticated public Python URL. */
 export function model2ScreeningSummary(result: Model2ScreeningResult): string {
   const pct = (result.defective_probability * 100).toFixed(2);
-  return `${result.predicted_class} (defective score ${pct}%) — manual review required`;
+  const label = result.predicted_class === 'defective' ? 'Predicted Defective' : 'Predicted Healthy';
+  return `${label} (${result.predicted_class}, defective score ${pct}%) — manual review required`;
 }

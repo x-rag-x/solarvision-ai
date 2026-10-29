@@ -97,12 +97,16 @@ export function CellScreeningView() {
     reader.readAsDataURL(file);
   };
 
-  const handleLoadSample = async () => {
+  const handleLoadSample = async (sampleType: "healthy" | "defective" = "healthy") => {
     try {
-      const resp = await fetch("/model2_sample_elpv_cell.png");
+      const filename =
+        sampleType === "defective"
+          ? "model2_sample_defective_cell.png"
+          : "model2_sample_healthy_cell.png";
+      const resp = await fetch(`/${filename}`);
       if (!resp.ok) throw new Error("Sample asset not found");
       const blob = await resp.blob();
-      const file = new File([blob], "model2_sample_elpv_cell.png", { type: "image/png" });
+      const file = new File([blob], filename, { type: "image/png" });
       setSelectedFile(file);
       setIsSampleLoaded(true);
       setResult(null);
@@ -112,7 +116,11 @@ export function CellScreeningView() {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(blob);
-      toast.info("Loaded benchmark sample ELPV single cell (300x300).");
+      toast.info(
+        sampleType === "defective"
+          ? "Loaded real ELPV defective sample cell (300x300, ground-truth defective)."
+          : "Loaded real ELPV healthy sample cell (300x300, ground-truth healthy)."
+      );
     } catch (err) {
       toast.error("Failed to load sample cell image.");
     }
@@ -208,17 +216,28 @@ export function CellScreeningView() {
         {/* Left Column: Upload & Controls (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-900 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-slate-900 flex flex-wrap items-center justify-between gap-2">
               <span>Cell Image Upload</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLoadSample}
-                className="text-xs border-slate-300 hover:bg-slate-100 text-slate-700"
-              >
-                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-[#8b6508]" />
-                Load Sample Cell
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleLoadSample("healthy")}
+                  className="text-xs border-emerald-300 hover:bg-emerald-50 text-emerald-800"
+                >
+                  <Sparkles className="mr-1 h-3.5 w-3.5 text-emerald-600" />
+                  Load Healthy Cell
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleLoadSample("defective")}
+                  className="text-xs border-rose-300 hover:bg-rose-50 text-rose-800"
+                >
+                  <Sparkles className="mr-1 h-3.5 w-3.5 text-rose-600" />
+                  Load Defective Cell
+                </Button>
+              </div>
             </h2>
             <p className="mt-1 text-xs text-slate-500">
               Grayscale single-cell EL crop (.png, .jpg, .tiff, .bmp, .webp), max 8 MiB.
@@ -347,7 +366,7 @@ export function CellScreeningView() {
                           : "bg-emerald-100 text-emerald-900 border-emerald-300"
                       )}
                     >
-                      {result.predictedClass}
+                      {result.predictedClass === "defective" ? "Predicted Defective" : "Predicted Healthy"}
                     </span>
                     <span className="text-xs text-slate-600">
                       (Decision threshold: {result.thresholdPct.toFixed(1)}%)
@@ -646,7 +665,7 @@ export function CellScreeningView() {
                             : "bg-emerald-100 text-emerald-800"
                         )}
                       >
-                        {item.predictedClass}
+                        {item.predictedClass === "defective" ? "Predicted Defective" : "Predicted Healthy"}
                       </span>
                     </td>
                     <td className="py-2.5 px-3 font-semibold text-slate-800">
