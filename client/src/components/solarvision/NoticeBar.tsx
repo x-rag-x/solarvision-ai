@@ -19,22 +19,22 @@ interface NoticeBarProps {
 
 const toneStyles: Record<NoticeTone, { container: string; icon: typeof Info; text: string }> = {
   info: {
-    container: "border-info/20 bg-info-tint text-text",
+    container: "border-[#B5BCDA]/60 bg-[#E8EBF5] text-text",
     icon: Info,
-    text: "text-info",
+    text: "text-sapphire",
   },
   warning: {
-    container: "border-warning/25 bg-warning-tint text-text",
+    container: "border-warning-border bg-warning-tint text-text",
     icon: AlertTriangle,
-    text: "text-brand-text",
+    text: "text-warning",
   },
   danger: {
-    container: "border-danger/25 bg-danger-tint text-text",
+    container: "border-danger-border bg-danger-tint text-text",
     icon: AlertCircle,
     text: "text-danger",
   },
   success: {
-    container: "border-success/25 bg-success-tint text-text",
+    container: "border-success-border bg-success-tint text-text",
     icon: CheckCircle2,
     text: "text-success",
   },
@@ -67,7 +67,7 @@ export function NoticeBar({
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className="rounded-md px-2 py-0.5 text-xs font-semibold text-text underline underline-offset-2 hover:bg-surface/50 transition-colors"
+                className="rounded-md px-2 py-0.5 text-xs font-semibold text-sapphire underline underline-offset-2 hover:bg-surface/50 transition-colors"
                 aria-label="View methodology details"
               >
                 Details
@@ -77,7 +77,7 @@ export function NoticeBar({
               align="end"
               className="w-80 sm:w-96 rounded-xl border border-border bg-surface p-4 shadow-xl"
             >
-              <h4 className="text-xs font-semibold text-text mb-1.5 flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold text-sapphire mb-1.5 flex items-center gap-1.5">
                 <Icon className={`h-3.5 w-3.5 ${text}`} />
                 {detailsTitle}
               </h4>

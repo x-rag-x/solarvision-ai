@@ -179,7 +179,7 @@ export default function Analytics() {
         {!isError && (
           <div className="grid gap-6 lg:grid-cols-12">
             {/* Defect Frequency Bar Chart (7 cols) */}
-            <div className="lg:col-span-7 rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+            <div className="lg:col-span-7 rounded-xl border border-border bg-surface p-5 space-y-4 shadow-xs">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
@@ -198,15 +198,15 @@ export default function Analytics() {
                 <div className="h-[280px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={byType} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E3E1DA" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#DCE2E1" />
                       <XAxis
                         dataKey="defectType"
-                        tick={{ fontSize: 11, fill: "#6A665E" }}
+                        tick={{ fontSize: 11, fill: "#59647D" }}
                         angle={-25}
                         textAnchor="end"
                         interval={0}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: "#6A665E" }} allowDecimals={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "#59647D" }} allowDecimals={false} />
                       <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
@@ -230,7 +230,7 @@ export default function Analytics() {
                       <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                         {byType.map((entry, index) => {
                           const meta = getDefectMeta(entry.defectType);
-                          return <Cell key={`cell-${index}`} fill={meta.color || "#F2B941"} />;
+                          return <Cell key={`cell-${index}`} fill={meta.color || "#965660"} />;
                         })}
                       </Bar>
                     </BarChart>
@@ -247,7 +247,7 @@ export default function Analytics() {
             </div>
 
             {/* Daily Detection Volume Timeline (5 cols) */}
-            <div className="lg:col-span-5 rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+            <div className="lg:col-span-5 rounded-xl border border-border bg-surface p-5 space-y-4 shadow-xs">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
@@ -269,14 +269,14 @@ export default function Analytics() {
                       data={chronologicalTrend}
                       margin={{ top: 10, right: 10, left: -20, bottom: 25 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E3E1DA" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#DCE2E1" />
                       <XAxis
                         dataKey="day"
-                        tick={{ fontSize: 10, fill: "#6A665E" }}
+                        tick={{ fontSize: 10, fill: "#59647D" }}
                         angle={-25}
                         textAnchor="end"
                       />
-                      <YAxis tick={{ fontSize: 11, fill: "#6A665E" }} allowDecimals={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "#59647D" }} allowDecimals={false} />
                       <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
@@ -288,7 +288,7 @@ export default function Analytics() {
                                   Inspections: <span className="font-mono font-bold text-text">{d.inspections}</span>
                                 </p>
                                 <p className="text-text-2">
-                                  Defects: <span className="font-mono font-bold text-brand-text">{d.defects}</span>
+                                  Defects: <span className="font-mono font-bold text-terracotta">{d.defects}</span>
                                 </p>
                               </div>
                             );
@@ -299,15 +299,15 @@ export default function Analytics() {
                       <Line
                         type="monotone"
                         dataKey="defects"
-                        stroke="#8A5A00"
+                        stroke="#965660"
                         strokeWidth={2}
-                        dot={{ r: 3, fill: "#F2B941" }}
+                        dot={{ r: 3, fill: "#E5AEA9" }}
                         activeDot={{ r: 5 }}
                       />
                       <Line
                         type="monotone"
                         dataKey="inspections"
-                        stroke="#16130F"
+                        stroke="#2F3A58"
                         strokeWidth={1.5}
                         strokeDasharray="4 4"
                         dot={{ r: 2 }}
@@ -329,7 +329,7 @@ export default function Analytics() {
 
         {/* Detailed Defect Class Breakdown Table */}
         {!isError && byType.length > 0 && (
-          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+          <div className="rounded-xl border border-border bg-surface p-5 space-y-4 shadow-xs">
             <h3 className="text-sm font-semibold text-text">Itemized Defect Distribution</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs min-w-[560px]">

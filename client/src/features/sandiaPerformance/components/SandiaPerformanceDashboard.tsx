@@ -91,28 +91,28 @@ export function SandiaPerformanceDashboard() {
           <TabsList className="h-12 w-full justify-start rounded-none bg-transparent p-0 gap-2 sm:gap-6 overflow-x-auto">
             <TabsTrigger
               value="prediction"
-              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-sapphire data-[state=active]:text-sapphire data-[state=active]:shadow-none"
             >
-              <Zap className="mr-2 h-4 w-4 text-[#F2B941]" />
+              <Zap className="mr-2 h-4 w-4 text-sapphire" />
               Electrical Inference & Telemetry
             </TabsTrigger>
             <TabsTrigger
               value="evaluation"
-              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-sapphire data-[state=active]:text-sapphire data-[state=active]:shadow-none"
             >
               <BarChart2 className="mr-2 h-4 w-4 text-slate-700" />
               Model Evaluation
             </TabsTrigger>
             <TabsTrigger
               value="history"
-              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-sapphire data-[state=active]:text-sapphire data-[state=active]:shadow-none"
             >
               <History className="mr-2 h-4 w-4 text-slate-700" />
               Prediction History
             </TabsTrigger>
             <TabsTrigger
               value="variants"
-              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-sapphire data-[state=active]:text-sapphire data-[state=active]:shadow-none"
             >
               <Layers className="mr-2 h-4 w-4 text-purple-600" />
               Model Variants & Roadmap

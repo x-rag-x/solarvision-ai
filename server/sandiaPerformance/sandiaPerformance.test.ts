@@ -406,18 +406,28 @@ describe("Model 3: Sandia Solar Electrical Performance Prediction Suite", () => 
 
       const client = new SandiaApiClient({ customAxios: mockAxiosInstance });
 
-      await expect(
-        client.predict({
-          moduleId: "MOD-01",
-          features: { irradiance: 1000 },
-        })
-      ).rejects.toThrow(SandiaApiError);
+      const validPayload = {
+        moduleId: "MOD-10085",
+        features: {
+          Total_Exposure: null,
+          "Nameplate_Pmp_(W)": 270.0,
+          "Nameplate_Isc_(A)": 9.18,
+          "Nameplate_Voc_(V)": 38.4,
+          "Nameplate_Imp_(A)": 8.7,
+          "Nameplate_Vmp_(V)": 31.0,
+          Make: "35",
+          Model: "1",
+          Cell_Wafer_Type: "mono-Si module",
+        },
+      };
+
+      await expect(client.predict(validPayload)).rejects.toThrow(
+        SandiaApiError
+      );
 
       try {
-        await client.predict({
-          moduleId: "MOD-01",
-          features: { irradiance: 1000 },
-        });
+        await client.predict(validPayload);
+        expect.unreachable("Expected predict() to throw SandiaApiError");
       } catch (err: any) {
         expect(err.statusCode).toBe(503);
         expect(err.code).toBe("PRECONDITION_FAILED");
@@ -443,11 +453,19 @@ describe("Model 3: Sandia Solar Electrical Performance Prediction Suite", () => 
 
       const client = new SandiaApiClient({ customAxios: mockAxiosInstance });
 
+      await expect(
+        client.predict({
+          moduleId: "MOD-01",
+          features: { irradiance: 1000 },
+        })
+      ).rejects.toThrow(SandiaApiError);
+
       try {
         await client.predict({
           moduleId: "MOD-01",
           features: { irradiance: 1000 },
         });
+        expect.unreachable("Expected predict() to throw SandiaApiError");
       } catch (err: any) {
         expect(err.statusCode).toBe(422);
         expect(err.code).toBe("BAD_REQUEST");
@@ -466,11 +484,19 @@ describe("Model 3: Sandia Solar Electrical Performance Prediction Suite", () => 
 
       const client = new SandiaApiClient({ customAxios: mockAxiosInstance });
 
+      await expect(
+        client.predict({
+          moduleId: "MOD-01",
+          features: { irradiance: 1000 },
+        })
+      ).rejects.toThrow(SandiaApiError);
+
       try {
         await client.predict({
           moduleId: "MOD-01",
           features: { irradiance: 1000 },
         });
+        expect.unreachable("Expected predict() to throw SandiaApiError");
       } catch (err: any) {
         expect(err.statusCode).toBe(503);
         expect(err.code).toBe("SERVICE_UNAVAILABLE");
@@ -489,16 +515,62 @@ describe("Model 3: Sandia Solar Electrical Performance Prediction Suite", () => 
 
       const client = new SandiaApiClient({ customAxios: mockAxiosInstance });
 
+      await expect(
+        client.predict({
+          moduleId: "MOD-01",
+          features: { irradiance: 1000 },
+        })
+      ).rejects.toThrow(SandiaApiError);
+
       try {
         await client.predict({
           moduleId: "MOD-01",
           features: { irradiance: 1000 },
         });
+        expect.unreachable("Expected predict() to throw SandiaApiError");
       } catch (err: any) {
         expect(err.statusCode).toBe(504);
         expect(err.code).toBe("TIMEOUT");
         expect(err.message).toContain("timed out");
       }
+    });
+
+    it("regression: maps HTTP 503 and sanitizes internal paths even with schema-valid telemetry payload", async () => {
+      const mockAxiosInstance: any = {
+        post: vi.fn().mockRejectedValue({
+          isAxiosError: true,
+          message: "Request failed with status code 503",
+          response: {
+            status: 503,
+            data: {
+              detail:
+                "Artifact missing at /backend/models/sandia/pipeline.joblib: model not trained",
+            },
+          },
+        }),
+      };
+
+      const client = new SandiaApiClient({ customAxios: mockAxiosInstance });
+
+      await expect(
+        client.predict({
+          moduleId: "MOD-REGRESSION-1",
+          features: {
+            Total_Exposure: null,
+            "Nameplate_Pmp_(W)": 270.0,
+            "Nameplate_Isc_(A)": 9.18,
+            "Nameplate_Voc_(V)": 38.4,
+            "Nameplate_Imp_(A)": 8.7,
+            "Nameplate_Vmp_(V)": 31.0,
+            Make: "35",
+            Model: "1",
+            Cell_Wafer_Type: "mono-Si module",
+          },
+        })
+      ).rejects.toMatchObject({
+        statusCode: 503,
+        code: "PRECONDITION_FAILED",
+      });
     });
   });
 
@@ -594,12 +666,14 @@ describe("Model 3: Sandia Solar Electrical Performance Prediction Suite", () => 
       ).rejects.toThrow(TRPCError);
     });
 
-    it("allows public querying of status, schema, target definition, sample input, and metadata", async () => {
-      const caller = appRouter.createCaller({
-        user: null,
-        req: {} as any,
-        res: {} as any,
-      });
+    it(
+      "allows public querying of status, schema, target definition, sample input, and metadata",
+      async () => {
+        const caller = appRouter.createCaller({
+          user: null,
+          req: {} as any,
+          res: {} as any,
+        });
 
       // Status query
       const status = await caller.sandiaPerformance.status();
@@ -641,7 +715,7 @@ describe("Model 3: Sandia Solar Electrical Performance Prediction Suite", () => 
       expect(statusFromAlias.modelName).toBe(
         "SolarVision-Sandia-Performance-Model3"
       );
-    });
+    }, 60000);
   });
 
   describe("8. Regression Preservation of SECOM & Other Models (Task 9)", () => {

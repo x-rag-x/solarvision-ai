@@ -79,13 +79,6 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
         isProd: mode === "prod",
       }}
     >
-      {/* Dev Mode Visual Indicator Ribbon across the top */}
-      {mode === "dev" && (
-        <div
-          className="fixed top-0 left-0 right-0 h-1 bg-amber-400 z-50 pointer-events-none transition-all"
-          title="Dev Mode Active: Extended telemetry, inspector drawer, batch upload, benchmarks enabled"
-        />
-      )}
       {children}
     </ModeContext.Provider>
   );

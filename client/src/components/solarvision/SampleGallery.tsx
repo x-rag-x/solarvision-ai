@@ -14,15 +14,15 @@ export interface SampleItem {
 export const M1_SAMPLES: SampleItem[] = [
   {
     id: "sample-1",
-    name: "Sample 1 (Finger Cut)",
+    name: "Sample 1 — Micro-Crack",
     path: "/samples/sample-el-cell-1.jpg",
-    groundTruth: "PVELAD GT: finger_interruption",
+    groundTruth: "PVELAD GT: star_crack",
     defectCount: 1,
     description: "Electroluminescence image with disconnected finger busbar",
   },
   {
     id: "sample-2",
-    name: "Sample 2 (Segmented Crack)",
+    name: "Sample 2 — Segmented Crack",
     path: "/samples/sample-el-cell-2.jpg",
     groundTruth: "PVELAD GT: crack",
     defectCount: 2,
@@ -30,7 +30,7 @@ export const M1_SAMPLES: SampleItem[] = [
   },
   {
     id: "sample-3",
-    name: "Sample 3 (Single Crack)",
+    name: "Sample 4 — Isolated Crack",
     path: "/samples/sample-el-cell-3.jpg",
     groundTruth: "PVELAD GT: isolated_crack",
     defectCount: 1,
@@ -38,7 +38,7 @@ export const M1_SAMPLES: SampleItem[] = [
   },
   {
     id: "sample-multi",
-    name: "Sample Multi-Defect",
+    name: "Sample 3 — Multi-Defect",
     path: "/samples/sample-el-cell-multi.jpg",
     groundTruth: "PVELAD GT: multi_defect (cluster)",
     defectCount: 5,
@@ -103,7 +103,7 @@ export function SampleGallery({
     <div className={`space-y-2.5 ${className}`}>
       <div className="flex items-center justify-between text-xs">
         <span className="font-semibold text-text flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-brand-text" />
+          <Sparkles className="h-3.5 w-3.5 text-terracotta" />
           Test Benchmark Gallery
         </span>
         <span className="text-xs text-text-3">Click to benchmark</span>
@@ -122,11 +122,11 @@ export function SampleGallery({
               onClick={() => loadSampleFile(sample)}
               className={`group flex flex-col overflow-hidden rounded-xl border p-2 text-left transition-all ${
                 isSelected
-                  ? "border-brand bg-brand-tint/30 shadow-xs"
-                  : "border-border bg-surface hover:border-border-strong hover:bg-surface-subtle"
+                  ? "border-sapphire bg-sapphire-tint/40 shadow-xs"
+                  : "border-border bg-surface hover:border-sapphire/50 hover:bg-sapphire-tint/10"
               }`}
             >
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-ink/5 border border-border/50 mb-2">
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-surface-subtle border border-border/50 mb-2">
                 <img
                   src={sample.path}
                   alt={sample.name}
@@ -135,11 +135,11 @@ export function SampleGallery({
                 />
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-xs">
-                    <Loader2 className="h-5 w-5 animate-spin text-text" />
+                    <Loader2 className="h-5 w-5 animate-spin text-sapphire" />
                   </div>
                 )}
                 {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 grid h-5 w-5 place-items-center rounded-full bg-brand text-ink shadow-xs">
+                  <div className="absolute top-1.5 right-1.5 grid h-5 w-5 place-items-center rounded-full bg-sapphire text-white shadow-xs">
                     <Check className="h-3 w-3 stroke-[3]" />
                   </div>
                 )}
@@ -147,7 +147,7 @@ export function SampleGallery({
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold text-text">{sample.name}</p>
-                <p className="mt-0.5 truncate font-mono text-xs text-text-3">
+                <p className="mt-0.5 truncate font-mono text-[11px] text-text-3">
                   {sample.groundTruth}
                 </p>
               </div>

@@ -70,11 +70,11 @@ export default function NotificationCenter() {
         onClick={() => setOpen(val => !val)}
         aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}
         aria-expanded={open}
-        className="relative grid h-9 w-9 place-items-center rounded-xl border border-border bg-surface text-text-2 transition-all hover:border-brand hover:text-text hover:bg-surface-subtle active:scale-95"
+        className="relative grid h-9 w-9 place-items-center rounded-lg border border-border bg-white text-text-3 transition-all hover:border-sapphire/50 hover:text-text hover:bg-surface-subtle shadow-xs active:scale-95"
       >
         <Bell className="h-4 w-4" />
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-ink px-1 text-xs font-bold text-brand ring-2 ring-surface">
+          <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-terracotta px-1 text-[10px] font-bold text-white ring-2 ring-surface">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -94,13 +94,13 @@ export default function NotificationCenter() {
             <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-surface-subtle">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-text-3">Operations Inbox</p>
-                <h2 className="text-sm font-semibold text-text">Activity & System Events</h2>
+                <h2 className="text-sm font-bold text-sapphire">Activity & System Events</h2>
               </div>
               <div className="flex items-center gap-1">
                 {items.length > 0 && (
                   <button
                     onClick={markAllRead}
-                    className="rounded-lg p-1.5 text-text-3 transition-colors hover:bg-surface hover:text-text"
+                    className="rounded-lg p-1.5 text-text-3 transition-colors hover:bg-surface hover:text-sapphire"
                     title="Mark all as read"
                     aria-label="Mark all notifications as read"
                   >
@@ -162,7 +162,7 @@ export default function NotificationCenter() {
               <div className="border-t border-border px-4 py-2.5 bg-surface-subtle flex justify-between items-center">
                 <button
                   onClick={clearAll}
-                  className="text-xs font-medium text-text-3 hover:text-text transition-colors"
+                  className="text-xs font-medium text-text-3 hover:text-sapphire transition-colors"
                 >
                   Clear notifications
                 </button>

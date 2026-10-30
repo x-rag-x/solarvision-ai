@@ -101,13 +101,13 @@ export default function History() {
         <PageHeader
           title="Inspection History"
           description="Every completed EL/NIR cell run is permanently recorded with its source image, detected defect count, measured YOLO latency, and database persistence status."
-          badge={<span className="rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-semibold text-text border border-border">{rows.length} Persisted Records</span>}
+          badge={<span className="rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-semibold text-sapphire border border-border">{rows.length} Persisted Records</span>}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleExportCsv}
                 disabled={filteredRows.length === 0}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-sapphire transition-colors shadow-xs disabled:opacity-50"
               >
                 <Download className="h-3.5 w-3.5 text-text-3" />
                 <span>Export CSV</span>
@@ -115,16 +115,16 @@ export default function History() {
               <button
                 onClick={() => refetch()}
                 disabled={isFetching}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-sapphire transition-colors shadow-xs disabled:opacity-50"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin text-brand-text" : "text-text-3"}`} />
+                <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin text-sapphire" : "text-text-3"}`} />
                 <span>Refresh</span>
               </button>
               <Link
                 href="/inspection"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-ink/90 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#965660] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#7E454E] transition-colors shadow-xs"
               >
-                <ScanLine className="h-3.5 w-3.5 text-brand" />
+                <ScanLine className="h-3.5 w-3.5 text-[#F2DBD7]" />
                 <span>New Inspection</span>
               </Link>
             </div>
@@ -163,7 +163,7 @@ export default function History() {
         )}
 
         {/* Search, Filter & Table Container */}
-        <div className="rounded-2xl border border-border bg-surface shadow-xs overflow-hidden">
+        <div className="rounded-xl border border-border bg-surface shadow-xs overflow-hidden">
           {/* Filter Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border p-4 bg-surface-subtle">
             <div className="relative flex-1 max-w-md">
@@ -173,7 +173,7 @@ export default function History() {
                 placeholder="Search by filename or inspection ID..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface pl-9 pr-3 py-1.5 text-xs text-text placeholder:text-text-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                className="w-full rounded-lg border border-border bg-surface pl-9 pr-3 py-1.5 text-xs text-text placeholder:text-text-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapphire"
               />
             </div>
 
@@ -183,7 +183,7 @@ export default function History() {
                 onClick={() => setFilterMode("all")}
                 className={`rounded px-2.5 py-1 font-medium transition-colors ${
                   filterMode === "all"
-                    ? "bg-ink text-white font-semibold"
+                    ? "bg-[#965660] text-white font-semibold shadow-xs"
                     : "text-text-3 hover:text-text"
                 }`}
               >
@@ -193,7 +193,7 @@ export default function History() {
                 onClick={() => setFilterMode("defects")}
                 className={`rounded px-2.5 py-1 font-medium transition-colors ${
                   filterMode === "defects"
-                    ? "bg-warning-tint text-brand-text font-semibold border border-warning/30"
+                    ? "bg-terracotta text-white font-semibold shadow-xs"
                     : "text-text-3 hover:text-text"
                 }`}
               >
@@ -203,7 +203,7 @@ export default function History() {
                 onClick={() => setFilterMode("clean")}
                 className={`rounded px-2.5 py-1 font-medium transition-colors ${
                   filterMode === "clean"
-                    ? "bg-success-tint text-success font-semibold border border-success/30"
+                    ? "bg-emerald-700 text-white font-semibold shadow-xs"
                     : "text-text-3 hover:text-text"
                 }`}
               >
@@ -251,7 +251,7 @@ export default function History() {
                         className="group hover:bg-surface-subtle transition-colors cursor-pointer"
                       >
                         <td className="py-3 px-4">
-                          <p className="font-semibold text-text group-hover:text-brand-text transition-colors truncate max-w-[240px]">
+                          <p className="font-semibold text-text group-hover:text-sapphire transition-colors truncate max-w-[240px]">
                             {item.sourceFilename}
                           </p>
                           <p className="font-mono text-xs text-text-3">
@@ -265,7 +265,7 @@ export default function History() {
                         </td>
                         <td className="py-3 px-3">
                           {hasDefects ? (
-                            <span className="inline-flex rounded-full bg-warning-tint px-2.5 py-0.5 text-xs font-semibold text-brand-text border border-warning/20">
+                            <span className="inline-flex rounded-full bg-warning-tint px-2.5 py-0.5 text-xs font-semibold text-warning border border-warning-border">
                               {item.detectionsCount} defect{item.detectionsCount === 1 ? "" : "s"}
                             </span>
                           ) : (
@@ -290,7 +290,7 @@ export default function History() {
                           })}
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-text-2 group-hover:border-brand group-hover:text-text transition-colors">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-text-2 group-hover:border-sapphire group-hover:text-sapphire transition-colors">
                             <span>Open Report</span>
                             <ArrowRight className="h-3 w-3 text-text-3" />
                           </span>

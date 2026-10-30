@@ -71,15 +71,15 @@ export default function Roadmap() {
         {phases.map((phase, index) => (
           <div
             key={phase.id}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-2xl border border-border bg-surface p-6 shadow-xs hover:border-brand/40 transition-colors"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-xl border border-border bg-surface p-6 shadow-xs hover:border-sapphire/40 transition-colors"
           >
             <div className="flex items-start gap-4">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-surface-subtle border border-border text-text">
-                <phase.icon className="h-6 w-6 text-brand-text" />
+                <phase.icon className="h-6 w-6 text-sapphire" />
               </div>
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-brand-text bg-brand-tint px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs font-bold text-sapphire bg-soft-lavender-tint border border-soft-lavender/30 px-2 py-0.5 rounded">
                     {phase.id}
                   </span>
                   <h3 className="text-base font-bold text-text">{phase.title}</h3>
@@ -103,7 +103,7 @@ export default function Roadmap() {
       {/* Optional Experimental Root Cause Note */}
       <div className="rounded-2xl border border-border bg-surface-subtle p-6 space-y-2">
         <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface text-brand-text border border-border">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface text-sapphire border border-border">
             <Compass className="h-5 w-5" />
           </div>
           <div>
@@ -119,8 +119,8 @@ export default function Roadmap() {
       </div>
 
       {/* Bottom Invariant Guarantee Card */}
-      <div className="rounded-2xl bg-ink p-6 text-white space-y-3">
-        <div className="flex items-center gap-2 text-brand">
+      <div className="rounded-2xl bg-sapphire p-6 text-white space-y-3">
+        <div className="flex items-center gap-2 text-dusty-pink">
           <ShieldCheck className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-wider">Zero-Fabrication Guarantee</span>
         </div>

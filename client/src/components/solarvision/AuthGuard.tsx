@@ -40,13 +40,13 @@ export function AuthGuard({
             <Lock className="h-6 w-6" />
           </div>
 
-          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-text-muted">
+          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-text-3">
             Restricted Quality Zone
           </p>
           <h2 className="mt-2 text-2xl font-bold tracking-tight text-text">
             {title}
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-xs leading-relaxed text-text-muted sm:text-sm">
+          <p className="mx-auto mt-3 max-w-lg text-xs leading-relaxed text-text-3 sm:text-sm">
             {description}
           </p>
 
@@ -86,7 +86,7 @@ export function InlineAuthPrompt({
 
   if (compact) {
     return (
-      <div className="flex items-center justify-between rounded-xl border border-warning-border bg-warning-soft px-3.5 py-2 text-xs text-text">
+      <div className="flex items-center justify-between rounded-xl border border-warning-border bg-warning-tint px-3.5 py-2 text-xs text-text">
         <div className="flex items-center gap-2">
           <ShieldAlert className="h-3.5 w-3.5 text-warning shrink-0" />
           <span>Operator sign-in required to execute {actionName}.</span>
@@ -102,13 +102,13 @@ export function InlineAuthPrompt({
   }
 
   return (
-    <div className="rounded-xl border border-warning-border bg-warning-soft p-4 text-xs text-text">
+    <div className="rounded-xl border border-warning-border bg-warning-tint p-4 text-xs text-text">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-start gap-2.5">
           <ShieldAlert className="h-4 w-4 text-warning shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-text">Session Not Authenticated</p>
-            <p className="text-text-muted mt-0.5">
+            <p className="text-text-3 mt-0.5">
               You are viewing in read-only preview mode. Sign in to record {actionName} into database lineage.
             </p>
           </div>

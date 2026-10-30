@@ -100,7 +100,7 @@ export default function Settings() {
               onClick={handleResetDefaults}
               className="h-9 gap-1.5 rounded-lg border-border bg-surface text-xs font-semibold text-text hover:bg-canvas"
             >
-              <RotateCcw className="h-3.5 w-3.5 text-text-subtle" />
+              <RotateCcw className="h-3.5 w-3.5 text-text-3" />
               Reset Defaults
             </Button>
             <Button
@@ -116,17 +116,17 @@ export default function Settings() {
       />
 
       {/* Segmented Tab Bar */}
-      <div className="flex items-center gap-1 rounded-xl border border-border bg-surface-elevated/70 p-1 text-xs">
+      <div className="flex items-center gap-1 rounded-xl border border-border bg-surface-subtle p-1 text-xs">
         <button
           type="button"
           onClick={() => setActiveTab("defaults")}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 font-medium transition-colors ${
             activeTab === "defaults"
-              ? "bg-surface font-semibold text-text shadow-sm"
-              : "text-text-muted hover:text-text"
+              ? "bg-surface font-semibold text-text shadow-xs"
+              : "text-text-3 hover:text-text"
           }`}
         >
-          <Sliders className="h-3.5 w-3.5" />
+          <Sliders className="h-3.5 w-3.5 text-sapphire" />
           Inspection Defaults
         </button>
         <button
@@ -134,11 +134,11 @@ export default function Settings() {
           onClick={() => setActiveTab("account")}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 font-medium transition-colors ${
             activeTab === "account"
-              ? "bg-surface font-semibold text-text shadow-sm"
-              : "text-text-muted hover:text-text"
+              ? "bg-surface font-semibold text-text shadow-xs"
+              : "text-text-3 hover:text-text"
           }`}
         >
-          <User className="h-3.5 w-3.5" />
+          <User className="h-3.5 w-3.5 text-sapphire" />
           Account & Profile
         </button>
         <button
@@ -146,11 +146,11 @@ export default function Settings() {
           onClick={() => setActiveTab("experimental")}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 font-medium transition-colors ${
             activeTab === "experimental"
-              ? "bg-surface font-semibold text-text shadow-sm"
-              : "text-text-muted hover:text-text"
+              ? "bg-surface font-semibold text-text shadow-xs"
+              : "text-text-3 hover:text-text"
           }`}
         >
-          <FlaskConical className="h-3.5 w-3.5" />
+          <FlaskConical className="h-3.5 w-3.5 text-sapphire" />
           Optional / Experimental Modules
           {rootCauseEnabled && (
             <span className="h-1.5 w-1.5 rounded-full bg-success" />
@@ -164,12 +164,12 @@ export default function Settings() {
           <div className="space-y-6 lg:col-span-2">
             {/* Confidence Threshold Configuration */}
             <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-border-subtle pb-4">
+              <div className="flex items-center justify-between border-b border-border pb-4">
                 <div>
                   <h2 className="text-base font-semibold text-text">
                     Confidence Cutoff (τ Threshold)
                   </h2>
-                  <p className="text-xs text-text-muted mt-0.5">
+                  <p className="text-xs text-text-3 mt-0.5">
                     Controls defect sensitivity vs false alarms for Model 1 YOLO inference.
                   </p>
                 </div>
@@ -192,14 +192,14 @@ export default function Settings() {
                   className={`rounded-xl border p-4 text-left transition-all ${
                     formValues.confidenceThreshold === 0.25
                       ? "border-primary bg-primary/5 text-text ring-1 ring-primary/20"
-                      : "border-border bg-surface text-text-muted hover:border-border hover:bg-canvas/50"
+                      : "border-border bg-surface text-text-3 hover:border-border hover:bg-canvas/50"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-text">Standard Production</span>
                     <span className="font-mono text-xs font-bold text-text tabular-nums">0.25</span>
                   </div>
-                  <p className="mt-1.5 text-xs text-text-muted leading-relaxed">
+                  <p className="mt-1.5 text-xs text-text-3 leading-relaxed">
                     Verified production baseline. Balances crack & finger recall with zero busbar false positives.
                   </p>
                 </button>
@@ -215,15 +215,15 @@ export default function Settings() {
                   }
                   className={`rounded-xl border p-4 text-left transition-all ${
                     formValues.confidenceThreshold === 0.10
-                      ? "border-warning bg-warning-soft text-text ring-1 ring-warning/30"
-                      : "border-border bg-surface text-text-muted hover:border-border hover:bg-canvas/50"
+                      ? "border-warning bg-warning-tint text-text ring-1 ring-warning/30"
+                      : "border-border bg-surface text-text-3 hover:border-border hover:bg-canvas/50"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-text">High Sensitivity</span>
                     <span className="font-mono text-xs font-bold text-text tabular-nums">0.10</span>
                   </div>
-                  <p className="mt-1.5 text-xs text-text-muted leading-relaxed">
+                  <p className="mt-1.5 text-xs text-text-3 leading-relaxed">
                     Surfaces faint hairline cracks; requires mandatory human operator verification.
                   </p>
                 </button>
@@ -231,7 +231,7 @@ export default function Settings() {
 
               {/* Fine-Tuning Slider */}
               <div className="pt-2 space-y-2">
-                <div className="flex items-center justify-between text-xs text-text-subtle font-medium">
+                <div className="flex items-center justify-between text-xs text-text-3 font-medium">
                   <span>Higher Recall (0.05)</span>
                   <span>Production (0.25)</span>
                   <span>Higher Precision (0.80)</span>
@@ -255,7 +255,7 @@ export default function Settings() {
 
               {/* Threshold Warning Banner */}
               {isLoweredThreshold ? (
-                <div className="flex items-start gap-3 rounded-xl border border-warning-border bg-warning-soft p-3.5 text-xs text-text">
+                <div className="flex items-start gap-3 rounded-xl border border-warning-border bg-warning-tint p-3.5 text-xs text-text">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-warning mt-0.5" />
                   <p className="leading-relaxed">
                     <strong>Threshold Below 0.25 Warning:</strong> Operating below 0.25 causes significant false alarm elevation (+108% at 0.10) on multi-busbar solder joints. Do not silently lower thresholds on automated production sorting lines.
@@ -271,7 +271,7 @@ export default function Settings() {
 
             {/* Inference Resolution & Safeguards */}
             <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm space-y-5">
-              <h2 className="text-base font-semibold text-text border-b border-border-subtle pb-3">
+              <h2 className="text-base font-semibold text-text border-b border-border pb-3">
                 Inference & Upload Safeguards
               </h2>
 
@@ -280,7 +280,7 @@ export default function Settings() {
                   <span className="text-xs font-semibold text-text">
                     Inference Resolution (YOLO imgsz)
                   </span>
-                  <p className="text-xs text-text-muted">
+                  <p className="text-xs text-text-3">
                     Input size passed to model. Standard baseline is 640×640.
                   </p>
                   <select
@@ -288,7 +288,7 @@ export default function Settings() {
                     onChange={(e) =>
                       setFormValues((curr) => ({ ...curr, imageSize: Number(e.target.value) }))
                     }
-                    className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-xs font-medium text-text outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full rounded-lg border border-border bg-surface-subtle px-3 py-2 text-xs font-medium text-text outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value={640}>640 × 640 (Standard Model Input - Verified)</option>
                     <option value={960}>960 × 960 (Experimental High-Res Display)</option>
@@ -300,7 +300,7 @@ export default function Settings() {
                   <span className="text-xs font-semibold text-text">
                     Client-Side Upload Limit
                   </span>
-                  <p className="text-xs text-text-muted">
+                  <p className="text-xs text-text-3">
                     Pre-upload browser limit. Server transport ceiling is strictly 35 MB.
                   </p>
                   <select
@@ -308,7 +308,7 @@ export default function Settings() {
                     onChange={(e) =>
                       setFormValues((curr) => ({ ...curr, maxUploadMb: Number(e.target.value) }))
                     }
-                    className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-xs font-medium text-text outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full rounded-lg border border-border bg-surface-subtle px-3 py-2 text-xs font-medium text-text outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value={10}>10 MB (Standard JPG)</option>
                     <option value={20}>20 MB (High-res PNG)</option>
@@ -323,14 +323,14 @@ export default function Settings() {
           <div className="space-y-4">
             <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm space-y-3">
               <h3 className="text-sm font-semibold text-text">EL & NIR Imagery Only</h3>
-              <p className="text-xs text-text-muted leading-relaxed">
+              <p className="text-xs text-text-3 leading-relaxed">
                 Visual defect models are trained on high-contrast electroluminescence and near-infrared sensor imagery. Standard RGB daylight camera photos yield unreliable detections and must not be used on production sorting lines.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-surface-elevated p-5 shadow-sm space-y-3">
+            <div className="rounded-2xl border border-border bg-surface-subtle p-5 shadow-sm space-y-3">
               <h3 className="text-sm font-semibold text-text">Need Infrastructure Status?</h3>
-              <p className="text-xs text-text-muted leading-relaxed">
+              <p className="text-xs text-text-3 leading-relaxed">
                 Live database connectivity, model checkpoint health checks, and server log consoles are housed in the dedicated engineering console.
               </p>
               <Button
@@ -349,7 +349,7 @@ export default function Settings() {
       {/* Tab 2: Account & Profile */}
       <div className={activeTab === "account" ? "space-y-6" : "hidden space-y-6"}>
         <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border-subtle pb-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
             <div className="flex items-center gap-3">
               <div className="grid h-12 w-12 place-items-center rounded-xl bg-canvas border border-border text-text font-bold text-lg">
                 <User className="h-6 w-6 text-text" />
@@ -358,7 +358,7 @@ export default function Settings() {
                 <h2 className="text-base font-semibold text-text">
                   {isAuthenticated ? user?.name || user?.openId || "Operator Session" : "Guest Operator"}
                 </h2>
-                <p className="text-xs text-text-muted mt-0.5">
+                <p className="text-xs text-text-3 mt-0.5">
                   {isAuthenticated
                     ? `Role: ${user?.role || "operator"} · Authenticated session active`
                     : "Unauthenticated · Read-only access enabled"}
@@ -372,7 +372,7 @@ export default function Settings() {
                   variant="outline"
                   size="sm"
                   onClick={() => logout()}
-                  className="h-9 gap-1.5 rounded-lg border-danger-border bg-danger-soft text-xs font-medium text-danger hover:bg-danger/10"
+                  className="h-9 gap-1.5 rounded-lg border-danger-border bg-danger-tint text-xs font-medium text-danger hover:bg-danger/10"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   Sign Out
@@ -394,35 +394,35 @@ export default function Settings() {
           <div>
             <h3 className="text-sm font-semibold text-text mb-3">Role Capabilities</h3>
             <div className="rounded-xl border border-border overflow-hidden text-xs">
-              <div className="grid grid-cols-3 bg-surface-elevated p-3 font-semibold text-text border-b border-border">
+              <div className="grid grid-cols-3 bg-surface-subtle p-3 font-semibold text-text border-b border-border">
                 <span>Operation</span>
                 <span>Operator</span>
                 <span>Administrator</span>
               </div>
               <div className="divide-y divide-border-subtle bg-surface">
-                <div className="grid grid-cols-3 p-3 text-text-muted items-center">
+                <div className="grid grid-cols-3 p-3 text-text-3 items-center">
                   <span className="text-text font-medium">Run Visual Defect Inspection</span>
                   <span className="text-success font-medium">Allowed</span>
                   <span className="text-success font-medium">Allowed</span>
                 </div>
-                <div className="grid grid-cols-3 p-3 text-text-muted items-center">
+                <div className="grid grid-cols-3 p-3 text-text-3 items-center">
                   <span className="text-text font-medium">Export Printable A4 Reports & CSV</span>
                   <span className="text-success font-medium">Allowed</span>
                   <span className="text-success font-medium">Allowed</span>
                 </div>
-                <div className="grid grid-cols-3 p-3 text-text-muted items-center">
+                <div className="grid grid-cols-3 p-3 text-text-3 items-center">
                   <span className="text-text font-medium">Tune Session Confidence Threshold</span>
                   <span className="text-success font-medium">Allowed</span>
                   <span className="text-success font-medium">Allowed</span>
                 </div>
-                <div className="grid grid-cols-3 p-3 text-text-muted items-center">
+                <div className="grid grid-cols-3 p-3 text-text-3 items-center">
                   <span className="text-text font-medium">Toggle Experimental Modules</span>
-                  <span className="text-text-subtle">Restricted</span>
+                  <span className="text-text-3">Restricted</span>
                   <span className="text-success font-medium">Allowed</span>
                 </div>
-                <div className="grid grid-cols-3 p-3 text-text-muted items-center">
+                <div className="grid grid-cols-3 p-3 text-text-3 items-center">
                   <span className="text-text font-medium">Flush Server Diagnostics Log</span>
-                  <span className="text-text-subtle">Restricted</span>
+                  <span className="text-text-3">Restricted</span>
                   <span className="text-success font-medium">Allowed</span>
                 </div>
               </div>
@@ -434,13 +434,13 @@ export default function Settings() {
       {/* Tab 3: Optional / Experimental Modules Section (Preserving exact copy & elements) */}
       <div className={activeTab === "experimental" ? "space-y-6" : "hidden space-y-6"}>
         <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-canvas border border-border text-text">
                 <FlaskConical className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                <p className="text-xs font-semibold uppercase tracking-wider text-text-3">
                   System Architecture &amp; Governance
                 </p>
                 <h2 className="mt-0.5 text-xl font-semibold text-text">
@@ -448,7 +448,7 @@ export default function Settings() {
                 </h2>
               </div>
             </div>
-            <span className="rounded-full border border-border bg-surface-elevated px-3 py-1 font-mono text-xs text-text-muted">
+            <span className="rounded-full border border-border bg-surface-subtle px-3 py-1 font-mono text-xs text-text-3">
               Administrative Access Control
             </span>
           </div>
@@ -463,16 +463,16 @@ export default function Settings() {
                     Enable Root Cause Analysis
                   </h3>
                   {rootCauseEnabled ? (
-                    <span className="rounded-full bg-success-soft border border-success-border px-2 py-0.5 text-xs font-semibold text-success">
+                    <span className="rounded-full bg-success-tint border border-success-border px-2 py-0.5 text-xs font-semibold text-success">
                       Active
                     </span>
                   ) : (
-                    <span className="rounded-full bg-surface-elevated border border-border px-2 py-0.5 text-xs font-semibold text-text-muted">
+                    <span className="rounded-full bg-surface-subtle border border-border px-2 py-0.5 text-xs font-semibold text-text-3">
                       Disabled
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-text-muted leading-relaxed pt-1">
+                <p className="text-xs text-text-3 leading-relaxed pt-1">
                   Show the experimental manufacturing root-cause analysis module in SolarVision. This feature is not trained on a verified, linked factory root-cause dataset and should not be treated as production-grade causal diagnosis.
                 </p>
               </div>
@@ -494,8 +494,8 @@ export default function Settings() {
             </div>
 
             {/* Role Status & Persistent Invariant Notice */}
-            <div className="border-t border-border-subtle pt-3 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
+            <div className="border-t border-border pt-3 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex items-center gap-2 text-text-3">
                 {isAdmin ? (
                   <span className="inline-flex items-center gap-1.5 text-success font-medium">
                     <CheckCircle2 className="h-3.5 w-3.5" />
@@ -522,7 +522,7 @@ export default function Settings() {
             </div>
 
             {/* Data Preservation Guarantee */}
-            <div className="rounded-xl bg-warning-soft border border-warning-border p-3.5 text-xs text-text leading-relaxed">
+            <div className="rounded-xl bg-warning-tint border border-warning-border p-3.5 text-xs text-text leading-relaxed">
               <p>
                 <strong>Data Preservation Guarantee:</strong> Disabling this setting removes Root Cause Analysis from the navigation sidebar and entry points, but never deletes underlying database tables, CSV imports, or confirmed annotations. If re-enabled, all previously linked batches, machines, and annotations remain intact.
               </p>

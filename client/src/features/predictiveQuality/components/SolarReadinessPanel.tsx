@@ -48,24 +48,24 @@ export function SolarReadinessPanel() {
   return (
     <div className="space-y-6">
       {/* Header Status Card */}
-      <Card className="rounded-3xl border border-rose-300/80 bg-white p-6 shadow-sm sm:p-8">
+      <Card className="rounded-3xl border border-rose-300/80 bg-surface p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs uppercase font-semibold">
                 Status: NOT_TRAINED
               </Badge>
-              <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
+              <Badge className="bg-surface-subtle text-text-2 border border-border text-xs font-mono">
                 DATASET_BLOCKED
               </Badge>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-text-3 font-mono">
                 Canonical Feature Contract: 32 Dimensions (v1.0.0)
               </span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+            <h2 className="text-xl font-bold tracking-tight text-sapphire sm:text-2xl">
               Photovoltaic Manufacturing Quality Model Readiness
             </h2>
-            <p className="text-xs text-slate-600 sm:text-sm max-w-2xl leading-relaxed">
+            <p className="text-xs text-text-2 sm:text-sm max-w-2xl leading-relaxed">
               Model 3 for solar manufacturing monitors in-line flash testing (Voc, Isc, Fill Factor, efficiency) and SCADA furnace/laminator telemetry. Serving is strictly quarantined until real factory ground-truth labels are ingested.
             </p>
           </div>
@@ -75,35 +75,35 @@ export function SolarReadinessPanel() {
             size="sm"
             onClick={loadReadiness}
             disabled={loading}
-            className="gap-2 rounded-xl border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 self-start sm:self-auto"
+            className="gap-2 rounded-xl border-border text-xs font-semibold text-text hover:bg-surface-subtle self-start sm:self-auto"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-slate-400" : "text-[#F2B941]"}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-text-3" : "text-sapphire"}`} />
             Refresh Telemetry Audit
           </Button>
         </div>
 
         {/* Live Database Inventory Counter */}
-        <div className="mt-8 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6 sm:grid-cols-5">
+        <div className="mt-8 grid grid-cols-2 gap-4 border-t border-border pt-6 sm:grid-cols-5">
           {/* Batches */}
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          <div className="rounded-2xl border border-border bg-surface-subtle p-4">
+            <span className="text-text-3 text-xs font-semibold uppercase tracking-wider">
               Manufacturing Batches
             </span>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-sapphire">
               {readiness?.tableCounts.batches ?? 0}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">Database batches</p>
+            <p className="text-xs text-text-3 mt-0.5">Database batches</p>
           </div>
 
           {/* Sensor Telemetry */}
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          <div className="rounded-2xl border border-border bg-surface-subtle p-4">
+            <span className="text-text-3 text-xs font-semibold uppercase tracking-wider">
               Sensor Streams
             </span>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-sapphire">
               {readiness?.tableCounts.sensorReadings ?? 0}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">Continuous records</p>
+            <p className="text-xs text-text-3 mt-0.5">Continuous records</p>
           </div>
 
           {/* Quality Outcome Labels */}
@@ -118,14 +118,14 @@ export function SolarReadinessPanel() {
           </div>
 
           {/* Linked Inspections */}
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          <div className="rounded-2xl border border-border bg-surface-subtle p-4">
+            <span className="text-text-3 text-xs font-semibold uppercase tracking-wider">
               Linked Inspections
             </span>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-sapphire">
               {readiness?.tableCounts.linkedInspections ?? 0}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">Model 1 optical records</p>
+            <p className="text-xs text-text-3 mt-0.5">Model 1 optical records</p>
           </div>
 
           {/* Eligible Training Examples */}
@@ -144,10 +144,10 @@ export function SolarReadinessPanel() {
       {/* Two Column Layout: Blocking Checklist & Prerequisites */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Active Blockers Checklist */}
-        <Card className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <Card className="rounded-3xl border border-border bg-surface p-6 shadow-xs">
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4 text-rose-600" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-sapphire">
               Active Production Blockers (Statistical Floor: N ≥ 500)
             </h3>
           </div>
@@ -164,16 +164,16 @@ export function SolarReadinessPanel() {
             ))}
           </div>
 
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
-            <span className="font-semibold text-slate-700">Zero-Fabrication Policy:</span> The SolarVision AI release gate prevents serving simulated risk scores or synthetic confidence percentages to plant operators.
+          <div className="mt-4 rounded-xl border border-border bg-surface-subtle p-3 text-xs text-text-3">
+            <span className="font-semibold text-text">Zero-Fabrication Policy:</span> The SolarVision AI release gate prevents serving simulated risk scores or synthetic confidence percentages to plant operators.
           </div>
         </Card>
 
         {/* Prerequisites to Training */}
-        <Card className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <Card className="rounded-3xl border border-border bg-surface p-6 shadow-xs">
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-[#F2B941]" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+            <Zap className="h-4 w-4 text-sapphire" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-sapphire">
               Prerequisites to Solar Model 3 Deployment
             </h3>
           </div>
@@ -182,9 +182,9 @@ export function SolarReadinessPanel() {
             {readiness?.prerequisites.map((step, index) => (
               <div
                 key={index}
-                className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3.5 text-xs text-slate-700 leading-relaxed"
+                className="flex items-start gap-3 rounded-2xl border border-border bg-surface-subtle p-3.5 text-xs text-text-2 leading-relaxed"
               >
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-200 font-mono text-xs font-bold text-slate-700">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-surface border border-border font-mono text-xs font-bold text-sapphire">
                   {index + 1}
                 </span>
                 <span>{step}</span>

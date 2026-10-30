@@ -125,24 +125,24 @@ export function PredictiveQualityOverview() {
               onClick={() => setModelMode("sandia_performance")}
               className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer ${
                 modelMode === "sandia_performance"
-                  ? "bg-ink text-white shadow-xs"
+                  ? "bg-[#965660] text-white shadow-xs"
                   : "text-text-2 hover:bg-surface-subtle hover:text-text"
               }`}
             >
               <Zap
                 className={`h-4 w-4 ${
-                  modelMode === "sandia_performance" ? "text-brand" : "text-brand-text"
+                  modelMode === "sandia_performance" ? "text-[#F2DBD7]" : "text-[#965660]"
                 }`}
               />
               <span>Sandia Solar Electrical Performance</span>
               <span
                 className={`rounded px-1.5 py-0.5 text-xs font-mono ${
                   modelMode === "sandia_performance"
-                    ? "bg-white/20 text-brand"
+                    ? "bg-white/20 text-white"
                     : "bg-surface-subtle text-text-3 border border-border"
                 }`}
               >
-                Primary M3
+                Primary Model 3
               </span>
             </button>
 
@@ -153,24 +153,24 @@ export function PredictiveQualityOverview() {
               onClick={() => setModelMode("secom_benchmark")}
               className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer ${
                 modelMode === "secom_benchmark"
-                  ? "bg-ink text-white shadow-xs"
+                  ? "bg-terracotta text-white shadow-xs"
                   : "text-text-2 hover:bg-surface-subtle hover:text-text"
               }`}
             >
               <Cpu
                 className={`h-4 w-4 ${
-                  modelMode === "secom_benchmark" ? "text-brand" : "text-text-3"
+                  modelMode === "secom_benchmark" ? "text-white" : "text-text-3"
                 }`}
               />
               <span>UCI SECOM Process Benchmark</span>
               <span
                 className={`rounded px-1.5 py-0.5 text-xs font-mono ${
                   modelMode === "secom_benchmark"
-                    ? "bg-white/20 text-brand"
+                    ? "bg-white/20 text-white"
                     : "bg-surface-subtle text-text-3 border border-border"
                 }`}
               >
-                Secondary
+                Secondary Benchmark
               </span>
             </button>
           </div>
@@ -190,21 +190,21 @@ export function PredictiveQualityOverview() {
                 <TabsList className="h-10 w-full justify-start rounded-none bg-transparent p-0 gap-4">
                   <TabsTrigger
                     value="benchmark"
-                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-ink data-[state=active]:text-text"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-sapphire data-[state=active]:text-sapphire"
                   >
                     <Cpu className="mr-2 h-3.5 w-3.5 text-text-3" />
                     UCI SECOM Benchmark
                   </TabsTrigger>
                   <TabsTrigger
                     value="prediction"
-                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-ink data-[state=active]:text-text"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-sapphire data-[state=active]:text-sapphire"
                   >
                     <Play className="mr-2 h-3.5 w-3.5 text-success" />
                     Prediction Simulator
                   </TabsTrigger>
                   <TabsTrigger
                     value="solar_readiness"
-                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-ink data-[state=active]:text-text"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-sapphire data-[state=active]:text-sapphire"
                   >
                     <Sun className="mr-2 h-3.5 w-3.5 text-warning" />
                     Solar PV Factory Readiness

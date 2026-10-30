@@ -168,7 +168,7 @@ export default function SystemHealthPage() {
               onClick={() => setAutoRefresh(!autoRefresh)}
               className="h-9 px-3 text-xs font-semibold rounded-lg border-border bg-surface text-text hover:bg-canvas gap-1.5"
             >
-              <Timer className="h-3.5 w-3.5 text-text-subtle" />
+              <Timer className="h-3.5 w-3.5 text-text-3" />
               {autoRefresh ? "Auto-Refresh (10s)" : "Auto-Refresh Off"}
             </Button>
             <Button
@@ -207,7 +207,7 @@ export default function SystemHealthPage() {
           <h2 className="text-base font-bold text-text tracking-tight">
             Multi-Model Inference Readiness & Artifact Integrity
           </h2>
-          <p className="text-xs text-text-muted">
+          <p className="text-xs text-text-3">
             Real-time status of all four AI models, trained artifact checkpoints, backend bridges, and operational governance constraints
           </p>
         </div>
@@ -265,7 +265,7 @@ export default function SystemHealthPage() {
           <h2 className="text-base font-bold text-text tracking-tight">
             Diagnostic Telemetry & Live Event Log
           </h2>
-          <p className="text-xs text-text-muted">
+          <p className="text-xs text-text-3">
             Real-time structured event stream from Node backend, FastAPI bridges, Model inference pipelines, and SQLite persistence
           </p>
         </div>

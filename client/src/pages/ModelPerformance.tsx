@@ -53,10 +53,10 @@ export default function ModelPerformance() {
             </StatusBadge>
             <Link
               href="/inspection"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink/90 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#965660] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#7E454E] transition-colors shadow-xs"
             >
               <span>Test Inspection</span>
-              <ArrowRight className="h-3 w-3 text-brand" />
+              <ArrowRight className="h-3 w-3 text-white" />
             </Link>
           </div>
         }
@@ -77,11 +77,11 @@ export default function ModelPerformance() {
       {/* Top Grid: Model Architecture & Runtime Specifications */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Active Checkpoint Architecture Card (7 cols) */}
-        <div className="lg:col-span-7 rounded-2xl bg-ink text-white p-6 shadow-sm flex flex-col justify-between space-y-5">
+        <div className="lg:col-span-7 rounded-xl bg-sapphire text-white p-6 shadow-xs flex flex-col justify-between space-y-5">
           <div>
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-brand">
+                <span className="text-xs font-semibold uppercase tracking-wider text-dusty-pink">
                   Active Checkpoint (Model 1)
                 </span>
                 <h2 className="mt-1 text-xl font-bold text-white">
@@ -91,7 +91,7 @@ export default function ModelPerformance() {
                   Single-stage anchor-free CNN (50 epochs, mAP@50=91.87% on internal validation; 69.75% on held-out test).
                 </p>
               </div>
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-brand">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-dusty-pink">
                 <BrainCircuit className="h-5 w-5" />
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function ModelPerformance() {
               <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                 <span className="text-white/60">SHA-256 Checksum</span>
                 <span
-                  className="font-mono text-xs text-brand truncate max-w-[220px]"
+                  className="font-mono text-xs text-dusty-pink truncate max-w-[220px]"
                   title={HISTORICAL_MODEL_EVALUATION.checkpointSha256}
                 >
                   {HISTORICAL_MODEL_EVALUATION.checkpointSha256}
@@ -130,12 +130,12 @@ export default function ModelPerformance() {
 
           <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/70">
             <span>FastAPI Bridge with CLI Fallback</span>
-            <span className="font-mono text-xs text-brand">PVELAD EL2021 Benchmark</span>
+            <span className="font-mono text-xs text-dusty-pink">PVELAD EL2021 Benchmark</span>
           </div>
         </div>
 
         {/* Runtime Settings Card (5 cols) */}
-        <div className="lg:col-span-5 rounded-2xl border border-border bg-surface p-6 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-5 rounded-xl border border-border bg-surface p-6 shadow-xs flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
@@ -147,7 +147,7 @@ export default function ModelPerformance() {
             <div className="mt-4 space-y-3 text-xs">
               <div className="rounded-xl border border-border bg-surface-subtle p-3 space-y-1">
                 <span className="font-semibold text-text flex items-center gap-1.5">
-                  <Sliders className="h-3.5 w-3.5 text-brand-text" />
+                  <Sliders className="h-3.5 w-3.5 text-sapphire" />
                   Baseline Cutoff: 0.25
                 </span>
                 <p className="text-text-3 leading-relaxed">
@@ -172,13 +172,13 @@ export default function ModelPerformance() {
             className="inline-flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
           >
             <span>Launch M1 Defect Detection</span>
-            <ExternalLink className="h-3.5 w-3.5 text-brand-text" />
+            <ExternalLink className="h-3.5 w-3.5 text-sapphire" />
           </Link>
         </div>
       </div>
 
       {/* Held-out Benchmark KPI Strip */}
-      <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-4">
+      <section className="rounded-xl border border-border bg-surface p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-3">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
@@ -237,7 +237,7 @@ export default function ModelPerformance() {
       </section>
 
       {/* Nine Defect Classes Breakdown */}
-      <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-4">
+      <section className="rounded-xl border border-border bg-surface p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
@@ -274,7 +274,7 @@ export default function ModelPerformance() {
                       meta.severity === "critical"
                         ? "bg-danger-tint text-danger border border-danger/20"
                         : meta.severity === "high"
-                        ? "bg-warning-tint text-brand-text border border-warning/20"
+                        ? "bg-warning-tint text-terracotta border border-warning/20"
                         : "bg-surface text-text-2 border border-border"
                     }`}
                   >
@@ -315,7 +315,7 @@ export default function ModelPerformance() {
       {/* Models 2, 3, 4 Governance Overviews */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Model 2 ELPV Card */}
-        <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-border bg-surface p-5 space-y-3 shadow-xs">
           <div className="flex items-center justify-between border-b border-border pb-2.5">
             <span className="font-mono text-xs font-bold text-text">Model 2 · ELPV</span>
             <StatusBadge tone="success">Active</StatusBadge>
@@ -327,7 +327,7 @@ export default function ModelPerformance() {
           <div className="pt-2 border-t border-border/60">
             <Link
               href="/cell-screening"
-              className="text-xs font-semibold text-brand-text hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-sapphire hover:underline inline-flex items-center gap-1"
             >
               <span>Open Cell Screening</span>
               <ArrowRight className="h-3 w-3" />
@@ -336,7 +336,7 @@ export default function ModelPerformance() {
         </div>
 
         {/* Model 3 Sandia Card */}
-        <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-border bg-surface p-5 space-y-3 shadow-xs">
           <div className="flex items-center justify-between border-b border-border pb-2.5">
             <span className="font-mono text-xs font-bold text-text">Model 3 · Sandia</span>
             <StatusBadge tone="success">Verified</StatusBadge>
@@ -348,7 +348,7 @@ export default function ModelPerformance() {
           <div className="pt-2 border-t border-border/60">
             <Link
               href="/predictive-quality"
-              className="text-xs font-semibold text-brand-text hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-sapphire hover:underline inline-flex items-center gap-1"
             >
               <span>Open Sandia Forecaster</span>
               <ArrowRight className="h-3 w-3" />
@@ -357,7 +357,7 @@ export default function ModelPerformance() {
         </div>
 
         {/* Model 4 AI4I Card */}
-        <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-border bg-surface p-5 space-y-3 shadow-xs">
           <div className="flex items-center justify-between border-b border-border pb-2.5">
             <span className="font-mono text-xs font-bold text-text">Model 4 · AI4I</span>
             <StatusBadge tone="neutral">Evaluated</StatusBadge>
@@ -369,7 +369,7 @@ export default function ModelPerformance() {
           <div className="pt-2 border-t border-border/60">
             <Link
               href="/predictive-maintenance"
-              className="text-xs font-semibold text-brand-text hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-sapphire hover:underline inline-flex items-center gap-1"
             >
               <span>Open Maintenance Center</span>
               <ArrowRight className="h-3 w-3" />

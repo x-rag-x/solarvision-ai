@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         />
 
-        <main className="flex-1 w-full max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150">
+        <main className="flex-1 w-full max-w-[1380px] mx-auto p-4 sm:p-5 lg:p-6 animate-in fade-in duration-150">
           {children}
         </main>
       </div>

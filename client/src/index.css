@@ -2,53 +2,104 @@
 @import "tw-animate-css";
 
 :root {
-  /* SolarVision Calm Precision Design Tokens */
-  --canvas: #F7F6F2;
+  /* Refined Lavender Blush Palette */
+  --sapphire: #2F3A58;
+  --sapphire-hover: #242E47;
+  --sapphire-dark: #1A2240;
+  --sapphire-tint: #E4E7F3;
+
+  --dusty-pink: #EAC9C4;
+  --dusty-pink-hover: #F2DBD7;
+  --dusty-pink-tint: #FAF0EE;
+  --dusty-pink-text: #54272D;
+
+  --terracotta: #965660;
+  --terracotta-hover: #7E454E;
+  --terracotta-tint: #F2DBD7;
+
+  --soft-lavender: #A6A9D0;
+  --soft-lavender-hover: #9497C2;
+  --soft-lavender-tint: #E8EBF5;
+  --soft-lavender-text: #2F3A58;
+
+  --cloud-white: #F0F1F9;
+
+  --sage-gray: #8F9A98;
+  --sage-gray-light: #D9DDEB;
+  --sage-gray-text: #59647D;
+
+  /* Core Canvas & Surfaces */
+  --canvas: #F0F1F9;
   --surface: #FFFFFF;
-  --surface-subtle: #F1F0EB;
-  --border: #E3E1DA;
-  --border-strong: #8C887E;
-  --text: #16130F;
-  --text-2: #46433D;
-  --text-3: #6A665E;
-  --ink: #16130F;
-  --brand: #F2B941;
-  --brand-tint: #FFF4D6;
-  --brand-text: #8A5A00;
-  --focus: #B07400;
-  --success: #1B6B43;
-  --success-tint: #E7F4EC;
-  --warning: #8A5A00;
-  --warning-tint: #FFF4D6;
-  --danger: #B42318;
-  --danger-tint: #FDECEA;
-  --info: #1E4FBF;
-  --info-tint: #E8EEFC;
+  --surface-subtle: #E4E7F3;
+  --border: #D9DDEB;
+  --border-strong: #59647D;
+
+  /* Accessible Typography (WCAG AA compliant) */
+  --text: #2F3A58;
+  --text-2: #59647D;
+  --text-3: #59647D;
+  --ink: #965660;
+
+  /* Primary Brand & Button Accents (Midnight-Indigo / Blush) */
+  --brand: #2F3A58;
+  --brand-hover: #242E47;
+  --brand-tint: #F2DBD7;
+  --brand-text: #965660;
+  --focus: #2F3A58;
+
+  /* Dedicated Lavender Sidebar Tokens */
+  --sidebar-bg: #E4E7F3;
+  --sidebar-text: #2F3A58;
+  --sidebar-header: #2F3A58;
+  --sidebar-section: #59647D;
+  --sidebar-icon: #2F3A58;
+  --sidebar-active-bg: #F2DBD7;
+  --sidebar-active-text: #2F3A58;
+  --sidebar-active-bar: #965660;
+  --sidebar-hover-bg: #D8DCED;
+  --sidebar-border: #D9DDEB;
+  --sidebar-footer-bg: #DBE0F0;
+
+  /* Preserved Operational Status Semantics (Never Pastel) */
+  --success: #166534;
+  --success-tint: #DCFCE7;
+  --success-border: #86EFAC;
+  --warning: #B45309;
+  --warning-tint: #FEF3C7;
+  --warning-border: #FCD34D;
+  --danger: #B91C1C;
+  --danger-tint: #FEE2E2;
+  --danger-border: #FCA5A5;
+  --info: #2F3A58;
+  --info-tint: #E8EBF5;
+  --info-border: #B5BCDA;
 
   /* shadcn UI Token Compatibility */
-  --background: #F7F6F2;
-  --foreground: #16130F;
+  --background: #F0F1F9;
+  --foreground: #2F3A58;
   --card: #FFFFFF;
-  --card-foreground: #16130F;
+  --card-foreground: #2F3A58;
   --popover: #FFFFFF;
-  --popover-foreground: #16130F;
-  --primary: #16130F;
+  --popover-foreground: #2F3A58;
+  --primary: #2F3A58;
+  --primary-hover: #242E47;
   --primary-foreground: #FFFFFF;
-  --secondary: #F1F0EB;
-  --secondary-foreground: #16130F;
-  --muted: #F1F0EB;
-  --muted-foreground: #6A665E;
-  --accent: #F1F0EB;
-  --accent-foreground: #16130F;
-  --destructive: #B42318;
+  --secondary: #F2DBD7;
+  --secondary-foreground: #965660;
+  --muted: #E4E7F3;
+  --muted-foreground: #59647D;
+  --accent: #F2DBD7;
+  --accent-foreground: #965660;
+  --destructive: #B91C1C;
   --destructive-foreground: #FFFFFF;
-  --input: #E3E1DA;
-  --ring: #B07400;
+  --input: #D9DDEB;
+  --ring: #2F3A58;
   --radius: 0.75rem;
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #16130F;
-  background-color: #F7F6F2;
+  color: #2F3A58;
+  background-color: #F0F1F9;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -57,6 +108,34 @@
 
 @theme inline {
   --font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", "Segoe UI Mono", Menlo, Consolas, monospace;
+
+  /* Sapphire Ash Morning Reference Palette */
+  --color-sapphire: var(--sapphire);
+  --color-sapphire-hover: var(--sapphire-hover);
+  --color-sapphire-dark: var(--sapphire-dark);
+  --color-sapphire-tint: var(--sapphire-tint);
+
+  --color-dusty-pink: var(--dusty-pink);
+  --color-dusty-pink-hover: var(--dusty-pink-hover);
+  --color-dusty-pink-tint: var(--dusty-pink-tint);
+  --color-dusty-pink-text: var(--dusty-pink-text);
+
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-hover: var(--terracotta-hover);
+  --color-terracotta-tint: var(--terracotta-tint);
+
+  --color-soft-lavender: var(--soft-lavender);
+  --color-soft-lavender-hover: var(--soft-lavender-hover);
+  --color-soft-lavender-tint: var(--soft-lavender-tint);
+  --color-soft-lavender-text: var(--soft-lavender-text);
+
+  --color-cloud-white: var(--cloud-white);
+
+  --color-sage-gray: var(--sage-gray);
+  --color-sage-gray-light: var(--sage-gray-light);
+  --color-sage-gray-text: var(--sage-gray-text);
+
+  /* Surface & Typography mappings */
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-subtle: var(--surface-subtle);
@@ -67,17 +146,24 @@
   --color-text-3: var(--text-3);
   --color-ink: var(--ink);
   --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
   --color-brand-tint: var(--brand-tint);
   --color-brand-text: var(--brand-text);
   --color-focus: var(--focus);
+
+  /* Operational status */
   --color-success: var(--success);
   --color-success-tint: var(--success-tint);
+  --color-success-border: var(--success-border);
   --color-warning: var(--warning);
   --color-warning-tint: var(--warning-tint);
+  --color-warning-border: var(--warning-border);
   --color-danger: var(--danger);
   --color-danger-tint: var(--danger-tint);
+  --color-danger-border: var(--danger-border);
   --color-info: var(--info);
   --color-info-tint: var(--info-tint);
+  --color-info-border: var(--info-border);
 
   /* shadcn compat */
   --color-background: var(--background);
@@ -135,12 +221,12 @@ button {
 }
 
 ::selection {
-  background: var(--brand);
-  color: var(--ink);
+  background: var(--blush);
+  color: var(--dark-rose-text);
 }
 
 .font-mono, code, kbd {
-  font-family: "JetBrains Mono", "DM Mono", "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, "Cascadia Code", "Segoe UI Mono", Consolas, "Liberation Mono", Menlo, monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -169,7 +255,7 @@ button {
 @media print {
   body {
     background: #FFFFFF !important;
-    color: #16130F !important;
+    color: #2F3A58 !important;
   }
   .no-print {
     display: none !important;
@@ -193,4 +279,27 @@ button {
     size: A4;
     margin: 1.5cm;
   }
+}
+
+/* Sidebar custom scrollbar */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #D8DCED transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #D8DCED;
+  border-radius: 9999px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #B5BCDA;
 }

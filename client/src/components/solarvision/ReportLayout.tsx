@@ -66,7 +66,7 @@ export function ReportLayout({
 
   const verdictToneStyles = {
     success: "border-success/30 bg-success-tint/40 text-success",
-    warning: "border-warning/30 bg-warning-tint/40 text-brand-text",
+    warning: "border-warning/30 bg-warning-tint/40 text-terracotta",
     danger: "border-danger/30 bg-danger-tint/40 text-danger",
     neutral: "border-border bg-surface-subtle text-text",
   };
@@ -112,9 +112,9 @@ export function ReportLayout({
           {onRunAnother && (
             <button
               onClick={onRunAnother}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-ink/90 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#965660] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#7E454E] transition-colors shadow-xs"
             >
-              <RotateCcw className="h-3.5 w-3.5 text-brand" />
+              <RotateCcw className="h-3.5 w-3.5 text-[#F2DBD7]" />
               <span>Run Another</span>
             </button>
           )}
@@ -195,21 +195,24 @@ export function ReportLayout({
           {mandatoryNoticeNode}
         </div>
 
-        {/* Evidence View (Visual Inspection Image or Telemetry) */}
-        <section aria-label="Visual Evidence" className="space-y-2 print-break-inside-avoid">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-text-3">
-            Primary Visual & Metric Evidence
-          </h2>
-          {evidenceNode}
-        </section>
+        {/* Side-by-side Evidence & Diagnostic Findings Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start print:grid-cols-1">
+          {/* Evidence View (Visual Inspection Image or Telemetry) */}
+          <section aria-label="Visual Evidence" className="space-y-2 print-break-inside-avoid">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-text-3">
+              Primary Visual & Metric Evidence
+            </h2>
+            {evidenceNode}
+          </section>
 
-        {/* Findings Detail List/Table */}
-        <section aria-label="Detailed Findings" className="space-y-2 print-break-inside-avoid">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-text-3">
-            Itemized Diagnostic Findings
-          </h2>
-          {findingsNode}
-        </section>
+          {/* Findings Detail List/Table */}
+          <section aria-label="Detailed Findings" className="space-y-2 print-break-inside-avoid">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-text-3">
+              Itemized Diagnostic Findings
+            </h2>
+            {findingsNode}
+          </section>
+        </div>
 
         {/* Print-only footer */}
         <footer className="hidden print:block pt-6 mt-8 border-t border-border text-xs font-mono text-text-3">

@@ -103,6 +103,10 @@ export default function InspectionDetail() {
               bbox: [Number(d.x1), Number(d.y1), Number(d.x2), Number(d.y2)] as [number, number, number, number],
             }));
 
+            const cleanDetailImage = inspection.inputImageUrl || "";
+            const backendAnnotatedDetailImage = inspection.annotatedImageUrl || null;
+            const isDetailBackendOnly = !cleanDetailImage && Boolean(backendAnnotatedDetailImage);
+
             const handleExportCsv = () => {
               if (detections.length === 0) {
                 toast.info("No detections to export.");
@@ -170,9 +174,12 @@ export default function InspectionDetail() {
                   }
                   evidenceNode={
                     <ImageViewer
-                      imageUrl={inspection.annotatedImageUrl || inspection.inputImageUrl || ""}
-                      originalImageUrl={inspection.inputImageUrl || undefined}
-                      detections={viewerDetections}
+                      cleanImageUrl={cleanDetailImage || undefined}
+                      imageUrl={cleanDetailImage || backendAnnotatedDetailImage || ""}
+                      backendAnnotatedUrl={backendAnnotatedDetailImage}
+                      isBackendAnnotated={isDetailBackendOnly}
+                      originalImageUrl={cleanDetailImage || undefined}
+                      detections={isDetailBackendOnly ? [] : viewerDetections}
                       highlightedIndex={highlightedIndex}
                       onHighlightIndex={setHighlightedIndex}
                       title={inspection.sourceFilename || "Stored Visual Evidence"}

@@ -46,25 +46,25 @@ export function BenchmarkEvaluationCard() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+      <Card className="rounded-xl border border-border bg-surface p-6 shadow-xs sm:p-7">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
                 Academic Evaluation Suite
               </span>
-              <Badge className="bg-[#0B0909] text-white text-xs font-mono">
+              <Badge className="bg-sapphire text-white text-xs font-mono">
                 {meta.modelVersion}
               </Badge>
-              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
+              <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs">
                 Audited Held-Out Test Split
               </Badge>
             </div>
-            <h3 className="mt-1 text-xl font-bold text-slate-900 sm:text-2xl">
+            <h3 className="mt-1 text-xl font-bold text-sapphire sm:text-2xl">
               AI4I 2020 Predictive Maintenance Performance
             </h3>
-            <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+            <p className="mt-1 text-xs text-text-3 sm:text-sm">
               Standardized benchmark evaluation on 1,502 held-out test records (10,000 total multi-sensor milling apparatus dataset).
             </p>
           </div>
@@ -73,80 +73,80 @@ export function BenchmarkEvaluationCard() {
             variant="outline"
             size="sm"
             onClick={() => setModalOpen(true)}
-            className="gap-2 rounded-xl border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 self-start sm:self-auto"
+            className="gap-2 rounded-lg border-border text-xs font-semibold text-text hover:bg-surface-subtle self-start sm:self-auto"
           >
-            <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+            <ExternalLink className="h-3.5 w-3.5 text-text-3" />
             Inspect DOI & Citation
           </Button>
         </div>
 
         {/* Primary Metrics Grid */}
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 border-t border-slate-100 pt-6">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-            <span className="text-xs text-slate-400 font-medium">Accuracy</span>
-            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 border-t border-border pt-6">
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 font-medium">Accuracy</span>
+            <p className="text-xl font-bold font-mono text-sapphire mt-0.5">
               {formatPct(m.accuracy)}
             </p>
-            <span className="text-xs text-emerald-600 font-medium">N = {m.testSamples} test</span>
+            <span className="text-xs text-emerald-700 font-medium">N = {m.testSamples} test</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-            <span className="text-xs text-slate-400 font-medium">Balanced Accuracy</span>
-            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 font-medium">Balanced Accuracy</span>
+            <p className="text-xl font-bold font-mono text-sapphire mt-0.5">
               {formatPct(m.balancedAccuracy)}
             </p>
-            <span className="text-xs text-slate-400">Class-adjusted</span>
+            <span className="text-xs text-text-3">Class-adjusted</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-            <span className="text-xs text-slate-400 font-medium">ROC-AUC</span>
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 font-medium">ROC-AUC</span>
             <p className="text-xl font-bold font-mono text-emerald-700 mt-0.5">
               {formatDec(m.rocAuc, 3)}
             </p>
-            <span className="text-xs text-slate-400">Discrimination index</span>
+            <span className="text-xs text-text-3">Discrimination index</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-            <span className="text-xs text-slate-400 font-medium">PR-AUC</span>
-            <p className="text-xl font-bold font-mono text-indigo-700 mt-0.5">
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 font-medium">PR-AUC</span>
+            <p className="text-xl font-bold font-mono text-sapphire mt-0.5">
               {formatDec(m.prAuc, 3)}
             </p>
-            <span className="text-xs text-slate-400">Precision-recall curve</span>
+            <span className="text-xs text-text-3">Precision-recall curve</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-            <span className="text-xs text-slate-400 font-medium">Precision (Fail)</span>
-            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 font-medium">Precision (Fail)</span>
+            <p className="text-xl font-bold font-mono text-sapphire mt-0.5">
               {formatPct(m.precision)}
             </p>
-            <span className="text-xs text-slate-400">Positive predictive val</span>
+            <span className="text-xs text-text-3">Positive predictive val</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-            <span className="text-xs text-slate-400 font-medium">Recall (Fail)</span>
-            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 font-medium">Recall (Fail)</span>
+            <p className="text-xl font-bold font-mono text-sapphire mt-0.5">
               {formatPct(m.recall)}
             </p>
-            <span className="text-xs text-slate-400">Fault sensitivity</span>
+            <span className="text-xs text-text-3">Fault sensitivity</span>
           </div>
         </div>
 
         {/* Secondary Calibration & Decision Boundary Strip */}
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-            <span className="text-xs text-slate-400 uppercase font-semibold">F1-Score</span>
-            <p className="text-base font-bold font-mono text-amber-700 mt-0.5">
+          <div className="rounded-xl border border-border bg-surface-subtle/40 p-3">
+            <span className="text-xs text-text-3 uppercase font-semibold">F1-Score</span>
+            <p className="text-base font-bold font-mono text-warning mt-0.5">
               {formatDec(m.f1Score, 3)}
             </p>
-            <span className="text-xs text-slate-400">Harmonic mean</span>
+            <span className="text-xs text-text-3">Harmonic mean</span>
           </div>
 
-          <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-            <span className="text-xs text-slate-400 uppercase font-semibold">Specificity (Normal)</span>
+          <div className="rounded-xl border border-border bg-surface-subtle/40 p-3">
+            <span className="text-xs text-text-3 uppercase font-semibold">Specificity (Normal)</span>
             <p className="text-base font-bold font-mono text-emerald-700 mt-0.5">
               {formatPct(m.specificityNormal)}
             </p>
-            <span className="text-xs text-slate-400">True negative rate</span>
+            <span className="text-xs text-text-3">True negative rate</span>
           </div>
 
           <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
@@ -174,7 +174,7 @@ export function BenchmarkEvaluationCard() {
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                 Held-Out Confusion Matrix
               </span>
-              <Badge className="bg-[#0B0909] text-white text-xs font-mono">
+              <Badge className="bg-sapphire text-white text-xs font-mono">
                 N = {m.testSamples}
               </Badge>
             </div>
@@ -211,67 +211,67 @@ export function BenchmarkEvaluationCard() {
           </div>
 
           {/* Volume & Class Imbalance */}
-          <div className="md:col-span-7 rounded-2xl border border-slate-200/80 bg-slate-50/60 p-5">
+          <div className="md:col-span-7 rounded-xl border border-border bg-surface-subtle p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
                 Ground-Truth Benchmark Failure Distribution
               </span>
-              <Badge className="bg-slate-200 text-slate-800 text-xs font-mono">
+              <Badge className="bg-surface text-text-2 border border-border text-xs font-mono">
                 {m.imbalanceRatio}:1 Imbalance
               </Badge>
             </div>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-              <div className="rounded-xl border border-slate-200/80 bg-white p-2.5">
-                <span className="text-xs text-slate-400">Heat Dissipation (HDF)</span>
-                <p className="text-base font-bold font-mono text-slate-900 mt-0.5">
+              <div className="rounded-lg border border-border bg-surface p-2.5">
+                <span className="text-xs text-text-3">Heat Dissipation (HDF)</span>
+                <p className="text-base font-bold font-mono text-sapphire mt-0.5">
                   {breakdown.hdfCount}
                 </p>
-                <span className="text-xs text-slate-400">33.9% of faults</span>
+                <span className="text-xs text-text-3">33.9% of faults</span>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-white p-2.5">
-                <span className="text-xs text-slate-400">Overstrain (OSF)</span>
-                <p className="text-base font-bold font-mono text-slate-900 mt-0.5">
+              <div className="rounded-lg border border-border bg-surface p-2.5">
+                <span className="text-xs text-text-3">Overstrain (OSF)</span>
+                <p className="text-base font-bold font-mono text-sapphire mt-0.5">
                   {breakdown.osfCount}
                 </p>
-                <span className="text-xs text-slate-400">28.9% of faults</span>
+                <span className="text-xs text-text-3">28.9% of faults</span>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-white p-2.5">
-                <span className="text-xs text-slate-400">Power Excursion (PWF)</span>
-                <p className="text-base font-bold font-mono text-slate-900 mt-0.5">
+              <div className="rounded-lg border border-border bg-surface p-2.5">
+                <span className="text-xs text-text-3">Power Excursion (PWF)</span>
+                <p className="text-base font-bold font-mono text-sapphire mt-0.5">
                   {breakdown.pwfCount}
                 </p>
-                <span className="text-xs text-slate-400">28.0% of faults</span>
+                <span className="text-xs text-text-3">28.0% of faults</span>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-white p-2.5">
-                <span className="text-xs text-slate-400">Tool Wear (TWF)</span>
-                <p className="text-base font-bold font-mono text-slate-900 mt-0.5">
+              <div className="rounded-lg border border-border bg-surface p-2.5">
+                <span className="text-xs text-text-3">Tool Wear (TWF)</span>
+                <p className="text-base font-bold font-mono text-sapphire mt-0.5">
                   {breakdown.twfCount}
                 </p>
-                <span className="text-xs text-slate-400">13.6% of faults</span>
+                <span className="text-xs text-text-3">13.6% of faults</span>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-white p-2.5">
-                <span className="text-xs text-slate-400">Random Failure (RNF)</span>
-                <p className="text-base font-bold font-mono text-slate-900 mt-0.5">
+              <div className="rounded-lg border border-border bg-surface p-2.5">
+                <span className="text-xs text-text-3">Random Failure (RNF)</span>
+                <p className="text-base font-bold font-mono text-sapphire mt-0.5">
                   {breakdown.rnfCount}
                 </p>
-                <span className="text-xs text-slate-400">5.6% of faults</span>
+                <span className="text-xs text-text-3">5.6% of faults</span>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-white p-2.5">
-                <span className="text-xs text-slate-400">Total Failures</span>
-                <p className="text-base font-bold font-mono text-rose-700 mt-0.5">
+              <div className="rounded-lg border border-border bg-surface p-2.5">
+                <span className="text-xs text-text-3">Total Failures</span>
+                <p className="text-base font-bold font-mono text-rose-600 mt-0.5">
                   {m.failureCount} / {m.totalRecords.toLocaleString()}
                 </p>
-                <span className="text-xs text-slate-400">3.39% baseline incidence</span>
+                <span className="text-xs text-text-3">3.39% baseline incidence</span>
               </div>
             </div>
 
-            <p className="mt-3 text-xs text-slate-400 leading-relaxed">
+            <p className="mt-3 text-xs text-text-3 leading-relaxed">
               Reflects authentic low-incidence manufacturing failure distributions typical in automated precision machining cells.
             </p>
           </div>

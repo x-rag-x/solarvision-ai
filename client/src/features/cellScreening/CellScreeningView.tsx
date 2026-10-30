@@ -78,37 +78,19 @@ export function CellScreeningView() {
       toast.success("Cell screening completed — Operator review required.");
     },
     onError: (err: any) => {
-      toast.error(err.message || "Cell screening failed");
+      toast.error("Screening inference failed", {
+        description: err.message,
+      });
     },
   });
 
-  // 'I' key shortcut in Dev mode
-  useEffect(() => {
-    if (!isDev) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === "i" || e.key === "I") && !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) {
-        e.preventDefault();
-        setInspectorOpen(prev => !prev);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isDev]);
-
   const handleFileSelect = (file: File) => {
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Image exceeds 8 MiB limit for cell defectiveness screening.");
-      return;
-    }
-
     setSelectedFile(file);
     setResult(null);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Create browser local preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
   const handleClearFile = () => {
@@ -118,83 +100,123 @@ export function CellScreeningView() {
   };
 
   const handleRunScreening = async () => {
+    if (!selectedFile) return;
+
     if (!isAuthenticated) {
       openOperatorLoginModal();
       return;
     }
 
-    if (!selectedFile || !imagePreview) {
-      toast.error("Please select a single-cell EL image before running screening.");
-      return;
+    try {
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = async e => {
+        const raw = e.target?.result as string;
+        const base64Data = raw.includes(",") ? raw.split(",")[1] : raw;
+        await predictMutation.mutateAsync({
+          filename: selectedFile.name,
+          mimeType: selectedFile.type || "image/png",
+          base64Data,
+        });
+      };
+      reader.readAsDataURL(selectedFile);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to process cell image.");
     }
-
-    const base64Data = imagePreview.includes(",")
-      ? imagePreview.split(",")[1]
-      : imagePreview;
-
-    predictMutation.mutate({
-      filename: selectedFile.name,
-      mimeType: selectedFile.type || "image/png",
-      base64Data,
-    });
   };
 
   const benchmark = statusQuery.data?.benchmark;
 
-  // If in Prod mode and screening result is ready: render the full printable ReportLayout!
+  // Prod Mode: Printable Inspection Report Layout
   if (isProd && result) {
     const isDefective = result.predictedClass === "defective";
 
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Cell Screening Report"
+          description="Official crystalline PV single-cell screening report for operational records and compliance audit."
+          badge={<ModelBadge model="M2" readiness="Screening Only" />}
+          actions={
+            <button
+              onClick={() => {
+                setResult(null);
+                setSelectedFile(null);
+                setImagePreview(null);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
+            >
+              <RotateCcw className="h-3.5 w-3.5 text-text-3" />
+              <span>New Screening</span>
+            </button>
+          }
+        />
+
+        <NoticeBar
+          tone="warning"
+          message="Operational Warning: Screening-only output. Every cell requires secondary human operator confirmation."
+          details={
+            <p>
+              Under zero-fabrication standards, Model 2 (EfficientNet-B0) operates as an anomaly triage filter.
+              It does not generate automated factory reject signals.
+            </p>
+          }
+        />
+
         <ReportLayout
-          title="Cell Defectiveness Screening Report"
+          title="Photovoltaic Cell Anomaly Screening Certificate"
           reportId={result.screeningId}
           timestamp={result.createdAt}
           operatorName={user?.name || "Authorized Operator"}
-          modelBadge={<ModelBadge model="M2" readiness="Screening only" />}
+          modelBadge={<ModelBadge model="M2" readiness="Screening Only" />}
           statusBadge={
             <StatusBadge tone={isDefective ? "warning" : "success"}>
-              {isDefective ? "Flagged: Defective Cell" : "Screened: Healthy Cell"}
+              {isDefective ? "Defective Likelihood Flagged" : "Healthy Cell Nominal"}
             </StatusBadge>
           }
           verdictHeadline={
             isDefective
-              ? `Model predicts potential cell defectiveness (${result.defectiveScorePct}% score vs 55% threshold)`
-              : `Cell classified as healthy (${result.defectiveScorePct}% score vs 55% threshold)`
+              ? `Defective cell pattern flagged above 0.55 cutoff (Anomaly score: ${result.defectiveScorePct}%)`
+              : `Cell classified healthy within nominal tolerance (Anomaly score: ${result.defectiveScorePct}%)`
           }
           verdictTone={isDefective ? "warning" : "success"}
           verdictStats={[
-            { label: "Predicted State", value: isDefective ? "Defective" : "Healthy" },
+            { label: "Screening ID", value: result.screeningId.slice(0, 10) },
             { label: "Anomaly Score", value: `${result.defectiveScorePct}%` },
-            { label: "Review Status", value: "Pending Review" },
+            { label: "Cutoff", value: "55.0%" },
+            { label: "Review Status", value: "Mandatory Review" },
           ]}
           mandatoryNoticeNode={
             <NoticeBar
               tone="warning"
-              message="Screening only: Mandatory operator review required. No automatic PASS/REJECT decision."
+              message="Operational Warning: Screening-only output. Every cell requires secondary human operator confirmation."
               details={
                 <p>
-                  Trained on academic ELPV dataset (2,624 images). Evaluated at threshold τ = 0.55.
-                  Every classification output serves exclusively as diagnostic triage and requires confirmation by a human operator.
+                  Under zero-fabrication standards, Model 2 (EfficientNet-B0) operates as an anomaly triage filter.
+                  It does not generate automated factory reject signals.
                 </p>
               }
             />
           }
           evidenceNode={
-            <div className="rounded-xl border border-border bg-ink p-4 flex flex-col items-center justify-center">
-              <img
-                src={result.imageUrl || imagePreview || ""}
-                alt="Single Cell EL Evidence"
-                className="max-h-[360px] w-auto object-contain rounded-lg border border-white/10"
-              />
+            <div className="space-y-3">
+              <div className="rounded-xl border border-border bg-surface-subtle p-3 text-center">
+                <img
+                  src={result.imageUrl || imagePreview || undefined}
+                  alt={result.sourceFilename}
+                  className="mx-auto max-h-72 object-contain rounded-lg"
+                />
+                <p className="mt-2 text-xs text-text-3 font-mono">
+                  {result.sourceFilename} • Single-cell electroluminescence (EL)
+                </p>
+              </div>
             </div>
           }
           findingsNode={
-            <div className="rounded-xl border border-border bg-surface-subtle p-5 space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-text">Anomaly Probability vs Cutoff Gauge</span>
-                <span className="font-mono text-text-3">Threshold: 55.0%</span>
+                <span className="font-semibold text-text">Screening Gauge</span>
+                <span className="font-mono text-text-3">Cutoff: 55.0%</span>
               </div>
 
               {/* Progress gauge */}
@@ -208,7 +230,7 @@ export function CellScreeningView() {
                   />
                   {/* Threshold marker line */}
                   <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-ink z-10"
+                    className="absolute top-0 bottom-0 w-0.5 bg-sapphire z-10"
                     style={{ left: "55%" }}
                     title="Threshold: 55%"
                   />
@@ -247,9 +269,9 @@ export function CellScreeningView() {
           isDev && result && (
             <button
               onClick={() => setInspectorOpen(prev => !prev)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-[#F2DBD7]/50 hover:text-[#965660] transition-colors shadow-xs"
             >
-              <Terminal className="h-3.5 w-3.5 text-brand-text" />
+              <Terminal className="h-3.5 w-3.5 text-[#965660]" />
               <span>Inspector</span>
               <kbd className="font-mono text-xs bg-surface-subtle px-1 rounded border border-border">
                 I
@@ -296,12 +318,12 @@ export function CellScreeningView() {
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Left Column (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+          <div className="rounded-xl border border-border bg-surface p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
                 Single-Cell Image Input
               </span>
-              <Scan className="h-4 w-4 text-text-3" />
+              <Scan className="h-4 w-4 text-sapphire" />
             </div>
 
             {/* Dropzone with 8 MiB limit */}
@@ -327,16 +349,16 @@ export function CellScreeningView() {
             <button
               disabled={!selectedFile || predictMutation.isPending}
               onClick={handleRunScreening}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-ink py-3 text-xs font-semibold text-white hover:bg-ink/90 transition-all shadow-xs disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.99]"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#965660] py-2.5 text-xs font-semibold text-white hover:bg-[#7E454E] transition-all shadow-xs disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.99]"
             >
               {predictMutation.isPending ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin text-brand" />
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
                   <span>Evaluating Cell Anomaly Likelihood…</span>
                 </>
               ) : (
                 <>
-                  <Scan className="h-4 w-4 text-brand" />
+                  <Scan className="h-4 w-4 text-white" />
                   <span>Run Cell Defect Screening</span>
                 </>
               )}
@@ -346,7 +368,7 @@ export function CellScreeningView() {
           {/* Benchmark Provenance Card (Dev Mode) */}
           {isDev && benchmark && (
             <div className="rounded-xl border border-border bg-surface-subtle p-4 space-y-2 text-xs">
-              <span className="font-semibold text-text block">ELPV Benchmark Provenance</span>
+              <span className="font-semibold text-sapphire block">ELPV Benchmark Provenance</span>
               <div className="space-y-1 font-mono text-xs text-text-2">
                 <div className="flex justify-between">
                   <span className="text-text-3">Dataset:</span>
@@ -373,13 +395,13 @@ export function CellScreeningView() {
 
         {/* Right Column: Visual Preview & Diagnostic Result (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+          <div className="rounded-xl border border-border bg-surface p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
                   Screening Assessment
                 </span>
-                <h3 className="text-sm font-semibold text-text">
+                <h3 className="text-sm font-semibold text-sapphire">
                   {selectedFile ? selectedFile.name : "Awaiting Input Cell"}
                 </h3>
               </div>
@@ -393,7 +415,7 @@ export function CellScreeningView() {
 
             {/* Image Canvas */}
             {imagePreview ? (
-              <div className="rounded-xl border border-border bg-ink p-4 flex flex-col items-center justify-center min-h-[300px]">
+              <div className="rounded-xl border border-white/10 bg-zinc-950 p-4 flex flex-col items-center justify-center min-h-[300px]">
                 <img
                   src={imagePreview}
                   alt="Cell preview"
@@ -403,7 +425,7 @@ export function CellScreeningView() {
             ) : (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-subtle p-8 text-center min-h-[300px]">
                 <div className="mb-3 grid h-11 w-11 place-items-center rounded-xl bg-surface text-text-3 border border-border">
-                  <Scan className="h-5 w-5 text-text-2" />
+                  <Scan className="h-5 w-5 text-sapphire" />
                 </div>
                 <h4 className="text-xs font-semibold text-text">No Cell Loaded</h4>
                 <p className="mt-1 text-xs text-text-3 max-w-xs leading-relaxed">
@@ -430,7 +452,7 @@ export function CellScreeningView() {
                         style={{ width: `${Math.min(100, Math.max(0, result.defectiveScorePct))}%` }}
                       />
                       <div
-                        className="absolute top-0 bottom-0 w-0.5 bg-ink z-10"
+                        className="absolute top-0 bottom-0 w-0.5 bg-sapphire z-10"
                         style={{ left: "55%" }}
                       />
                     </div>
@@ -448,7 +470,7 @@ export function CellScreeningView() {
                     </div>
                     <div>
                       <span className="text-text-3 block text-xs">Anomaly Score</span>
-                      <span className="font-mono font-semibold text-text">
+                      <span className="font-mono font-semibold text-sapphire">
                         {isDev ? `${result.rawDefectiveScore.toFixed(4)} (${result.defectiveScorePct}%)` : `${result.defectiveScorePct}%`}
                       </span>
                     </div>
@@ -470,7 +492,7 @@ export function CellScreeningView() {
           {historyQuery.data && historyQuery.data.length > 0 && (
             <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold text-text">Recent Cell Screening History</h4>
+                <h4 className="text-xs font-semibold text-sapphire">Recent Cell Screening History</h4>
                 <span className="font-mono text-[11px] text-text-3">
                   {historyQuery.data.length} recorded
                 </span>

@@ -53,7 +53,7 @@ export function ArtifactProvenanceModal({
 
         {/* Modal Header */}
         <div className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#0B0909] text-[#F2B941]">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-sapphire text-dusty-pink">
             <Award className="h-6 w-6" />
           </div>
           <div>
@@ -118,7 +118,7 @@ export function ArtifactProvenanceModal({
         <div className="mt-6">
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4 text-[#F2B941]" />
+              <BookOpen className="h-4 w-4 text-sapphire" />
               Official Scientific Citation (IEEE Format)
             </label>
             <Button
@@ -164,7 +164,7 @@ export function ArtifactProvenanceModal({
         <div className="mt-6 flex justify-end">
           <Button
             onClick={onClose}
-            className="rounded-xl bg-[#0B0909] text-white text-xs px-5 hover:bg-slate-800"
+            className="rounded-xl bg-[#965660] text-white text-xs px-5 hover:bg-[#7E454E]"
           >
             Close Provenance Details
           </Button>

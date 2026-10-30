@@ -55,7 +55,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
   const failureModesToDisplay = prediction.ruleBasedFailureModes || prediction.failureModes || [];
 
   return (
-    <Card className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
+    <Card className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
       {/* Top Banner */}
       <div
         className={`border-b px-6 py-4 sm:px-8 ${
@@ -73,14 +73,14 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                 isFailure ? "bg-rose-500 animate-pulse" : isWarning ? "bg-amber-500" : "bg-emerald-500"
               }`}
             />
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-2">
               Operating Condition Assessment Verdict
             </span>
-            <Badge className="bg-[#0B0909] text-white text-xs font-mono">
+            <Badge className="bg-sapphire text-white text-xs font-mono">
               Model 4 ({prediction.modelVersion})
             </Badge>
           </div>
-          <span className="text-xs text-slate-500 font-mono">
+          <span className="text-xs text-text-3 font-mono">
             Evaluated in {prediction.executionTimeMs} ms • Decision Cut: τ* = 0.1981
           </span>
         </div>
@@ -92,7 +92,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
           {/* Classification Status */}
           <div className="md:col-span-5 flex items-center gap-4">
             <div
-              className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl shadow-sm ${
+              className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl shadow-xs ${
                 isFailure
                   ? "bg-rose-100 text-rose-700 border border-rose-200"
                   : isWarning
@@ -114,19 +114,19 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                   {prediction.riskLevel} Risk
                 </Badge>
                 {prediction.activeFailureMode && (
-                  <Badge className="bg-[#0B0909] text-[#F2B941] text-xs font-mono">
+                  <Badge className="bg-sapphire text-dusty-pink text-xs font-mono">
                     Mode: {prediction.activeFailureMode}
                   </Badge>
                 )}
               </div>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-text sm:text-3xl">
                 {isFailure
                   ? "Operating in Failure State"
                   : isWarning
                   ? "Operating Margin Warning"
                   : "Operating in Nominal Envelope"}
               </h2>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-text-3">
                 {isFailure
                   ? "Operating parameters exceed safe physical envelope for active station."
                   : isWarning
@@ -137,49 +137,49 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
           </div>
 
           {/* Calibrated Probabilities */}
-          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-slate-100 md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5">
-              <span className="text-xs text-slate-500 font-medium">Failure Probability</span>
+          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-border md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
+            <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+              <span className="text-xs text-text-3 font-medium">Failure Probability</span>
               <p
                 className={`text-xl font-bold font-mono mt-0.5 ${
-                  isFailure ? "text-rose-700" : isWarning ? "text-amber-700" : "text-slate-800"
+                  isFailure ? "text-rose-700" : isWarning ? "text-amber-700" : "text-text"
                 }`}
               >
                 {prediction.failureProbability !== null
                   ? `${(prediction.failureProbability * 100).toFixed(1)}%`
                   : "N/A"}
               </p>
-              <span className="text-xs text-slate-400">
+              <span className="text-[11px] text-text-3">
                 P(Fail | Condition)
               </span>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5">
-              <span className="text-xs text-slate-500 font-medium">Conforming Probability</span>
+            <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+              <span className="text-xs text-text-3 font-medium">Conforming Probability</span>
               <p className="text-xl font-bold font-mono text-emerald-700 mt-0.5">
                 {prediction.healthyProbability !== null
                   ? `${(prediction.healthyProbability * 100).toFixed(1)}%`
                   : "N/A"}
               </p>
-              <span className="text-xs text-slate-400">
+              <span className="text-[11px] text-text-3">
                 P(Healthy | Condition)
               </span>
             </div>
 
-            <div className="col-span-2 sm:col-span-1 rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5">
-              <span className="text-xs text-slate-500 font-medium">95% Confidence Interval</span>
-              <p className="text-sm font-bold font-mono text-slate-800 mt-1">
+            <div className="col-span-2 sm:col-span-1 rounded-xl border border-border bg-surface-subtle p-3.5">
+              <span className="text-xs text-text-3 font-medium">95% Confidence Interval</span>
+              <p className="text-sm font-bold font-mono text-text mt-1">
                 {prediction.confidenceInterval
                   ? `[${(prediction.confidenceInterval.low * 100).toFixed(1)}%, ${(prediction.confidenceInterval.high * 100).toFixed(1)}%]`
                   : "N/A"}
               </p>
-              <span className="text-xs text-slate-400">Calibrated Platt bounds</span>
+              <span className="text-[11px] text-text-3">Calibrated Platt bounds</span>
             </div>
           </div>
         </div>
 
         {/* Prognostic RUL Transparency Callout */}
-        <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-5">
+        <div className="rounded-xl border border-amber-300 bg-amber-50/80 p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-200 text-amber-900">
@@ -205,12 +205,12 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
         </div>
 
         {/* Failure Mode Attribution Grid — Rule-Based Transparency */}
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
+        <div className="rounded-xl border border-border bg-surface-subtle p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-2">
               Failure Mode Decomposition (Deterministic Physical Rules):
             </p>
-            <Badge className="bg-slate-200 text-slate-800 text-xs font-mono self-start sm:self-auto">
+            <Badge className="bg-surface text-text border border-border text-xs font-mono self-start sm:self-auto">
               Rule-Based Engineering Criteria • Not Multi-Class Model
             </Badge>
           </div>
@@ -223,7 +223,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                   className={`flex flex-col rounded-xl border p-3.5 ${
                     mode.thresholdExceeded
                       ? "border-rose-300 bg-rose-50/90 text-rose-950"
-                      : "border-slate-200/80 bg-white text-slate-700"
+                      : "border-border bg-surface text-text"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -232,17 +232,17 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                       className={`text-xs font-mono ${
                         mode.thresholdExceeded
                           ? "bg-rose-200 text-rose-900 border-rose-300"
-                          : "bg-slate-100 text-slate-600 border-slate-200"
+                          : "bg-surface-subtle text-text-3 border-border"
                       }`}
                     >
                       {mode.thresholdExceeded ? "EXCEEDED" : "NORMAL"}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-xs font-bold truncate">{mode.name}</p>
-                  <p className="mt-1 text-xs leading-relaxed line-clamp-2 text-slate-500">
+                  <p className="mt-1 text-xs font-bold truncate text-text">{mode.name}</p>
+                  <p className="mt-1 text-xs leading-relaxed line-clamp-2 text-text-3">
                     {mode.description}
                   </p>
-                  <p className="mt-2 text-xs font-mono text-slate-400 border-t border-slate-100 pt-1.5">
+                  <p className="mt-2 text-xs font-mono text-text-3/80 border-t border-border pt-1.5">
                     {mode.engineeringFormula}
                   </p>
                 </div>
@@ -253,23 +253,23 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
         {/* Recommended Action & Scope Boundary */}
         <div className="grid gap-4 md:grid-cols-12">
           {/* Action */}
-          <div className="md:col-span-7 rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="flex items-center gap-2 text-slate-900 font-semibold text-xs uppercase tracking-wider">
-              <Wrench className="h-4 w-4 text-[#F2B941]" />
+          <div className="md:col-span-7 rounded-xl border border-border bg-surface p-5 shadow-xs">
+            <div className="flex items-center gap-2 text-sapphire font-semibold text-xs uppercase tracking-wider">
+              <Wrench className="h-4 w-4 text-sapphire" />
               Maintenance Directive:
             </div>
-            <p className="mt-2 text-sm text-slate-800 leading-relaxed font-medium">
+            <p className="mt-2 text-xs sm:text-sm text-text leading-relaxed font-medium">
               {prediction.recommendedAction}
             </p>
           </div>
 
           {/* Scope Guard Callout */}
-          <div className="md:col-span-5 rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
-            <div className="flex items-center gap-2 text-blue-900 font-semibold text-xs uppercase tracking-wider">
-              <Info className="h-4 w-4 text-blue-700" />
+          <div className="md:col-span-5 rounded-xl border border-info-border bg-info-tint p-5 shadow-xs">
+            <div className="flex items-center gap-2 text-info font-semibold text-xs uppercase tracking-wider">
+              <Info className="h-4 w-4 text-info" />
               Prognostic Scope Boundary:
             </div>
-            <p className="mt-2 text-xs text-blue-800 leading-relaxed">
+            <p className="mt-2 text-xs text-text-2 leading-relaxed">
               Current condition classification indicates if active machine telemetry reflects a failure state{" "}
               <strong>right now</strong>. It does not calculate hours until a healthy machine will break down.
             </p>

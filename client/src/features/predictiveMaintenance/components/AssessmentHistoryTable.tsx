@@ -75,7 +75,7 @@ export function AssessmentHistoryTable({
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Database Assessment History
             </span>
-            <Badge className="bg-[#0B0909] text-white text-xs font-mono">
+            <Badge className="bg-sapphire text-white text-xs font-mono">
               {history.length} Record{history.length !== 1 ? "s" : ""}
             </Badge>
           </div>

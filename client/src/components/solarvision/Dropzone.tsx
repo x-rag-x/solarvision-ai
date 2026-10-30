@@ -167,10 +167,10 @@ export function Dropzone({
     <div className={`relative ${className}`}>
       {/* Global drag overlay */}
       {isGlobalDragOver && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 backdrop-blur-xs text-white p-6 animate-in fade-in">
-          <div className="rounded-3xl border-2 border-dashed border-brand bg-surface p-10 text-center max-w-md shadow-2xl">
-            <UploadCloud className="mx-auto h-12 w-12 text-brand-text mb-3 animate-bounce" />
-            <h3 className="text-lg font-semibold text-text">Release to Attach Solar Image</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-sapphire-dark/60 backdrop-blur-xs text-white p-6 animate-in fade-in">
+          <div className="rounded-3xl border-2 border-dashed border-sapphire bg-surface p-10 text-center max-w-md shadow-2xl">
+            <UploadCloud className="mx-auto h-12 w-12 text-sapphire mb-3 animate-bounce" />
+            <h3 className="text-lg font-bold text-sapphire">Release to Attach Solar Image</h3>
             <p className="mt-1 text-xs text-text-3">File will be routed to the active inspection pipeline.</p>
           </div>
         </div>
@@ -193,7 +193,7 @@ export function Dropzone({
         <div className="flex items-center justify-between rounded-xl border border-border bg-surface-subtle p-3.5 transition-all">
           <div className="flex items-center gap-3 min-w-0">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-surface border border-border text-text">
-              <FileImage className="h-5 w-5 text-brand-text" />
+              <FileImage className="h-5 w-5 text-sapphire" />
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-text">{selectedFile.name}</p>
@@ -209,7 +209,7 @@ export function Dropzone({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors"
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-sapphire transition-colors"
             >
               Replace
             </button>
@@ -241,16 +241,16 @@ export function Dropzone({
           }}
           className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
             isDragOver
-              ? "border-brand bg-brand-tint/30 scale-[0.99]"
-              : "border-border bg-surface hover:border-border-strong hover:bg-surface-subtle/50"
+              ? "border-sapphire bg-sapphire/5 scale-[0.99]"
+              : "border-border bg-surface hover:border-sapphire/40 hover:bg-surface-subtle/50"
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          <div className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-surface-subtle text-text-3 border border-border">
-            <UploadCloud className="h-5 w-5 text-text-2" />
+          <div className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-surface-subtle text-sapphire border border-border">
+            <UploadCloud className="h-5 w-5 text-sapphire" />
           </div>
 
-          <p className="text-xs sm:text-sm font-semibold text-text">{title}</p>
-          <p className="mt-1 max-w-sm text-xs sm:text-xs text-text-3 leading-relaxed">
+          <p className="text-xs sm:text-sm font-semibold text-sapphire">{title}</p>
+          <p className="mt-1 max-w-sm text-xs text-text-3 leading-relaxed">
             {subtitle}
           </p>
 

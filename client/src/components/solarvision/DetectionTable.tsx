@@ -36,15 +36,15 @@ export function DetectionTable({
 
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-      <table className="w-full min-w-[640px] text-left text-xs">
+      <table className="w-full min-w-full sm:min-w-[540px] text-left text-xs">
         <thead className="border-b border-border bg-surface-subtle text-xs text-text-3 font-semibold">
           <tr>
-            <th className="py-2.5 px-3.5">Defect Class</th>
-            <th className="py-2.5 px-3">Severity</th>
-            <th className="py-2.5 px-3">Confidence</th>
-            <th className="py-2.5 px-3">Bounding Box</th>
-            <th className="py-2.5 px-3">Dimensions</th>
-            <th className="py-2.5 px-3 text-right">Model Engine</th>
+            <th className="py-2.5 px-3">Defect Class</th>
+            <th className="py-2.5 px-2.5">Severity</th>
+            <th className="py-2.5 px-2.5">Confidence</th>
+            <th className="py-2.5 px-2.5">Bounding Box</th>
+            <th className="py-2.5 px-2.5">Dimensions</th>
+            <th className="py-2.5 px-2.5 text-right hidden sm:table-cell">Model Engine</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/60">
@@ -65,14 +65,22 @@ export function DetectionTable({
                 key={`${defectType}-${index}`}
                 onMouseEnter={() => onHighlightIndex?.(index)}
                 onMouseLeave={() => onHighlightIndex?.(null)}
-                className={`transition-colors cursor-pointer ${
-                  isHighlighted ? "bg-brand-tint/40 font-medium" : "hover:bg-surface-subtle"
+                onClick={() => onHighlightIndex?.(isHighlighted ? null : index)}
+                className={`transition-all duration-150 cursor-pointer select-none ${
+                  isHighlighted
+                    ? "bg-amber-500/15 border-l-4 border-l-amber-500 font-semibold shadow-2xs"
+                    : "hover:bg-surface-subtle border-l-4 border-l-transparent"
                 }`}
               >
-                <td className="py-2.5 px-3.5">
-                  <DefectBadge defectType={defectType} size="sm" />
-                </td>
                 <td className="py-2.5 px-3">
+                  <div className="flex items-center gap-1.5">
+                    {isHighlighted && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                    )}
+                    <DefectBadge defectType={defectType} size="sm" />
+                  </div>
+                </td>
+                <td className="py-2.5 px-2.5">
                   <span
                     className={`inline-block rounded px-2 py-0.5 text-xs font-semibold capitalize ${
                       meta.severity === "critical"
@@ -85,9 +93,9 @@ export function DetectionTable({
                     {meta.severity}
                   </span>
                 </td>
-                <td className="py-2.5 px-3">
+                <td className="py-2.5 px-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-14 h-1.5 rounded-full bg-border overflow-hidden">
+                    <div className="w-12 sm:w-14 h-1.5 rounded-full bg-border overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-300"
                         style={{
@@ -101,16 +109,16 @@ export function DetectionTable({
                     </span>
                   </div>
                 </td>
-                <td className="py-2.5 px-3 font-mono text-xs text-text-3 tabular-nums">
-                  <span className="inline-flex items-center gap-1">
-                    <Crosshair className="h-3 w-3 text-text-3" />
+                <td className="py-2.5 px-2.5 font-mono text-xs text-text-3 tabular-nums">
+                  <span className={`inline-flex items-center gap-1 ${isHighlighted ? "text-amber-600 dark:text-amber-400 font-medium" : ""}`}>
+                    <Crosshair className={`h-3 w-3 ${isHighlighted ? "text-amber-500 animate-spin" : "text-text-3"}`} style={{ animationDuration: "3s" }} />
                     [{x1}, {y1}] → [{x2}, {y2}]
                   </span>
                 </td>
-                <td className="py-2.5 px-3 font-mono text-xs text-text-3 tabular-nums">
+                <td className="py-2.5 px-2.5 font-mono text-xs text-text-3 tabular-nums">
                   {width} × {height} px
                 </td>
-                <td className="py-2.5 px-3 text-right">
+                <td className="py-2.5 px-2.5 text-right hidden sm:table-cell">
                   <span className="inline-flex rounded bg-surface-subtle border border-border px-1.5 py-0.5 font-mono text-xs text-text-3">
                     YOLO26n
                   </span>

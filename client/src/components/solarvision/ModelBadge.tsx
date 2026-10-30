@@ -24,7 +24,7 @@ export function ModelBadge({ model, readiness, className = "" }: ModelBadgeProps
     <span
       className={`inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-subtle px-2 py-0.5 text-xs text-text-2 font-medium ${className}`}
     >
-      <span className="font-mono font-semibold text-text">{model}</span>
+      <span className="font-mono font-bold text-sapphire">{model}</span>
       <span className="text-border-strong">•</span>
       <span className="text-xs text-text-3">{displayReadiness}</span>
     </span>

@@ -193,7 +193,7 @@ export function PredictionInProgressSkeleton() {
               </p>
             </div>
           </div>
-          <span className="rounded-full bg-surface-elevated px-3 py-1 text-xs font-semibold text-slate-900">
+          <span className="rounded-full bg-surface-subtle px-3 py-1 text-xs font-semibold text-slate-900">
             Inferring Candidates
           </span>
         </div>

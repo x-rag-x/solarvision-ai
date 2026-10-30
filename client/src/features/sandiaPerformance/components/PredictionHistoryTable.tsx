@@ -78,33 +78,33 @@ export function PredictionHistoryTable({
   }, [filterModule, lastPredictionTimestamp]);
 
   return (
-    <Card className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm sm:p-8 space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5">
+    <Card className="rounded-xl border border-border bg-surface p-6 shadow-xs sm:p-7 space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#F2B941]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-sapphire">
               Audit Trail & Operational Records
             </span>
-            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
+            <Badge className="bg-surface-subtle text-text-2 border border-border text-xs font-mono">
               {history.length} Inferences Logged
             </Badge>
           </div>
-          <h3 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
+          <h3 className="mt-1 text-lg font-bold tracking-tight text-sapphire">
             Prediction History & Telemetry Log
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-text-3 mt-0.5">
             Backed by persistent SQLite database history through authenticated tRPC layer. Zero synthetic entries generated.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative w-48 sm:w-64">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-text-3" />
             <Input
               value={filterModule}
               onChange={e => setFilterModule(e.target.value)}
               placeholder="Filter by Module ID..."
-              className="h-8 pl-8 rounded-xl font-mono text-xs border-slate-300"
+              className="h-9 pl-8 rounded-lg font-mono text-xs border-border bg-surface"
             />
           </div>
 
@@ -113,10 +113,10 @@ export function PredictionHistoryTable({
             size="sm"
             onClick={loadHistory}
             disabled={loading}
-            className="h-8 gap-1.5 rounded-xl border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="h-9 gap-1.5 rounded-lg border-border text-xs font-semibold text-text hover:bg-surface-subtle"
           >
             <RefreshCw
-              className={`h-3 w-3 ${loading ? "animate-spin text-slate-400" : "text-[#F2B941]"}`}
+              className={`h-3 w-3 ${loading ? "animate-spin text-text-3" : "text-sapphire"}`}
             />
             Refresh
           </Button>
@@ -125,14 +125,14 @@ export function PredictionHistoryTable({
 
       {error && (
         <div
-          className={`rounded-2xl border p-4 text-xs flex items-center gap-3 ${
+          className={`rounded-xl border p-4 text-xs flex items-center gap-3 ${
             isAuthError
-              ? "border-amber-200 bg-amber-50 text-amber-900"
+              ? "border-warning-border bg-warning-tint text-warning"
               : "border-rose-200 bg-rose-50 text-rose-900"
           }`}
         >
           {isAuthError ? (
-            <Lock className="h-4 w-4 shrink-0 text-amber-600" />
+            <Lock className="h-4 w-4 shrink-0 text-warning" />
           ) : (
             <ShieldAlert className="h-4 w-4 shrink-0 text-rose-600" />
           )}
@@ -146,7 +146,7 @@ export function PredictionHistoryTable({
             variant="ghost"
             size="sm"
             onClick={loadHistory}
-            className="h-7 text-xs font-semibold hover:bg-amber-100"
+            className="h-7 text-xs font-semibold hover:bg-warning-tint/80"
           >
             Retry
           </Button>
@@ -154,21 +154,21 @@ export function PredictionHistoryTable({
       )}
 
       {history.length === 0 && !error ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-10 text-center space-y-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-400 mx-auto">
+        <div className="rounded-xl border border-dashed border-border bg-surface-subtle p-10 text-center space-y-3">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-surface border border-border text-text-3 mx-auto">
             <FileText className="h-5 w-5" />
           </div>
-          <h4 className="text-sm font-semibold text-slate-800">
+          <h4 className="text-sm font-semibold text-text">
             No Sandia Electrical Predictions Recorded
           </h4>
-          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+          <p className="text-xs text-text-3 max-w-md mx-auto leading-relaxed">
             Inferences submitted through the dynamic schema form or batch API will be logged here with module identifier, predicted electrical value, and model version.
           </p>
         </div>
       ) : history.length > 0 ? (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+        <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-surface-subtle text-xs font-semibold text-text-3 uppercase tracking-wider border-b border-border">
               <tr>
                 <th className="px-4 py-3">Timestamp</th>
                 <th className="px-4 py-3">Module ID</th>
@@ -179,45 +179,45 @@ export function PredictionHistoryTable({
                 <th className="px-4 py-3">Source</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-mono">
+            <tbody className="divide-y divide-border font-mono">
               {history.map(item => (
                 <tr
                   key={item.id}
-                  className="hover:bg-slate-50/60 transition-colors"
+                  className="hover:bg-surface-subtle/60 transition-colors"
                 >
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-text-2 whitespace-nowrap">
                     {new Date(item.timestamp).toLocaleString(undefined, {
                       dateStyle: "short",
                       timeStyle: "medium",
                     })}
                   </td>
-                  <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">
+                  <td className="px-4 py-3 font-semibold text-text whitespace-nowrap">
                     {item.moduleId}
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">
+                  <td className="px-4 py-3 font-bold text-sapphire whitespace-nowrap">
                     {typeof item.prediction === "number"
                       ? item.prediction.toFixed(2)
                       : String(item.prediction)}{" "}
-                    <span className="text-slate-400 font-normal">
+                    <span className="text-text-3 font-normal">
                       {item.targetUnit}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-text-2 whitespace-nowrap">
                     {item.targetName}
                   </td>
-                  <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+                  <td className="px-4 py-3 text-text-3 whitespace-nowrap">
                     {item.processingTimeMs} ms
                   </td>
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-text-2 whitespace-nowrap">
                     v{item.modelVersion}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {item.isMock ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
+                      <Badge className="bg-warning-tint text-warning border-warning-border text-xs">
                         MOCK
                       </Badge>
                     ) : (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
+                      <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs">
                         PIPELINE
                       </Badge>
                     )}

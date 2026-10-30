@@ -61,15 +61,15 @@ export function Inspector({ open, onClose, title = "Telemetry & Pipeline Inspect
       {/* Header */}
       <div className="flex h-14 items-center justify-between border-b border-border px-4 bg-surface-subtle">
         <div className="flex items-center gap-2">
-          <Terminal className="h-4 w-4 text-brand-text" />
-          <h3 className="text-xs font-semibold text-text truncate">{title}</h3>
-          <span className="rounded bg-brand-tint px-1.5 py-0.5 font-mono text-xs font-bold text-brand-text">
+          <Terminal className="h-4 w-4 text-sapphire" />
+          <h3 className="text-xs font-semibold text-sapphire truncate">{title}</h3>
+          <span className="rounded bg-soft-lavender-tint px-1.5 py-0.5 font-mono text-xs font-bold text-sapphire border border-soft-lavender/40">
             DEV
           </span>
         </div>
         <button
           onClick={onClose}
-          className="grid h-7 w-7 place-items-center rounded-lg text-text-3 hover:text-text hover:bg-surface transition-colors"
+          className="grid h-7 w-7 place-items-center rounded-lg text-text-3 hover:text-sapphire hover:bg-surface transition-colors"
           aria-label="Close inspector drawer"
         >
           <X className="h-4 w-4" />
@@ -84,7 +84,7 @@ export function Inspector({ open, onClose, title = "Telemetry & Pipeline Inspect
             onClick={() => setActiveTab(tab)}
             className={`border-b-2 px-3 py-2.5 capitalize transition-colors ${
               activeTab === tab
-                ? "border-brand text-text font-semibold"
+                ? "border-sapphire text-sapphire font-semibold"
                 : "border-transparent text-text-3 hover:text-text"
             }`}
           >
@@ -125,13 +125,13 @@ export function Inspector({ open, onClose, title = "Telemetry & Pipeline Inspect
               </span>
               <button
                 onClick={() => copyJson(data.rawResponse || data)}
-                className="inline-flex items-center gap-1 rounded bg-surface-subtle border border-border px-2 py-1 text-xs text-text-2 hover:text-text hover:bg-surface transition-colors"
+                className="inline-flex items-center gap-1 rounded bg-surface-subtle border border-border px-2 py-1 text-xs text-text-2 hover:text-sapphire hover:bg-surface transition-colors"
               >
                 {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
             </div>
-            <pre className="max-h-[500px] overflow-auto rounded-xl border border-border bg-ink p-3 font-mono text-xs text-emerald-400 leading-relaxed">
+            <pre className="max-h-[500px] overflow-auto rounded-xl border border-border bg-sapphire-dark p-3 font-mono text-xs text-emerald-400 leading-relaxed">
               {JSON.stringify(data.rawResponse || data, null, 2)}
             </pre>
           </div>
@@ -189,13 +189,13 @@ export function Inspector({ open, onClose, title = "Telemetry & Pipeline Inspect
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-xl border border-border bg-surface-subtle p-3">
                 <span className="text-xs text-text-3 block">Inference</span>
-                <span className="font-mono text-lg font-semibold text-text tabular-nums">
+                <span className="font-mono text-lg font-bold text-sapphire tabular-nums">
                   {data.timingMs?.inference ? `${data.timingMs.inference.toFixed(1)} ms` : "—"}
                 </span>
               </div>
               <div className="rounded-xl border border-border bg-surface-subtle p-3">
                 <span className="text-xs text-text-3 block">Round-Trip Total</span>
-                <span className="font-mono text-lg font-semibold text-text tabular-nums">
+                <span className="font-mono text-lg font-bold text-sapphire tabular-nums">
                   {data.timingMs?.roundTrip ? `${data.timingMs.roundTrip.toFixed(0)} ms` : "—"}
                 </span>
               </div>
@@ -237,7 +237,7 @@ export function Inspector({ open, onClose, title = "Telemetry & Pipeline Inspect
         <span>Press <kbd className="font-mono bg-surface border border-border px-1 rounded">I</kbd> to toggle</span>
         <button
           onClick={onClose}
-          className="text-text-2 hover:text-text font-medium"
+          className="text-text-2 hover:text-sapphire font-medium"
         >
           Close Drawer
         </button>

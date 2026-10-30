@@ -299,7 +299,7 @@ export function DataImportDashboard({ onImportSuccess }: DataImportDashboardProp
           htmlFor="csv-file-input"
           className="cursor-pointer flex flex-col items-center justify-center"
         >
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-elevated text-primary-foreground shadow-sm mb-2">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-subtle text-primary-foreground shadow-sm mb-2">
             <UploadCloud className="h-6 w-6 text-primary-foreground" />
           </div>
           <span className="text-sm font-bold text-slate-900">

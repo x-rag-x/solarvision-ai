@@ -213,7 +213,7 @@ export function RootCauseOverview({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-md border border-primary/30 bg-surface-elevated px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground">
+              <span className="rounded-md border border-primary/30 bg-surface-subtle px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground">
                 Industry 4.0 • Model 2
               </span>
               <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">

@@ -39,27 +39,27 @@ export function ModelVariantsRoadmapCard({
   isTabularReady = false,
 }: ModelVariantsRoadmapCardProps) {
   return (
-    <Card className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm sm:p-8 space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5">
+    <Card className="rounded-xl border border-border bg-surface p-6 shadow-xs sm:p-7 space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#F2B941]">
+            <span className="text-xs font-bold uppercase tracking-wider text-sapphire">
               Model 3 Evolution & Roadmap
             </span>
-            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
+            <Badge className="bg-surface-subtle text-text-2 border border-border text-xs font-mono">
               3 Architectures Planned
             </Badge>
           </div>
-          <h3 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
+          <h3 className="mt-1 text-lg font-bold tracking-tight text-sapphire">
             Electrical Performance Model Architecture Family
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-text-3 mt-0.5">
             Extensible architecture supporting tabular regression, optical EL multimodal fusion, and temporal yield forecasting.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs font-mono">
+          <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs font-mono">
             Tabular Primary Active
           </Badge>
         </div>
@@ -74,32 +74,32 @@ export function ModelVariantsRoadmapCard({
             <div
               key={v.id}
               onClick={() => onSelectVariant?.(v.id)}
-              className={`rounded-2xl border p-5 flex flex-col justify-between transition-all cursor-pointer ${
+              className={`rounded-xl border p-5 flex flex-col justify-between transition-all cursor-pointer ${
                 isSelected
-                  ? "border-[#0B0909] bg-slate-50/70 shadow-sm"
-                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/30"
+                  ? "border-sapphire bg-surface-subtle shadow-xs"
+                  : "border-border bg-surface hover:border-sapphire/40"
               }`}
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   {v.status === "operational" ? (
-                    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs font-semibold gap-1">
+                    <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs font-semibold gap-1">
                       <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                       OPERATIONAL INFERENCE
                     </Badge>
                   ) : v.status === "in_development" ? (
-                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs font-semibold gap-1">
-                      <AlertTriangle className="h-3 w-3 text-amber-600" />
+                    <Badge className="bg-warning-tint text-warning border-warning-border text-xs font-semibold gap-1">
+                      <AlertTriangle className="h-3 w-3 text-warning" />
                       EXPERIMENTAL
                     </Badge>
                   ) : (
-                    <Badge className="bg-slate-100 text-slate-700 border-slate-300 text-xs font-semibold gap-1">
-                      <Clock className="h-3 w-3 text-slate-500" />
+                    <Badge className="bg-surface-subtle text-text-2 border border-border text-xs font-semibold gap-1">
+                      <Clock className="h-3 w-3 text-text-3" />
                       ROADMAP PLANNED
                     </Badge>
                   )}
 
-                  <span className="text-xs font-mono text-slate-400 uppercase">
+                  <span className="text-xs font-mono text-text-3 uppercase">
                     {v.badge}
                   </span>
                 </div>
@@ -108,37 +108,37 @@ export function ModelVariantsRoadmapCard({
                   <div
                     className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
                       v.id === "sandia_tabular"
-                        ? "bg-[#F2B941]/20 text-[#0B0909]"
+                        ? "bg-sapphire/15 text-sapphire"
                         : v.id === "el_multimodal"
-                        ? "bg-purple-100 text-purple-800"
-                        : "bg-blue-100 text-blue-800"
+                        ? "bg-soft-lavender-tint text-soft-lavender-text"
+                        : "bg-terracotta/15 text-terracotta"
                     }`}
                   >
                     {v.id === "sandia_tabular" ? (
-                      <Cpu className="h-5 w-5 text-[#0B0909]" />
+                      <Cpu className="h-5 w-5 text-sapphire" />
                     ) : v.id === "el_multimodal" ? (
-                      <Camera className="h-5 w-5 text-purple-700" />
+                      <Camera className="h-5 w-5 text-soft-lavender-text" />
                     ) : (
-                      <LineChart className="h-5 w-5 text-blue-700" />
+                      <LineChart className="h-5 w-5 text-terracotta" />
                     )}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug">{v.name}</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{v.headline}</p>
+                    <h4 className="text-sm font-bold text-sapphire leading-snug">{v.name}</h4>
+                    <p className="text-xs text-text-3 mt-0.5">{v.headline}</p>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed">{v.description}</p>
+                <p className="text-xs text-text-2 leading-relaxed">{v.description}</p>
 
-                <div className="space-y-1.5 border-t border-slate-100 pt-3 text-xs">
-                  <span className="font-semibold text-slate-500 uppercase tracking-wider text-xs">
+                <div className="space-y-1.5 border-t border-border pt-3 text-xs">
+                  <span className="font-semibold text-text-3 uppercase tracking-wider text-xs">
                     Inputs:
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {v.inputs.map((inp, idx) => (
                       <span
                         key={idx}
-                        className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-600"
+                        className="rounded-md bg-surface-subtle px-1.5 py-0.5 font-mono text-xs text-text-2 border border-border"
                       >
                         {inp}
                       </span>
@@ -147,8 +147,8 @@ export function ModelVariantsRoadmapCard({
                 </div>
               </div>
 
-              <div className="mt-4 border-t border-slate-100 pt-3">
-                <p className="text-xs text-slate-500 italic leading-relaxed">
+              <div className="mt-4 border-t border-border pt-3">
+                <p className="text-xs text-text-3 italic leading-relaxed">
                   {v.readinessNotice}
                 </p>
               </div>

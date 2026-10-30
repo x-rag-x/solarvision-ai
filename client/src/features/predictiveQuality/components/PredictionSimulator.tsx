@@ -135,35 +135,35 @@ export function PredictionSimulator() {
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <Card className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+      <Card className="rounded-3xl border border-border bg-surface p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#0B0909] text-[#F2B941]">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-sapphire text-white shadow-xs">
                 <Cpu className="h-4 w-4" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 sm:text-lg">
+              <h3 className="text-base font-bold text-sapphire sm:text-lg">
                 UCI SECOM Benchmark Prediction Workflow
               </h3>
-              <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-mono">
+              <Badge className="bg-surface-subtle text-sapphire border border-border text-xs font-mono">
                 Domain Isolated
               </Badge>
             </div>
-            <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+            <p className="mt-1 text-xs text-text-3 sm:text-sm">
               Submit a validated 590-feature in-situ measurement vector to evaluate yield excursion risk.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-xs text-text-3 font-mono">
               Vector Size: <span className={currentFeatureCount === 590 ? "font-bold text-emerald-700" : "font-bold text-rose-700"}>{currentFeatureCount}</span> / 590
             </span>
           </div>
         </div>
 
         {/* Preset Selector Buttons */}
-        <div className="mt-6 border-t border-slate-100 pt-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+        <div className="mt-6 border-t border-border pt-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-3 mb-3">
             Select Verified Preset Wafer Run:
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -173,28 +173,28 @@ export function PredictionSimulator() {
                 <button
                   key={preset.id}
                   onClick={() => handleSelectPreset(preset)}
-                  className={`flex flex-col rounded-2xl border p-4 text-left transition-all ${
+                  className={`flex flex-col rounded-2xl border p-4 text-left transition-all cursor-pointer ${
                     active
-                      ? "border-[#0B0909] bg-[#0B0909] text-white shadow-md"
-                      : "border-slate-200 bg-slate-50/70 text-slate-700 hover:border-slate-300 hover:bg-slate-100/70"
+                      ? "border-[#965660] bg-[#965660] text-white shadow-md"
+                      : "border-border bg-surface-subtle text-text hover:border-[#965660]/40 hover:bg-surface"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-semibold uppercase tracking-wider ${active ? "text-[#F2B941]" : "text-slate-500"}`}>
+                    <span className={`text-xs font-bold uppercase tracking-wider ${active ? "text-dusty-pink" : "text-text-3"}`}>
                       {preset.tag}
                     </span>
                     <Badge
                       className={`text-xs font-mono uppercase ${
                         preset.expectedOutcome === "FAIL"
-                          ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
-                          : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                          ? "bg-rose-500/20 text-rose-200 border-rose-500/40"
+                          : "bg-emerald-500/20 text-emerald-200 border-emerald-500/40"
                       }`}
                     >
                       Exp: {preset.expectedOutcome}
                     </Badge>
                   </div>
                   <p className="mt-2 text-sm font-bold truncate">{preset.name}</p>
-                  <p className={`mt-1 text-xs leading-relaxed line-clamp-2 ${active ? "text-slate-300" : "text-slate-500"}`}>
+                  <p className={`mt-1 text-xs leading-relaxed line-clamp-2 ${active ? "text-cloud-white/80" : "text-text-3"}`}>
                     {preset.description}
                   </p>
                 </button>
@@ -205,13 +205,13 @@ export function PredictionSimulator() {
           <div className="mt-3 flex items-center justify-between">
             <button
               onClick={() => setIsCustomMode(true)}
-              className={`text-xs font-semibold ${isCustomMode ? "text-[#0B0909] underline" : "text-slate-500 hover:text-slate-900"}`}
+              className={`text-xs font-bold cursor-pointer ${isCustomMode ? "text-sapphire underline" : "text-text-3 hover:text-sapphire"}`}
             >
               Custom 590-Dimensional Input Vector
             </button>
             <button
               onClick={handleTriggerDimensionError}
-              className="text-xs text-slate-400 hover:text-rose-600 underline"
+              className="text-xs text-text-3 hover:text-rose-600 underline cursor-pointer"
             >
               Test Dimension Mismatch (Send 50 Features)
             </button>
@@ -220,8 +220,8 @@ export function PredictionSimulator() {
 
         {/* Custom Input Textarea (Collapsible / Editable) */}
         {isCustomMode && (
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-700 mb-2">
+          <div className="mt-4 rounded-2xl border border-border bg-surface-subtle p-4">
+            <div className="flex items-center justify-between text-xs font-medium text-text-2 mb-2">
               <span>Raw Vector Payload (JSON Array or Comma-separated)</span>
               <span className={`font-mono text-xs ${currentFeatureCount === 590 ? "text-emerald-700" : "text-rose-600"}`}>
                 {currentFeatureCount === 590 ? "✓ 590 signals present" : `⚠ ${currentFeatureCount} signals (590 required)`}
@@ -231,7 +231,7 @@ export function PredictionSimulator() {
               value={featureInputText}
               onChange={(e) => setFeatureInputText(e.target.value)}
               rows={4}
-              className="font-mono text-xs text-slate-800 bg-white"
+              className="font-mono text-xs text-text bg-surface border-border"
               placeholder="[0.245, -1.02, 0.05, ... exactly 590 numbers]"
             />
           </div>
@@ -242,16 +242,16 @@ export function PredictionSimulator() {
           <Button
             onClick={handleExecutePrediction}
             disabled={loading}
-            className="h-11 gap-2 rounded-xl bg-[#0B0909] px-6 text-xs font-semibold text-white shadow-md hover:bg-slate-800"
+            className="h-11 gap-2 rounded-xl bg-[#965660] px-6 text-xs font-semibold text-white shadow-md hover:bg-[#7E454E]"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
+                <Loader2 className="h-4 w-4 animate-spin text-[#F2DBD7]" />
                 Evaluating Benchmark Inference...
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 text-[#F2B941]" />
+                <Play className="h-4 w-4 text-[#F2DBD7]" />
                 Run Benchmark Inference
               </>
             )}
@@ -261,9 +261,9 @@ export function PredictionSimulator() {
             variant="outline"
             onClick={() => handleSelectPreset(PRESET_SAMPLE_VECTORS[0])}
             disabled={loading}
-            className="h-11 gap-2 rounded-xl border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="h-11 gap-2 rounded-xl border-border text-xs font-semibold text-text hover:bg-surface-subtle"
           >
-            <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+            <RotateCcw className="h-3.5 w-3.5 text-text-3" />
             Reset to Sample #001
           </Button>
         </div>
@@ -271,7 +271,7 @@ export function PredictionSimulator() {
 
       {/* Error Banners */}
       {error && (
-        <div className="rounded-2xl border border-rose-500/30 bg-rose-50/80 p-5 shadow-sm">
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-50/80 p-5 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-700">
               <ShieldAlert className="h-5 w-5" />
@@ -310,19 +310,19 @@ export function PredictionSimulator() {
 
       {/* Real Prediction Results Output */}
       {prediction && !error && (
-        <Card className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-slate-50/70 px-6 py-4 sm:px-8">
+        <Card className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xs">
+          <div className="border-b border-border bg-surface-subtle px-6 py-4 sm:px-8">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-wider text-sapphire">
                   Verified Prediction Output
                 </span>
-                <Badge className="bg-slate-200 text-slate-800 text-xs font-mono">
+                <Badge className="bg-surface text-text-2 border border-border text-xs font-mono">
                   {prediction.modelVersion}
                 </Badge>
               </div>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-text-3 font-mono">
                 Computed in {prediction.executionTimeMs} ms • Decision Threshold τ = {prediction.thresholdUsed}
               </span>
             </div>
@@ -333,7 +333,7 @@ export function PredictionSimulator() {
             <div className="grid gap-6 md:grid-cols-12 items-center">
               <div className="md:col-span-5 flex items-center gap-4">
                 <div
-                  className={`grid h-16 w-16 place-items-center rounded-2xl shadow-sm ${
+                  className={`grid h-16 w-16 place-items-center rounded-2xl shadow-xs ${
                     prediction.outcome === "FAIL"
                       ? "bg-rose-100 text-rose-700"
                       : "bg-emerald-100 text-emerald-700"
@@ -347,7 +347,7 @@ export function PredictionSimulator() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
                       Wafer Verdict
                     </span>
                     <Badge className={riskBadgeColor(prediction.riskLevel)}>
@@ -365,22 +365,22 @@ export function PredictionSimulator() {
               </div>
 
               {/* Probabilities Breakdown */}
-              <div className="md:col-span-7 grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+              <div className="md:col-span-7 grid grid-cols-2 gap-4 rounded-2xl border border-border bg-surface-subtle p-4">
                 <div>
-                  <span className="text-xs font-medium text-slate-500">Excursion Probability P(Fail)</span>
-                  <p className="mt-1 text-2xl font-bold font-mono text-slate-900">
+                  <span className="text-xs font-medium text-text-3">Excursion Probability P(Fail)</span>
+                  <p className="mt-1 text-2xl font-bold font-mono text-sapphire">
                     {(prediction.probabilityFail * 100).toFixed(2)}%
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-text-3">
                     CI: [{(prediction.confidenceInterval.low * 100).toFixed(1)}%, {(prediction.confidenceInterval.high * 100).toFixed(1)}%]
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-slate-500">Conforming Probability P(Pass)</span>
-                  <p className="mt-1 text-2xl font-bold font-mono text-slate-900">
+                  <span className="text-xs font-medium text-text-3">Conforming Probability P(Pass)</span>
+                  <p className="mt-1 text-2xl font-bold font-mono text-sapphire">
                     {(prediction.probabilityPass * 100).toFixed(2)}%
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-text-3">
                     Probability sum = 1.0 (calibrated)
                   </p>
                 </div>
@@ -388,19 +388,19 @@ export function PredictionSimulator() {
             </div>
 
             {/* Threshold Calibration Notice */}
-            <div className="rounded-2xl border border-slate-200/90 bg-amber-50/40 p-3.5 text-xs text-slate-600">
-              <span className="font-semibold text-slate-800">Threshold Calibration Logic:</span> The SECOM semiconductor benchmark dataset has a 6.64% baseline fail rate (14:1 class imbalance). To prevent catastrophic false-negative rates, the decision boundary is calibrated to τ = {prediction.thresholdUsed} (7.0%). A posterior failure probability of {(prediction.probabilityFail * 100).toFixed(2)}% triggers an excursion verdict because it exceeds this calibrated 7.0% decision threshold.
+            <div className="rounded-2xl border border-soft-lavender/40 bg-soft-lavender-tint p-3.5 text-xs text-text-2">
+              <span className="font-semibold text-sapphire">Threshold Calibration Logic:</span> The SECOM semiconductor benchmark dataset has a 6.64% baseline fail rate (14:1 class imbalance). To prevent catastrophic false-negative rates, the decision boundary is calibrated to τ = {prediction.thresholdUsed} (7.0%). A posterior failure probability of {(prediction.probabilityFail * 100).toFixed(2)}% triggers an excursion verdict because it exceeds this calibrated 7.0% decision threshold.
             </div>
 
             {/* Actionable Engineering Recommendation */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-2xl border border-border bg-surface-subtle p-4">
               <div className="flex items-start gap-3">
-                <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#F2B941]" />
+                <FileText className="mt-0.5 h-4 w-4 shrink-0 text-sapphire" />
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-sapphire">
                     Actionable Automated Guidance:
                   </span>
-                  <p className="mt-0.5 text-xs text-slate-800 leading-relaxed font-medium">
+                  <p className="mt-0.5 text-xs text-text leading-relaxed font-medium">
                     {prediction.recommendedAction}
                   </p>
                 </div>
@@ -410,20 +410,20 @@ export function PredictionSimulator() {
             {/* Top Contributing Deviating Features */}
             {prediction.topFeatures && prediction.topFeatures.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-sapphire mb-3">
                   Top Deviating In-Situ Sensor Signals:
                 </h4>
-                <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white overflow-hidden text-xs">
+                <div className="divide-y divide-border rounded-2xl border border-border bg-surface overflow-hidden text-xs">
                   {prediction.topFeatures.map((feat) => (
-                    <div key={feat.featureIndex} className="flex items-center justify-between p-3 hover:bg-slate-50">
+                    <div key={feat.featureIndex} className="flex items-center justify-between p-3 hover:bg-surface-subtle">
                       <div>
-                        <span className="font-semibold text-slate-900">
+                        <span className="font-semibold text-text">
                           {feat.featureName || `Sensor Channel #${feat.featureIndex}`}
                         </span>
-                        <p className="text-xs text-slate-500">{feat.description}</p>
+                        <p className="text-xs text-text-3">{feat.description}</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-mono font-semibold text-slate-800">
+                        <span className="font-mono font-semibold text-text">
                           Z: {feat.zScore > 0 ? `+${feat.zScore}` : feat.zScore} σ
                         </span>
                         <Badge

@@ -51,30 +51,30 @@ export function ConfusionMatrixCard() {
       };
 
   return (
-    <Card className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+    <Card className="rounded-3xl border border-border bg-surface p-6 shadow-xs sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-slate-900 sm:text-lg">
+            <h3 className="text-base font-bold text-sapphire sm:text-lg">
               Held-Out Test Confusion Matrix (N = 236 Wafers)
             </h3>
-            <Badge className="bg-slate-100 text-slate-800 text-xs font-mono">
+            <Badge className="bg-surface-subtle text-text-2 border border-border text-xs font-mono">
               Chronological Split
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-text-3 mt-1">
             Visualizing classification trade-offs between false scrap alarms and undetected defect escapes.
           </p>
         </div>
 
         {/* Threshold Switcher */}
-        <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100/70 p-1 self-start sm:self-auto">
+        <div className="inline-flex rounded-xl border border-border bg-surface-subtle p-1 self-start sm:self-auto">
           <button
             onClick={() => setSelectedThreshold("optimal")}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
               isOptimal
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-[#965660] text-white shadow-xs"
+                : "text-text-3 hover:text-text"
             }`}
           >
             Optimal Threshold (τ = 0.07)
@@ -83,8 +83,8 @@ export function ConfusionMatrixCard() {
             onClick={() => setSelectedThreshold("default")}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
               !isOptimal
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-[#965660] text-white shadow-xs"
+                : "text-text-3 hover:text-text"
             }`}
           >
             Default Naive (τ = 0.50)
@@ -97,14 +97,14 @@ export function ConfusionMatrixCard() {
         <div className="lg:col-span-7">
           <div className="relative">
             {/* Column & Row Labels */}
-            <div className="mb-2 grid grid-cols-2 text-center text-xs font-semibold text-slate-600 pl-16">
+            <div className="mb-2 grid grid-cols-2 text-center text-xs font-semibold text-text-2 pl-16">
               <div>Predicted Conforming (Pass)</div>
               <div className="text-rose-700">Predicted Excursion (Fail)</div>
             </div>
 
             <div className="flex">
               {/* Vertical Row Headers */}
-              <div className="flex w-16 flex-col justify-around text-right pr-3 text-xs font-semibold text-slate-600">
+              <div className="flex w-16 flex-col justify-around text-right pr-3 text-xs font-semibold text-text-2">
                 <div className="leading-tight">Actual Pass</div>
                 <div className="leading-tight text-rose-700">Actual Fail</div>
               </div>
@@ -129,7 +129,7 @@ export function ConfusionMatrixCard() {
                 <div className={`rounded-2xl border p-5 text-center transition-all ${
                   matrix.fp > 0
                     ? "border-amber-200 bg-amber-50/70 text-amber-950"
-                    : "border-slate-200 bg-slate-50 text-slate-400"
+                    : "border-border bg-surface-subtle text-text-3"
                 }`}>
                   <div className="flex items-center justify-between text-xs font-semibold text-amber-800">
                     <span>False Positive (FP)</span>
@@ -147,7 +147,7 @@ export function ConfusionMatrixCard() {
                 <div className={`rounded-2xl border p-5 text-center transition-all ${
                   matrix.fn > 0
                     ? "border-rose-300 bg-rose-50/80 text-rose-950"
-                    : "border-slate-200 bg-slate-50 text-slate-400"
+                    : "border-border bg-surface-subtle text-text-3"
                 }`}>
                   <div className="flex items-center justify-between text-xs font-semibold text-rose-800">
                     <span className="flex items-center gap-1">
@@ -177,7 +177,7 @@ export function ConfusionMatrixCard() {
                 <div className={`rounded-2xl border p-5 text-center transition-all ${
                   matrix.tp > 0
                     ? "border-emerald-300 bg-emerald-100/70 text-emerald-950"
-                    : "border-slate-200 bg-slate-50 text-slate-400"
+                    : "border-border bg-surface-subtle text-text-3"
                 }`}>
                   <div className="flex items-center justify-between text-xs font-semibold text-emerald-800">
                     <span>True Positive (TP)</span>
@@ -196,31 +196,31 @@ export function ConfusionMatrixCard() {
         </div>
 
         {/* Analytical Explanation & Pitfalls */}
-        <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-5 lg:col-span-5">
+        <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-border bg-surface-subtle p-5 lg:col-span-5">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
-              <Info className="h-4 w-4 text-[#F2B941]" />
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sapphire">
+              <Info className="h-4 w-4 text-sapphire" />
               <span>Operational Yield Impact</span>
             </div>
 
-            <div className="mt-4 space-y-2.5 text-xs text-slate-600 leading-relaxed">
-              <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
-                <span className="font-medium text-slate-700">Failure Recall (Defects Caught):</span>
+            <div className="mt-4 space-y-2.5 text-xs text-text-2 leading-relaxed">
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <span className="font-medium text-text">Failure Recall (Defects Caught):</span>
                 <span className={`font-mono font-bold ${isOptimal ? "text-emerald-700" : "text-rose-700"}`}>
                   {matrix.recall}
                 </span>
               </div>
-              <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
-                <span className="font-medium text-slate-700">Precision (True In Excursions):</span>
-                <span className="font-mono font-bold text-slate-900">{matrix.precision}</span>
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <span className="font-medium text-text">Precision (True In Excursions):</span>
+                <span className="font-mono font-bold text-sapphire">{matrix.precision}</span>
               </div>
-              <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
-                <span className="font-medium text-slate-700">Overall Raw Accuracy:</span>
-                <span className="font-mono font-bold text-slate-900">{matrix.accuracy}</span>
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <span className="font-medium text-text">Overall Raw Accuracy:</span>
+                <span className="font-mono font-bold text-sapphire">{matrix.accuracy}</span>
               </div>
             </div>
 
-            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3.5 text-xs text-slate-700">
+            <div className="mt-4 rounded-xl border border-border bg-surface p-3.5 text-xs text-text-2">
               {isOptimal ? (
                 <p>
                   <span className="font-semibold text-emerald-800">Cost-Sensitive Optimization:</span> Setting τ* = 0.07 detects 4 of 9 failure events ({matrix.recall} recall), preventing defective wafers from escaping into module assembly at the expense of 31 inspection alerts.
@@ -233,7 +233,7 @@ export function ConfusionMatrixCard() {
             </div>
           </div>
 
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-text-3">
             Source: Chronological held-out evaluation on 236 continuous manufacturing runs.
           </div>
         </div>

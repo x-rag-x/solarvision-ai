@@ -5,7 +5,7 @@ import { useAppMode } from "@/contexts/ModeContext";
 import { trpc } from "@/lib/trpc";
 import { UserMenu } from "./UserMenu";
 import {
-  LayoutDashboard,
+  LayoutGrid,
   ScanLine,
   Scan,
   Zap,
@@ -14,13 +14,9 @@ import {
   BarChart3,
   BrainCircuit,
   HeartPulse,
-  Route as RouteIcon,
   Settings2,
   Compass,
   Factory,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -71,7 +67,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
     {
       group: "Workspace",
       items: [
-        { label: "Overview", path: "/", icon: LayoutDashboard },
+        { label: "Overview", path: "/", icon: LayoutGrid },
       ],
     },
     {
@@ -95,7 +91,6 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
       items: [
         { label: "Model registry", path: "/model", icon: BrainCircuit, adminOnly: true },
         { label: "System health", path: "/system-health", icon: HeartPulse, adminOnly: true },
-        { label: "Architecture", path: "/roadmap", icon: RouteIcon, devOnly: true },
       ],
     },
     ...(enableRootCause
@@ -123,41 +118,41 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-[#2F3A58]/40 backdrop-blur-xs lg:hidden"
           onClick={closeMobile}
           aria-label="Close navigation"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-surface transition-all duration-200 select-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-[#E4E7F3] text-[#2F3A58] transition-all duration-200 select-none shadow-xs ${
           collapsed ? "w-[72px]" : "w-[248px]"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         {/* Brand header */}
-        <div className="flex h-14 items-center justify-between border-b border-border px-4">
+        <div className="flex h-14 items-center justify-between border-b border-border px-3.5">
           <Link
             href="/"
             onClick={closeMobile}
-            className="flex items-center gap-2.5 overflow-hidden focus-visible:ring-2 focus-visible:ring-focus rounded-lg"
+            className="flex items-center gap-2.5 overflow-hidden focus-visible:ring-2 focus-visible:ring-sapphire rounded-lg transition-transform active:scale-[0.99]"
           >
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand text-ink shadow-xs">
-              <Factory className="h-4 w-4" />
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-sapphire text-white shadow-xs">
+              <Factory className="h-4 w-4 text-white" />
             </div>
             {!collapsed && (
               <div className="min-w-0 flex flex-col">
-                <span className="text-sm font-semibold tracking-tight text-text leading-tight">
-                  SolarVision <span className="text-brand-text font-bold">AI</span>
+                <span className="text-[15px] font-bold tracking-tight text-[#2F3A58] leading-tight">
+                  SolarVision <span className="text-sapphire font-bold">AI</span>
                 </span>
-                <span className="text-xs text-text-3 font-medium uppercase tracking-wider">
-                  Quality Ops
+                <span className="text-[10px] text-text-3 font-semibold uppercase tracking-wider">
+                  ENTERPRISE OPS
                 </span>
               </div>
             )}
           </Link>
           <button
             onClick={() => setCollapsed(c => !c)}
-            className="hidden lg:grid h-7 w-7 place-items-center rounded-md text-text-3 hover:text-text hover:bg-surface-subtle transition-colors"
+            className="hidden lg:grid h-7 w-7 place-items-center rounded-md text-text-3 hover:text-text hover:bg-[#D8DCED] transition-colors"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -166,7 +161,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
         </div>
 
         {/* Navigation list */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5">
+        <div className="flex-1 overflow-y-auto px-2 py-3.5 space-y-4 sidebar-scrollbar">
           {navGroups.map(group => {
             // Filter items based on Dev vs Prod & Admin permissions
             const visibleItems = group.items.filter(item => {
@@ -180,7 +175,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
             return (
               <div key={group.group} className="space-y-1">
                 {!collapsed && (
-                  <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wider text-text-3">
+                  <div className="px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[#59647D]">
                     {group.group}
                   </div>
                 )}
@@ -194,32 +189,32 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
                       href={item.path}
                       onClick={closeMobile}
                       aria-current={active ? "page" : undefined}
-                      className={`group relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                      className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150 ${
                         active
-                          ? "bg-brand-tint text-text font-semibold shadow-xs"
-                          : "text-text-2 hover:bg-surface-subtle hover:text-text"
-                      } ${collapsed ? "justify-center px-0 h-10 w-10 mx-auto" : "w-full"}`}
+                          ? "bg-[#F2DBD7] text-[#2F3A58] font-semibold shadow-xs"
+                          : "text-[#59647D] hover:bg-[#D8DCED] hover:text-[#2F3A58]"
+                      } ${collapsed ? "justify-center px-0 h-9 w-9 mx-auto" : "w-full"}`}
                     >
                       {/* Active indicator bar */}
                       {active && (
-                        <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r bg-brand" />
+                        <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#965660]" />
                       )}
                       <Icon
                         className={`h-4 w-4 shrink-0 transition-colors ${
-                          active ? "text-text" : "text-text-3 group-hover:text-text"
+                          active ? "text-[#965660]" : "text-[#59647D] group-hover:text-[#2F3A58]"
                         }`}
                       />
                       {!collapsed && (
                         <div className="flex items-center justify-between flex-1 min-w-0">
                           <span className="truncate">{item.label}</span>
                           <div className="flex items-center gap-1.5">
-                            {isDev && item.modelChip && (
-                              <span className="rounded bg-surface-subtle px-1.5 py-0.5 font-mono text-xs text-text-3 border border-border">
+                            {item.modelChip && (
+                              <span className="rounded bg-white/70 px-1.5 py-0.5 font-mono text-[10px] font-bold text-sapphire border border-border">
                                 {item.modelChip}
                               </span>
                             )}
                             {item.badge && (
-                              <span className="rounded bg-brand-tint px-1.5 py-0.5 text-xs font-semibold text-brand-text">
+                              <span className="rounded bg-soft-lavender-tint px-1.5 py-0.5 text-[10px] font-semibold text-sapphire border border-soft-lavender/40">
                                 {item.badge}
                               </span>
                             )}
@@ -233,7 +228,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
                     return (
                       <Tooltip key={item.path} delayDuration={0}>
                         <TooltipTrigger asChild>{navContent}</TooltipTrigger>
-                        <TooltipContent side="right" className="text-xs font-medium">
+                        <TooltipContent side="right" className="text-xs font-medium bg-[#2F3A58] text-white border-[#D9DDEB]">
                           {item.label} {item.modelChip ? `(${item.modelChip})` : ""}
                         </TooltipContent>
                       </Tooltip>
@@ -249,60 +244,60 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
           {/* Dev-only Live Status Panel */}
           {isDev && !collapsed && (
             <div className="pt-2">
-              <div className="rounded-xl border border-border bg-surface-subtle p-3 space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-text-3">
+              <div className="rounded-2xl border border-[#D9DDEB] bg-[#D8DCED]/60 p-3 space-y-2.5 shadow-xs">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#59647D]">
                   <span>Live Model Status</span>
-                  <span className="text-xs font-mono text-brand-text">DEV</span>
+                  <span className="text-[11px] font-mono font-bold tracking-wider text-[#965660]">DEV</span>
                 </div>
-                <div className="space-y-1.5 text-xs text-text-2">
+                <div className="space-y-1.5 text-xs text-[#2F3A58]">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs">M1 YOLO26n</span>
-                    <span className="inline-flex items-center gap-1">
+                    <span className="font-mono text-xs font-medium text-[#2F3A58]">M1 YOLO26n</span>
+                    <span className="inline-flex items-center gap-1.5">
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          m1Status?.exists ? "bg-success" : "bg-warning"
+                          m1Status?.exists ? "bg-emerald-600" : "bg-amber-600"
                         }`}
                       />
-                      <span className="text-xs font-mono text-text-3">
+                      <span className="text-[11px] font-mono text-[#59647D]">
                         {m1Status?.exists ? "ready" : "fallback"}
                       </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs">M2 ELPV</span>
-                    <span className="inline-flex items-center gap-1">
+                    <span className="font-mono text-xs font-medium text-[#2F3A58]">M2 ELPV</span>
+                    <span className="inline-flex items-center gap-1.5">
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          m2Status?.artifactsPresent ? "bg-success" : "bg-warning"
+                          m2Status?.artifactsPresent ? "bg-emerald-600" : "bg-amber-600"
                         }`}
                       />
-                      <span className="text-xs font-mono text-text-3">
+                      <span className="text-[11px] font-mono text-[#59647D]">
                         {m2Status?.artifactsPresent ? "ready" : "uncal"}
                       </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs">M3 Sandia</span>
-                    <span className="inline-flex items-center gap-1">
+                    <span className="font-mono text-xs font-medium text-[#2F3A58]">M3 Sandia</span>
+                    <span className="inline-flex items-center gap-1.5">
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          m3Status?.isReady ? "bg-success" : "bg-danger"
+                          m3Status?.isReady ? "bg-emerald-600" : "bg-rose-600"
                         }`}
                       />
-                      <span className="text-xs font-mono text-text-3">
+                      <span className="text-[11px] font-mono text-[#59647D]">
                         {m3Status?.isReady ? "verified" : "err"}
                       </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs">M4 AI4I Maint</span>
-                    <span className="inline-flex items-center gap-1">
+                    <span className="font-mono text-xs font-medium text-[#2F3A58]">M4 AI4I Maint</span>
+                    <span className="inline-flex items-center gap-1.5">
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          m4Status?.isReady ? "bg-success" : "bg-warning"
+                          m4Status?.isReady ? "bg-emerald-600" : "bg-amber-600"
                         }`}
                       />
-                      <span className="text-xs font-mono text-text-3">
+                      <span className="text-[11px] font-mono text-[#59647D]">
                         {m4Status?.isReady ? "ready" : "eval"}
                       </span>
                     </span>
@@ -314,17 +309,24 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
         </div>
 
         {/* Footer: Settings & User Menu */}
-        <div className="border-t border-border p-2.5 space-y-1.5 bg-surface">
+        <div className="border-t border-[#D9DDEB] p-2 space-y-1 bg-[#DBE0F0]">
           <Link
             href="/settings"
             onClick={closeMobile}
-            className={`flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors ${
+            className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150 ${
               location === "/settings"
-                ? "bg-brand-tint text-text font-semibold"
-                : "text-text-2 hover:bg-surface-subtle hover:text-text"
-            } ${collapsed ? "justify-center px-0 h-10 w-10 mx-auto" : "w-full"}`}
+                ? "bg-[#F2DBD7] text-[#2F3A58] font-semibold shadow-xs"
+                : "text-[#59647D] hover:bg-[#D8DCED]/70 hover:text-[#2F3A58]"
+            } ${collapsed ? "justify-center px-0 h-9 w-9 mx-auto" : "w-full"}`}
           >
-            <Settings2 className="h-4 w-4 shrink-0 text-text-3" />
+            {location === "/settings" && (
+              <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#965660]" />
+            )}
+            <Settings2
+              className={`h-4 w-4 shrink-0 transition-colors ${
+                location === "/settings" ? "text-[#2F3A58]" : "text-[#59647D] group-hover:text-[#2F3A58]"
+              }`}
+            />
             {!collapsed && <span>Settings</span>}
           </Link>
           <div className="pt-1">

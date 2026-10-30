@@ -156,7 +156,7 @@ export function LiveApplicationConsole({
       {/* Console Top Toolbar */}
       <div className="border-b border-slate-800 bg-zinc-900 px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-700 text-brand-text flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-700 text-dusty-pink flex items-center justify-center">
             <Terminal className="h-4 w-4" />
           </div>
           <div>

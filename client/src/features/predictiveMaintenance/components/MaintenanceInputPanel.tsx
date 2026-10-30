@@ -68,31 +68,31 @@ export function MaintenanceInputPanel({
   };
 
   return (
-    <Card className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+    <Card className="rounded-xl border border-border bg-surface p-6 shadow-xs sm:p-7">
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
               Operating Telemetry Input
             </span>
-            <Badge className="bg-[#0B0909] text-white text-xs font-mono">
+            <Badge className="bg-sapphire text-white text-xs font-mono">
               6 Physical Features
             </Badge>
           </div>
-          <h3 className="mt-1 text-base font-bold text-slate-900 sm:text-lg">
+          <h3 className="mt-1 text-base font-bold text-sapphire sm:text-lg">
             AI4I 2020 Operational Measurements
           </h3>
         </div>
 
-        <div className="text-xs text-slate-500 font-mono">
-          Product Variant: <span className="font-bold text-slate-900">{measurements.productType}-Type</span>
+        <div className="text-xs text-text-3 font-mono">
+          Product Variant: <span className="font-bold text-text">{measurements.productType}-Type</span>
         </div>
       </div>
 
       {/* Preset Buttons */}
-      <div className="mt-6 border-t border-slate-100 pt-5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+      <div className="mt-6 border-t border-border pt-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-3 mb-3">
           Select Academic Evaluation Preset:
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -102,10 +102,10 @@ export function MaintenanceInputPanel({
               <button
                 key={preset.id}
                 onClick={() => onSelectPreset(preset)}
-                className={`flex flex-col rounded-2xl border p-3.5 text-left transition-all ${
+                className={`flex flex-col rounded-xl border p-3.5 text-left transition-all ${
                   isSelected
-                    ? "border-[#0B0909] bg-[#0B0909] text-white shadow-md"
-                    : "border-slate-200 bg-slate-50/70 text-slate-700 hover:border-slate-300 hover:bg-slate-100/70"
+                    ? "border-[#965660] bg-[#965660] text-white shadow-xs"
+                    : "border-border bg-surface-subtle text-text hover:border-[#965660]/40 hover:bg-surface"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -113,11 +113,11 @@ export function MaintenanceInputPanel({
                     className={`text-xs font-mono uppercase ${
                       preset.sourceCategory === "authentic_benchmark_record"
                         ? isSelected
-                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                          : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                          ? "bg-white/20 text-white border-white/30"
+                          : "bg-emerald-50 text-emerald-800 border-emerald-200"
                         : isSelected
-                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                        : "bg-amber-100 text-amber-800 border-amber-300"
+                        ? "bg-white/20 text-white border-white/30"
+                        : "bg-warning-tint text-warning border-warning-border"
                     }`}
                   >
                     {preset.sourceCategory === "authentic_benchmark_record"
@@ -127,8 +127,8 @@ export function MaintenanceInputPanel({
                   <span
                     className={`text-xs font-bold ${
                       preset.expectedClassification === "FAILURE"
-                        ? "text-rose-500"
-                        : "text-emerald-500"
+                        ? isSelected ? "text-rose-200" : "text-rose-600"
+                        : isSelected ? "text-emerald-200" : "text-emerald-600"
                     }`}
                   >
                     {preset.targetLabel || (preset.expectedClassification === "FAILURE" ? "Machine Failure" : "Normal Operation")}
@@ -137,7 +137,7 @@ export function MaintenanceInputPanel({
                 <p className="mt-2 text-xs font-bold truncate">{preset.name}</p>
                 <p
                   className={`mt-1 text-xs leading-relaxed line-clamp-2 ${
-                    isSelected ? "text-slate-300" : "text-slate-500"
+                    isSelected ? "text-white/80" : "text-text-3"
                   }`}
                 >
                   {preset.description}
@@ -149,30 +149,30 @@ export function MaintenanceInputPanel({
       </div>
 
       {/* Input Fields Grid */}
-      <div className="mt-6 border-t border-slate-100 pt-6">
+      <div className="mt-6 border-t border-border pt-6">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {/* Product Type Variant */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">
+            <label className="text-xs font-semibold text-text-2">
               Product Variant / Quality Class
             </label>
-            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <div className="flex rounded-lg border border-border bg-surface-subtle p-1">
               {(["L", "M", "H"] as ProductType[]).map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => handleChangeField("productType", type)}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-all ${
+                  className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-all ${
                     measurements.productType === type
-                      ? "bg-[#0B0909] text-white shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-[#965660] text-white shadow-xs"
+                      : "text-text-2 hover:text-text"
                   }`}
                 >
                   {type} ({type === "L" ? "Low 50%" : type === "M" ? "Med 30%" : "High 20%"})
                 </button>
               ))}
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-text-3">
               Determines tool wear threshold (L: 240m, M: 215m, H: 180m).
             </p>
           </div>
@@ -354,16 +354,16 @@ export function MaintenanceInputPanel({
         <Button
           onClick={onExecuteAssessment}
           disabled={loading}
-          className="h-11 gap-2 rounded-xl bg-[#0B0909] px-6 text-xs font-semibold text-white shadow-md hover:bg-slate-800"
+          className="h-10 gap-2 rounded-lg bg-[#965660] px-6 text-xs font-semibold text-white shadow-xs hover:bg-[#7E454E] transition-colors"
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
+              <Loader2 className="h-4 w-4 animate-spin text-white" />
               Classifying Operating Condition...
             </>
           ) : (
             <>
-              <Play className="h-4 w-4 text-[#F2B941]" />
+              <Play className="h-4 w-4 text-white" />
               Evaluate Operating Condition Failure Risk
             </>
           )}
@@ -373,9 +373,9 @@ export function MaintenanceInputPanel({
           variant="outline"
           onClick={() => onSelectPreset(PRESET_MAINTENANCE_SAMPLES[0])}
           disabled={loading}
-          className="h-11 gap-2 rounded-xl border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          className="h-10 gap-2 rounded-lg border-border text-xs font-semibold text-text hover:bg-surface-subtle"
         >
-          <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+          <RotateCcw className="h-3.5 w-3.5 text-text-3" />
           Reset to Nominal Sample
         </Button>
       </div>

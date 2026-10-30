@@ -25,16 +25,16 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
 
   return (
     <Card className="border border-border bg-surface shadow-xs overflow-hidden rounded-2xl">
-      <div className="border-b border-border px-6 py-4 flex items-center justify-between bg-surface-elevated/70">
+      <div className="border-b border-border px-6 py-4 flex items-center justify-between bg-surface-subtle/70">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-success-soft text-success flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-success-tint text-success flex items-center justify-center">
             <Database className="h-4 w-4" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-text tracking-tight">
               Database Connectivity & Table Telemetry
             </h2>
-            <p className="text-xs text-text-muted">
+            <p className="text-xs text-text-3">
               Direct verification of database connections, read-only ping latency, and model persistence tables
             </p>
           </div>
@@ -47,17 +47,17 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
           <div className="rounded-xl border border-border bg-surface p-4 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 h-9 w-9 rounded-xl bg-success-soft text-success flex items-center justify-center shrink-0">
+                <div className="mt-0.5 h-9 w-9 rounded-xl bg-success-tint text-success flex items-center justify-center shrink-0">
                   <HardDrive className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-text">{sqliteDb.name}</span>
-                    <Badge className="bg-surface-elevated text-text-muted border-border text-xs font-semibold">
+                    <Badge className="bg-surface-subtle text-text-3 border-border text-xs font-semibold">
                       SQLite 3 (WAL Mode)
                     </Badge>
                   </div>
-                  <p className="text-xs text-text-muted mt-0.5">
+                  <p className="text-xs text-text-3 mt-0.5">
                     Path: <code className="font-mono text-text text-xs">{sqliteDb.details?.path || "data/solarvision.db"}</code>
                   </p>
                 </div>
@@ -65,12 +65,12 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
 
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 {sqliteDb.state === "connected" ? (
-                  <Badge className="bg-success-soft text-success border-success-border font-semibold gap-1 text-xs">
+                  <Badge className="bg-success-tint text-success border-success-border font-semibold gap-1 text-xs">
                     <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                     CONNECTED (SELECT 1: {sqliteDb.pingLatencyMs}ms)
                   </Badge>
                 ) : (
-                  <Badge className="bg-danger-soft text-danger border-danger-border font-semibold gap-1 text-xs">
+                  <Badge className="bg-danger-tint text-danger border-danger-border font-semibold gap-1 text-xs">
                     <XCircle className="h-3.5 w-3.5 text-danger" />
                     DISCONNECTED
                   </Badge>
@@ -79,15 +79,15 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
             </div>
 
             {sqliteDb.errorMessage && (
-              <div className="mt-3 p-3 rounded-lg bg-danger-soft border border-danger-border text-xs text-danger">
+              <div className="mt-3 p-3 rounded-lg bg-danger-tint border border-danger-border text-xs text-danger">
                 Error: {sqliteDb.errorMessage}
               </div>
             )}
 
             {/* Tables Breakdown Header */}
-            <div className="mt-4 pt-4 border-t border-border-subtle flex items-center justify-between">
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-semibold text-text">
-                <Table className="h-3.5 w-3.5 text-text-subtle" />
+                <Table className="h-3.5 w-3.5 text-text-3" />
                 <span>
                   Persistence Tables Verified ({sqliteDb.details?.tablesVerified || 0} /{" "}
                   {sqliteDb.details?.tables?.length || 0})
@@ -124,7 +124,7 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
                         <XCircle className="h-3.5 w-3.5 text-danger shrink-0" />
                       )}
                     </div>
-                    <div className="flex items-center justify-between text-xs text-text-muted">
+                    <div className="flex items-center justify-between text-xs text-text-3">
                       <span>{tbl.modelTarget || "Core"}</span>
                       <span className="font-bold text-text tabular-nums">{tbl.rowCount} rows</span>
                     </div>
@@ -137,20 +137,20 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
 
         {/* Remote Supabase / Cloud Database */}
         {remoteDb && (
-          <div className="rounded-xl border border-border bg-surface-elevated/40 p-4">
+          <div className="rounded-xl border border-border bg-surface-subtle/40 p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 h-9 w-9 rounded-xl bg-canvas border border-border text-text-subtle flex items-center justify-center shrink-0">
+                <div className="mt-0.5 h-9 w-9 rounded-xl bg-canvas border border-border text-text-3 flex items-center justify-center shrink-0">
                   <CloudOff className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-text">{remoteDb.name}</span>
-                    <Badge className="bg-surface border border-border text-text-muted text-xs font-semibold">
+                    <Badge className="bg-surface border border-border text-text-3 text-xs font-semibold">
                       Cloud Sync / Remote
                     </Badge>
                   </div>
-                  <p className="text-xs text-text-muted mt-0.5">
+                  <p className="text-xs text-text-3 mt-0.5">
                     {remoteDb.details?.note ||
                       "Remote cloud database not provisioned. All four models persist to authoritative local SQLite."}
                   </p>
@@ -158,7 +158,7 @@ export function DatabaseHealthCard({ databases }: DatabaseHealthCardProps) {
               </div>
 
               <div className="self-end sm:self-auto">
-                <Badge className="bg-surface border border-border text-text-muted font-semibold text-xs">
+                <Badge className="bg-surface border border-border text-text-3 font-semibold text-xs">
                   NOT CONFIGURED
                 </Badge>
               </div>
