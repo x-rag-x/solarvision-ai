@@ -1,0 +1,83 @@
+{
+  "model_id": "solarvision_m2_elpv_binary_v1",
+  "trained_at_utc": "2026-10-29T15:13:50.733613+00:00",
+  "architecture": "EfficientNet-B0 pretrained transfer learning",
+  "dataset": "ELPV 1.0.0.post1",
+  "split_strategy": "64-consecutive-filename proxy blocks; unioned 584 reviewed SSIM>=.97 candidate pairs; selected by label balance only",
+  "true_module_ids_present": false,
+  "train_confident_count": 1556,
+  "val_confident_count": 359,
+  "test_confident_count": 308,
+  "test_uncertain_count": 76,
+  "similarity_review_edges_used": 584,
+  "selected_epoch": 12,
+  "validation_best_auc": 0.9541161796151105,
+  "test": {
+    "test_n": 308,
+    "test_class_counts": {
+      "healthy": 225,
+      "defective": 83
+    },
+    "threshold_selected_on_validation": 0.5499999999999999,
+    "accuracy": 0.698051948051948,
+    "balanced_accuracy": 0.6944846050870147,
+    "precision_defective": 0.4596774193548387,
+    "recall_defective": 0.6867469879518072,
+    "f1_defective": 0.5507246376811594,
+    "macro_f1": 0.6616703873002374,
+    "roc_auc": 0.8028915662650602,
+    "average_precision": 0.6331161650398356,
+    "confusion_matrix_healthy_defective": [
+      [
+        158,
+        67
+      ],
+      [
+        26,
+        57
+      ]
+    ],
+    "evaluation_warning": "Proxy filename-block/SSIM-based split only; true source module IDs unavailable. Not factory-certified."
+  },
+  "cell_type_results": {
+    "mono": {
+      "n": 92,
+      "positive_count": 15,
+      "accuracy": 0.8478260869565217,
+      "macro_f1": 0.7051282051282051,
+      "roc_auc": 0.7965367965367965
+    },
+    "poly": {
+      "n": 216,
+      "positive_count": 68,
+      "accuracy": 0.6342592592592593,
+      "macro_f1": 0.6232031267251088,
+      "roc_auc": 0.7899443561208268
+    }
+  },
+  "uncertain_test_descriptive": {
+    "1": {
+      "count": 58,
+      "mean": 0.5062938410917233,
+      "median": 0.5120287835597992
+    },
+    "2": {
+      "count": 18,
+      "mean": 0.47194916837745243,
+      "median": 0.47632671892642975
+    }
+  },
+  "brightness_only_diagnostic": {
+    "roc_auc": 0.6951539491298527,
+    "average_precision": 0.4407468266813036
+  },
+  "python": "3.13.16",
+  "torch": "2.11.0+cu130",
+  "torchvision": "0.26.0+cu130",
+  "limitations": [
+    "Expert labels are defectiveness judgements, not measured severity or production disposition.",
+    "Physical module IDs missing; blocked split cannot guarantee truly independent modules.",
+    "SSIM was computed at 96px on dHash candidates; similar edges are not proven duplicates.",
+    "Model 1 and Model 2 benchmark images do not share physical inspection identifiers."
+  ]
+}

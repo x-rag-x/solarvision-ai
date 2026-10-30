@@ -24,9 +24,11 @@ import { DataSourceNote, EmptyData, PageIntro, StatusBadge } from "@/components/
 import { HISTORICAL_MODEL_EVALUATION } from "@/lib/modelData";
 import { DEFECT_CLASS_LIST, getDefectMeta } from "@/lib/defects";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 export default function ModelPerformance() {
   const { data: modelStatus, isLoading } = trpc.model.status.useQuery();
+  const { data: model2Status } = trpc.model2Elpv.status.useQuery();
   const ready = Boolean(modelStatus?.exists);
 
   return (
@@ -412,6 +414,70 @@ export default function ModelPerformance() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Model 2 ELPV Screening Benchmark Registry Section */}
+      <div className="mt-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-[#F2B941]/20 px-2 py-0.5 text-xs font-semibold text-[#8b6508] border border-[#F2B941]/40">
+                Model 2
+              </span>
+              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-mono text-slate-700">
+                solarvision_m2_elpv_binary_v1
+              </span>
+              <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-xs font-medium">
+                Checkpoint Active
+              </span>
+            </div>
+            <h3 className="mt-2 text-xl font-bold text-slate-900">
+              Model 2 — Full-Cell Grayscale EL Defect Screening
+            </h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              EfficientNet-B0 transfer learning on ELPV benchmark (CC BY-NC-SA 4.0). Evaluates individual cropped cells.
+            </p>
+          </div>
+          <Link href="/cell-screening">
+            <Button className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs">
+              Open Cell Screening UI
+            </Button>
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Benchmark Accuracy</span>
+            <span className="text-xl font-bold text-slate-900 mt-1 block">69.81%</span>
+            <span className="text-[10px] text-slate-500">215 / 308 correct</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Defective Recall</span>
+            <span className="text-xl font-bold text-slate-900 mt-1 block">68.67%</span>
+            <span className="text-[10px] text-slate-500">57 / 83 defective identified</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Defective Precision</span>
+            <span className="text-xl font-bold text-slate-900 mt-1 block">45.97%</span>
+            <span className="text-[10px] text-slate-500">57 / 124 flagged</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Decision Threshold</span>
+            <span className="text-xl font-bold text-slate-900 mt-1 block">0.55</span>
+            <span className="text-[10px] text-slate-500">Validation-selected</span>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 space-y-1">
+          <p className="font-semibold text-amber-950 flex items-center gap-1.5">
+            <ShieldAlert className="h-4 w-4 text-amber-700" />
+            Mandatory Operator Review Policy
+          </p>
+          <p className="leading-relaxed">
+            Every Model 2 output is designated <code>screening_only</code> with review status <code>pending</code>.
+            Zero automated PASS/REJECT decisions are permitted. True module independence is not established (44 modules, no source IDs).
+          </p>
         </div>
       </div>
 

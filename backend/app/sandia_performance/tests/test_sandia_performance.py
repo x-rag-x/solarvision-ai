@@ -153,6 +153,13 @@ class TestSandiaModelLoaderAndService:
             pipeline.fit(X_calib, y_calib)
             joblib.dump(pipeline, pipeline_path)
 
+            import hashlib
+            manifest_path = artifact_dir / "manifest.json"
+            manifest_path.write_text(
+                json.dumps({"version": "1.0.0", "sha256": hashlib.sha256(pipeline_path.read_bytes()).hexdigest()}),
+                encoding="utf-8",
+            )
+
             loader = SandiaModelLoader(
                 artifact_path=pipeline_path,
                 schema_path=schema_path,

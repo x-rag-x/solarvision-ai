@@ -17,6 +17,7 @@ import { rootCauseRouter } from "./rootCause";
 import { predictiveQualityRouter } from "./predictiveQuality";
 import { predictiveMaintenanceRouter } from "./predictiveMaintenance";
 import { sandiaPerformanceRouter } from "./sandiaPerformance";
+import { cellScreeningRouter } from "./cellScreening";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { existsSync } from "node:fs";
@@ -140,6 +141,8 @@ export const appRouter = router({
     ),
   }),
   rootCause: rootCauseRouter,
+  model2Elpv: cellScreeningRouter,
+  cellScreening: cellScreeningRouter,
   predictiveQuality: predictiveQualityRouter,
   predictiveMaintenance: predictiveMaintenanceRouter,
   sandiaPerformance: sandiaPerformanceRouter,

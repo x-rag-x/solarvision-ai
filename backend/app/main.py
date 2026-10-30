@@ -22,6 +22,7 @@ from .config import settings
 from .inference import image_to_data_url, inference_service, load_image_safely
 from .predictive_maintenance.api import router as predictive_maintenance_router
 from .predictive_quality.api import router as predictive_quality_router
+from .quality_screening.router import router as model2_elpv_router
 from .root_cause.api import router as root_cause_router
 from .sandia_performance.api import router as sandia_performance_router
 from .sandia_performance.service import sandia_performance_service
@@ -120,6 +121,7 @@ app.include_router(predictive_maintenance_router, prefix="/api")
 app.include_router(predictive_maintenance_router)
 app.include_router(sandia_performance_router, prefix="/api")
 app.include_router(sandia_performance_router)
+app.include_router(model2_elpv_router)
 
 _import_elapsed_ms = (time.perf_counter() - _import_start_time) * 1000
 logger.info("[TIMING:IMPORT] Python backend modules imported and routes mounted in %.1f ms", _import_elapsed_ms)

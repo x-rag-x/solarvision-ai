@@ -12,6 +12,7 @@ import Roadmap from "./pages/Roadmap";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
 import InspectionDetail from "./pages/InspectionDetail";
+import CellScreening from "./pages/CellScreening";
 import { RootCauseOverview } from "./features/rootCause";
 import { PredictiveQualityOverview } from "./features/predictiveQuality";
 import { PredictiveMaintenanceOverview } from "./features/predictiveMaintenance";
@@ -26,6 +27,10 @@ function Router() {
         <Route path="/inspection" component={Inspection} />
         <Route path="/inspect" component={Inspection} />
         <Route path="/inspection/:inspectionId" component={InspectionDetail} />
+        <Route path="/cell-screening" component={CellScreening} />
+        <Route path="/cell%20screening" component={CellScreening} />
+        <Route path="/cell_screening" component={CellScreening} />
+        <Route path="/model2-screening" component={CellScreening} />
         <Route path="/root-cause" component={RootCauseOverview} />
         <Route path="/root%20cause" component={RootCauseOverview} />
         <Route path="/root cause" component={RootCauseOverview} />

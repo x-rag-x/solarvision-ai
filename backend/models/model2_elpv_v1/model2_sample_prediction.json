@@ -1,0 +1,7 @@
+{
+  "model_id": "solarvision_m2_elpv_binary_v1",
+  "defective_probability": 0.475702,
+  "predicted_class": "healthy",
+  "threshold": 0.55,
+  "scope": "ELPV single-cell screening; NOT certified factory acceptance or root-cause diagnosis"
+}
