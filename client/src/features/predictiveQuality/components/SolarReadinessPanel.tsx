@@ -52,10 +52,10 @@ export function SolarReadinessPanel() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] uppercase font-semibold">
+              <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs uppercase font-semibold">
                 Status: NOT_TRAINED
               </Badge>
-              <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-[10px] font-mono">
+              <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
                 DATASET_BLOCKED
               </Badge>
               <span className="text-xs text-slate-400 font-mono">
@@ -86,57 +86,57 @@ export function SolarReadinessPanel() {
         <div className="mt-8 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6 sm:grid-cols-5">
           {/* Batches */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               Manufacturing Batches
             </span>
             <p className="mt-2 text-2xl font-bold text-slate-900">
               {readiness?.tableCounts.batches ?? 0}
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Database batches</p>
+            <p className="text-xs text-slate-400 mt-0.5">Database batches</p>
           </div>
 
           {/* Sensor Telemetry */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               Sensor Streams
             </span>
             <p className="mt-2 text-2xl font-bold text-slate-900">
               {readiness?.tableCounts.sensorReadings ?? 0}
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Continuous records</p>
+            <p className="text-xs text-slate-400 mt-0.5">Continuous records</p>
           </div>
 
           {/* Quality Outcome Labels */}
           <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-4">
-            <span className="text-rose-700 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-rose-700 text-xs font-semibold uppercase tracking-wider">
               Quality Labels
             </span>
             <p className="mt-2 text-2xl font-bold text-rose-700">
               {readiness?.tableCounts.qualityOutcomeLabels ?? 0}
             </p>
-            <p className="text-[10px] text-rose-600 mt-0.5">Confirmed factory tiers</p>
+            <p className="text-xs text-rose-600 mt-0.5">Confirmed factory tiers</p>
           </div>
 
           {/* Linked Inspections */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               Linked Inspections
             </span>
             <p className="mt-2 text-2xl font-bold text-slate-900">
               {readiness?.tableCounts.linkedInspections ?? 0}
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Model 1 optical records</p>
+            <p className="text-xs text-slate-400 mt-0.5">Model 1 optical records</p>
           </div>
 
           {/* Eligible Training Examples */}
           <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-4">
-            <span className="text-rose-700 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-rose-700 text-xs font-semibold uppercase tracking-wider">
               Eligible Training N
             </span>
             <p className="mt-2 text-2xl font-bold text-rose-700">
               {readiness?.tableCounts.eligibleTrainingExamples ?? 0}
             </p>
-            <p className="text-[10px] text-rose-600 mt-0.5">Minimum 500 required</p>
+            <p className="text-xs text-rose-600 mt-0.5">Minimum 500 required</p>
           </div>
         </div>
       </Card>
@@ -164,7 +164,7 @@ export function SolarReadinessPanel() {
             ))}
           </div>
 
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] text-slate-500">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
             <span className="font-semibold text-slate-700">Zero-Fabrication Policy:</span> The SolarVision AI release gate prevents serving simulated risk scores or synthetic confidence percentages to plant operators.
           </div>
         </Card>
@@ -184,7 +184,7 @@ export function SolarReadinessPanel() {
                 key={index}
                 className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3.5 text-xs text-slate-700 leading-relaxed"
               >
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-200 font-mono text-[10px] font-bold text-slate-700">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-200 font-mono text-xs font-bold text-slate-700">
                   {index + 1}
                 </span>
                 <span>{step}</span>
@@ -192,7 +192,7 @@ export function SolarReadinessPanel() {
             ))}
           </div>
 
-          <div className="mt-4 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-3 text-[11px] text-emerald-900">
+          <div className="mt-4 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-3 text-xs text-emerald-900">
             <span className="font-semibold">Contract Ready:</span> The 32-feature solar schema (`CANONICAL_SOLAR_FEATURES`, v1.0.0) is synchronized across Python and TypeScript. Ingestion can begin immediately once factory CSVs or SCADA webhooks connect.
           </div>
         </Card>

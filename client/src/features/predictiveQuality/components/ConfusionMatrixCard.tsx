@@ -58,7 +58,7 @@ export function ConfusionMatrixCard() {
             <h3 className="text-base font-bold text-slate-900 sm:text-lg">
               Held-Out Test Confusion Matrix (N = 236 Wafers)
             </h3>
-            <Badge className="bg-slate-100 text-slate-800 text-[10px] font-mono">
+            <Badge className="bg-slate-100 text-slate-800 text-xs font-mono">
               Chronological Split
             </Badge>
           </div>
@@ -113,14 +113,14 @@ export function ConfusionMatrixCard() {
               <div className="grid flex-1 grid-cols-2 gap-3">
                 {/* Cell 1: True Negative (TN) */}
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 text-center transition-all">
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-800">
+                  <div className="flex items-center justify-between text-xs font-semibold text-emerald-800">
                     <span>True Negative (TN)</span>
                     <span className="font-mono">{((matrix.tn / 236) * 100).toFixed(1)}%</span>
                   </div>
                   <p className="mt-2 text-3xl font-bold font-mono text-emerald-950">
                     {matrix.tn}
                   </p>
-                  <p className="mt-1 text-[11px] text-emerald-700">
+                  <p className="mt-1 text-xs text-emerald-700">
                     Correctly cleared conforming wafers
                   </p>
                 </div>
@@ -131,14 +131,14 @@ export function ConfusionMatrixCard() {
                     ? "border-amber-200 bg-amber-50/70 text-amber-950"
                     : "border-slate-200 bg-slate-50 text-slate-400"
                 }`}>
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-amber-800">
+                  <div className="flex items-center justify-between text-xs font-semibold text-amber-800">
                     <span>False Positive (FP)</span>
                     <span className="font-mono">{((matrix.fp / 236) * 100).toFixed(1)}%</span>
                   </div>
                   <p className="mt-2 text-3xl font-bold font-mono text-amber-950">
                     {matrix.fp}
                   </p>
-                  <p className="mt-1 text-[11px] text-amber-700">
+                  <p className="mt-1 text-xs text-amber-700">
                     False alarms (conforming flagged for review)
                   </p>
                 </div>
@@ -149,7 +149,7 @@ export function ConfusionMatrixCard() {
                     ? "border-rose-300 bg-rose-50/80 text-rose-950"
                     : "border-slate-200 bg-slate-50 text-slate-400"
                 }`}>
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-rose-800">
+                  <div className="flex items-center justify-between text-xs font-semibold text-rose-800">
                     <span className="flex items-center gap-1">
                       False Negative (FN)
                       <TooltipProvider>
@@ -168,7 +168,7 @@ export function ConfusionMatrixCard() {
                   <p className="mt-2 text-3xl font-bold font-mono text-rose-950">
                     {matrix.fn}
                   </p>
-                  <p className="mt-1 text-[11px] text-rose-700 font-medium">
+                  <p className="mt-1 text-xs text-rose-700 font-medium">
                     Escaped defects (missed scrap)
                   </p>
                 </div>
@@ -179,14 +179,14 @@ export function ConfusionMatrixCard() {
                     ? "border-emerald-300 bg-emerald-100/70 text-emerald-950"
                     : "border-slate-200 bg-slate-50 text-slate-400"
                 }`}>
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-800">
+                  <div className="flex items-center justify-between text-xs font-semibold text-emerald-800">
                     <span>True Positive (TP)</span>
                     <span className="font-mono">{((matrix.tp / 236) * 100).toFixed(1)}%</span>
                   </div>
                   <p className="mt-2 text-3xl font-bold font-mono text-emerald-950">
                     {matrix.tp}
                   </p>
-                  <p className="mt-1 text-[11px] text-emerald-700">
+                  <p className="mt-1 text-xs text-emerald-700">
                     Correctly intercepted yield excursions
                   </p>
                 </div>
@@ -233,7 +233,7 @@ export function ConfusionMatrixCard() {
             </div>
           </div>
 
-          <div className="text-[11px] text-slate-400">
+          <div className="text-xs text-slate-400">
             Source: Chronological held-out evaluation on 236 continuous manufacturing runs.
           </div>
         </div>

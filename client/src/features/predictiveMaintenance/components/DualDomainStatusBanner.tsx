@@ -40,7 +40,7 @@ export function DualDomainStatusBanner() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Domain 1: Reference Benchmark
                   </span>
-                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] font-mono">
+                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs font-mono">
                     Ready
                   </Badge>
                 </div>
@@ -89,7 +89,7 @@ export function DualDomainStatusBanner() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-rose-800">
                     Domain 2: Production Factory Equipment
                   </span>
-                  <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] font-mono">
+                  <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-mono">
                     Not Trained
                   </Badge>
                 </div>
@@ -135,7 +135,7 @@ export function DualDomainStatusBanner() {
               <span className="font-bold uppercase tracking-wider text-amber-900 font-mono">
                 Domain Quarantine & Classification Scope Notice
               </span>
-              <Badge className="bg-amber-200 text-amber-950 border-amber-300 text-[10px]">
+              <Badge className="bg-amber-200 text-amber-950 border-amber-300 text-xs">
                 Evaluation Only
               </Badge>
             </div>

@@ -4,12 +4,9 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
-  ArrowUpRight,
   BrainCircuit,
   CheckCircle2,
   Clock3,
-  Compass,
-  Database,
   ExternalLink,
   Factory,
   Gauge,
@@ -22,59 +19,31 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
-  UploadCloud,
   Wrench,
+  Workflow,
+  Cpu,
+  Layers,
+  Database,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { DataSourceNote, EmptyData, PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useAppMode } from "@/contexts/ModeContext";
 import { isUnauthorizedError } from "@/lib/auth-helpers";
-import { SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
-import { openOperatorLoginModal, startLogin } from "@/const";
-import { Button } from "@/components/ui/button";
+import { openOperatorLoginModal } from "@/const";
 
-function StatCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
-  accent,
-  isLoading,
-}: {
-  label: string;
-  value: string | number;
-  detail: string;
-  icon: typeof Target;
-  accent: string;
-  isLoading?: boolean;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-slate-500">{label}</p>
-          {isLoading ? (
-            <Skeleton className="mt-3 h-8 w-24 rounded-lg" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#0B0909]">{value}</p>
-          )}
-          <p className="mt-1 text-[11px] text-slate-400">{detail}</p>
-        </div>
-        <div
-          className="grid h-10 w-10 place-items-center rounded-xl"
-          style={{ backgroundColor: `${accent}15`, color: accent }}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </div>
-  );
-}
+// Shared SolarVision UI Components
+import PageHeader from "@/components/solarvision/PageHeader";
+import StatCard from "@/components/solarvision/StatCard";
+import StatusBadge from "@/components/solarvision/StatusBadge";
+import ModelBadge from "@/components/solarvision/ModelBadge";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+import AuthPrompt from "@/components/solarvision/AuthPrompt";
+import { EmptyState, Skeleton } from "@/components/solarvision/StateComponents";
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const { isDev, isProd } = useAppMode();
 
   const {
     data: stats,
@@ -88,9 +57,6 @@ export default function Home() {
   const { data: model1Status } = trpc.model.status.useQuery();
   const { data: model2Status } = trpc.model2Elpv.status.useQuery();
   const { data: sandiaStatus } = trpc.sandiaPerformance.status.useQuery();
-  const { data: model3Status } = trpc.predictiveQuality.status.useQuery(undefined, {
-    enabled: Boolean(isAuthenticated),
-  });
   const { data: model4Status } = trpc.predictiveMaintenance.status.useQuery(undefined, {
     enabled: Boolean(isAuthenticated),
   });
@@ -109,488 +75,450 @@ export default function Home() {
   const configured = Boolean(stats?.configured) && !isAuthError;
   const model1Ready = model1Status?.exists;
 
-  const handleRetry = () => {
-    refetchStats();
-    refetchHistory();
-  };
-
   return (
     <div className="space-y-6">
-      <PageIntro
-        eyebrow="Unified Smart Factory Operations & Four-Model Architecture"
+      {/* Page Header */}
+      <PageHeader
         title="SolarVision AI Control Center"
         description="Unified industrial intelligence platform for crystalline photovoltaic manufacturing: visual electroluminescence inspection, cell defectiveness screening, electrical performance forecasting, and electromechanical equipment health monitoring."
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/inspection"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B0909] px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(7,27,41,0.14)] transition-transform hover:-translate-y-0.5"
-            >
-              <ScanLine className="h-4 w-4 text-[#F2B941]" />
-              Run M1 Inspection
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+        badge={<span className="rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-semibold text-text border border-border">Production Ops</span>}
+        actions={
+          <Link
+            href="/inspection"
+            className="inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-ink/90 transition-all active:scale-[0.98]"
+          >
+            <ScanLine className="h-4 w-4 text-brand" />
+            <span>Run M1 Inspection</span>
+            <ArrowRight className="h-3.5 w-3.5 text-text-3" />
+          </Link>
         }
       />
 
-      {isAuthError && <SessionExpiredBanner onRetry={handleRetry} />}
-
-      {!isAuthenticated && !isAuthError && (
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0B0909] text-[#F2B941]">
-              <LogIn className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-xs font-semibold text-amber-950">Operator Authentication Recommended</p>
-              <p className="text-[11px] text-amber-800">
-                Sign in with your operator identity to run AI inspections and persist protected factory records.
-              </p>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => openOperatorLoginModal()}
-            className="h-8 gap-1.5 rounded-lg bg-[#0B0909] px-3.5 text-xs font-semibold text-white hover:bg-slate-800 sm:shrink-0"
-          >
-            <LogIn className="h-3 w-3 text-[#F2B941]" />
-            Sign in
-          </Button>
-        </div>
+      {/* Auth Banner & Provenance Notice */}
+      {!isAuthenticated ? (
+        <AuthPrompt
+          variant="banner"
+          description="Signed out view: Zero-fabrication guarantees unauthenticated metrics remain undisclosed. Sign in to query live factory inspection statistics."
+          actionText="Sign In as Operator"
+        />
+      ) : (
+        <NoticeBar
+          tone="info"
+          message="Storage layer verified: Metrics below reflect stored production inspection records (Zero-fabrication enforced)."
+          details={
+            <p>
+              Persistent database active. Every displayed detection, defect classification count,
+              and latency number is computed from verified production runs and immutable audit logs.
+            </p>
+          }
+        />
       )}
 
-      <DataSourceNote configured={configured} />
-
-      {/* Primary Production Statistics Cards */}
+      {/* Primary KPI Strip (Zero Fabrication: '—' when signed out, never false 0) */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="M1 Inspections Processed"
-          value={configured ? stats?.inspections ?? 0 : 0}
-          detail="Stored inspection records"
+          value={configured && stats?.inspections != null ? stats.inspections : undefined}
+          isUnknown={!isAuthenticated || !configured}
+          unknownReason="Sign in with authorized operator credentials to view live metrics"
+          caption="Stored inspection records"
           icon={ScanLine}
-          accent="#F2B941"
-          isLoading={statsLoading}
         />
         <StatCard
           label="Defects Detected"
-          value={configured ? stats?.detections ?? 0 : 0}
-          detail="Across persisted detections"
+          value={configured && stats?.detections != null ? stats.detections : undefined}
+          isUnknown={!isAuthenticated || !configured}
+          unknownReason="Sign in with authorized operator credentials to view live metrics"
+          caption="Across persisted detections"
           icon={Target}
-          accent="#FDCD5E"
-          isLoading={statsLoading}
         />
         <StatCard
           label="Defect Classes Seen"
-          value={configured ? stats?.defectTypes ?? 0 : 0}
-          detail="Unique labels observed in DB (out of 9)"
+          value={configured && stats?.defectTypes != null ? stats.defectTypes : undefined}
+          isUnknown={!isAuthenticated || !configured}
+          unknownReason="Sign in with authorized operator credentials to view live metrics"
+          caption="Unique labels observed in DB (out of 9)"
           icon={Gauge}
-          accent="#F2B941"
-          isLoading={statsLoading}
         />
         <StatCard
           label="M1 Inference Latency"
           value={
             configured && stats?.avgProcessingTimeMs != null
-              ? `${Math.round(stats.avgProcessingTimeMs)} ms`
-              : "—"
+              ? Math.round(stats.avgProcessingTimeMs)
+              : undefined
           }
-          detail="Measured model inference latency"
+          unit="ms"
+          isUnknown={!isAuthenticated || !configured}
+          unknownReason="Sign in with authorized operator credentials to view live metrics"
+          caption="Measured model inference latency"
           icon={Clock3}
-          accent="#FDCD5E"
-          isLoading={statsLoading}
         />
       </div>
 
       {/* UNIFIED FOUR-MODEL ARCHITECTURE STATUS MATRIX */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-4">
+      <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">
+              <span className="flex h-2 w-2 rounded-full bg-success animate-pulse" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-text-3">
                 System Status & Model Registry
-              </p>
+              </h2>
             </div>
-            <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
+            <h3 className="text-lg font-bold tracking-tight text-text mt-0.5">
               Four-Model Operational Architecture
-            </h2>
+            </h3>
           </div>
-          <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-[11px] text-slate-600">
+          <span className="rounded-full bg-surface-subtle px-3 py-1 font-mono text-xs text-text-2 border border-border">
             Strict Zero-Fabrication Enforcement
           </span>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {/* MODEL 1 */}
-          <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-[#FAF9F5] p-5 transition-shadow hover:shadow-md">
+          <div className="flex flex-col justify-between rounded-xl border border-border bg-surface-subtle p-5 hover:border-brand/50 transition-all">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-[#0B0909] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#F2B941]">
+                <span className="rounded bg-ink px-2 py-0.5 font-mono text-xs font-bold text-brand">
                   MODEL 1
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-warning-tint px-2 py-0.5 text-xs font-semibold text-brand-text border border-warning/20">
                   <CheckCircle2 className="h-3 w-3" /> Academic Prototype
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">AI-Based Solar Cell Defect Detection</h3>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+              <h4 className="mt-3 text-sm font-bold text-text">
+                AI-Based Solar Cell Defect Detection
+              </h4>
+              <p className="mt-1 text-xs text-text-2 leading-relaxed">
                 Detect and localize visible defects in supported solar-cell EL/NIR inspection images with bounding-box coordinates. Academic prototype / non-certified industrial use.
               </p>
-              <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
-                <div className="flex justify-between text-slate-600">
-                  <span>Engine:</span>
-                  <span className="font-mono font-medium">YOLO / PyTorch</span>
+              <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-xs">
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Engine:</span>
+                  <span className="font-mono font-medium text-text">YOLO / PyTorch</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Checkpoint:</span>
-                  <span className="font-mono text-emerald-700">best.pt verified</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Checkpoint:</span>
+                  <span className="font-mono text-success font-medium">best.pt verified</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Validation:</span>
-                  <span className="font-medium text-amber-700">PVELAD (91.87% mAP@50)</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Validation:</span>
+                  <span className="font-medium text-brand-text">PVELAD (91.87% mAP@50)</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Domain:</span>
-                  <span className="font-medium text-slate-800">Solar Cell EL/NIR</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Domain:</span>
+                  <span className="font-medium text-text">Solar Cell EL/NIR</span>
                 </div>
               </div>
             </div>
             <Link
               href="/inspection"
-              className="mt-5 inline-flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
+              className="mt-5 inline-flex items-center justify-between rounded-lg bg-surface border border-border px-3 py-2 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
             >
               <span>Run Inspection</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#F2B941]" />
+              <ArrowRight className="h-3.5 w-3.5 text-brand-text" />
             </Link>
           </div>
 
           {/* MODEL 2 */}
-          <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-[#FAF9F5] p-5 transition-shadow hover:shadow-md">
+          <div className="flex flex-col justify-between rounded-xl border border-border bg-surface-subtle p-5 hover:border-brand/50 transition-all">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-[#0B0909] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#F2B941]">
+                <span className="rounded bg-ink px-2 py-0.5 font-mono text-xs font-bold text-brand">
                   MODEL 2
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-success-tint px-2 py-0.5 text-xs font-semibold text-success border border-success/20">
                   <CheckCircle2 className="h-3 w-3" /> Trained Screening
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">AI-Based Solar Cell Defectiveness Screening</h3>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+              <h4 className="mt-3 text-sm font-bold text-text">
+                AI-Based Solar Cell Defectiveness Screening
+              </h4>
+              <p className="mt-1 text-xs text-text-2 leading-relaxed">
                 Assess the likelihood that an individual cropped solar cell contains defects. Experimental screening only; every prediction requires mandatory operator review (no automated PASS/REJECT).
               </p>
-              <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
-                <div className="flex justify-between text-slate-600">
-                  <span>Engine:</span>
-                  <span className="font-mono font-medium">EfficientNet-B0 / PyTorch</span>
+              <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-xs">
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Engine:</span>
+                  <span className="font-mono font-medium text-text">EfficientNet-B0 / PyTorch</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Dataset:</span>
-                  <span className="font-mono text-slate-800">ELPV (2,624 images)</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Dataset:</span>
+                  <span className="font-mono text-text">ELPV (2,624 images)</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Accuracy / Recall:</span>
-                  <span className="font-mono text-emerald-700">69.81% / 68.67%</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Accuracy / Recall:</span>
+                  <span className="font-mono text-success font-medium">69.81% / 68.67%</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Precision / F1:</span>
-                  <span className="font-mono text-slate-800">45.97% / 55.07% (τ=0.55)</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Precision / F1:</span>
+                  <span className="font-mono text-text">45.97% / 55.07% (τ=0.55)</span>
                 </div>
               </div>
             </div>
             <Link
               href="/cell-screening"
-              className="mt-5 inline-flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
+              className="mt-5 inline-flex items-center justify-between rounded-lg bg-surface border border-border px-3 py-2 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
             >
               <span>Cell Screening</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#F2B941]" />
+              <ArrowRight className="h-3.5 w-3.5 text-brand-text" />
             </Link>
           </div>
 
           {/* MODEL 3 */}
-          <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-[#FAF9F5] p-5 transition-shadow hover:shadow-md">
+          <div className="flex flex-col justify-between rounded-xl border border-border bg-surface-subtle p-5 hover:border-brand/50 transition-all">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-[#0B0909] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#F2B941]">
+                <span className="rounded bg-ink px-2 py-0.5 font-mono text-xs font-bold text-brand">
                   MODEL 3
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-info-tint px-2 py-0.5 text-xs font-semibold text-info border border-info/20">
                   <CheckCircle2 className="h-3 w-3" /> Pipeline Ready
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">Sandia Solar Electrical Performance Prediction</h3>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+              <h4 className="mt-3 text-sm font-bold text-text">
+                Sandia Solar Electrical Performance Prediction
+              </h4>
+              <p className="mt-1 text-xs text-text-2 leading-relaxed">
                 Predict reference-normalized PV electrical performance from supported environmental and electrical features. Research-domain limitations apply; secondary UCI SECOM benchmark accessible.
               </p>
-              <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
-                <div className="flex justify-between text-slate-600">
-                  <span>Engine:</span>
-                  <span className="font-mono font-medium">scikit-learn Pipeline</span>
+              <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-xs">
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Engine:</span>
+                  <span className="font-mono font-medium text-text">scikit-learn Pipeline</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Dataset:</span>
-                  <span className="font-mono text-slate-800">Sandia PV Research</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Dataset:</span>
+                  <span className="font-mono text-text">Sandia PV Research</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Target:</span>
-                  <span className="font-mono text-sky-700">power_retention_pct</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Target:</span>
+                  <span className="font-mono text-info font-medium">power_retention_pct</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>MAE / RMSE / R²:</span>
-                  <span className="font-mono text-emerald-700">0.793 pp / 1.107 pp / 0.581</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">MAE / RMSE / R²:</span>
+                  <span className="font-mono text-success font-medium">0.793 pp / 1.107 pp / 0.581</span>
                 </div>
               </div>
             </div>
             <Link
               href="/predictive-quality"
-              className="mt-5 inline-flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
+              className="mt-5 inline-flex items-center justify-between rounded-lg bg-surface border border-border px-3 py-2 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
             >
               <span>Predict Performance</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#F2B941]" />
+              <ArrowRight className="h-3.5 w-3.5 text-brand-text" />
             </Link>
           </div>
 
           {/* MODEL 4 */}
-          <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-[#FAF9F5] p-5 transition-shadow hover:shadow-md">
+          <div className="flex flex-col justify-between rounded-xl border border-border bg-surface-subtle p-5 hover:border-brand/50 transition-all">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-[#0B0909] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#F2B941]">
+                <span className="rounded bg-ink px-2 py-0.5 font-mono text-xs font-bold text-brand">
                   MODEL 4
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-purple-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-text-2 border border-border">
                   <CheckCircle2 className="h-3 w-3" /> Benchmark Evaluated
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">AI-Based Equipment Predictive Maintenance</h3>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+              <h4 className="mt-3 text-sm font-bold text-text">
+                AI-Based Equipment Predictive Maintenance
+              </h4>
+              <p className="mt-1 text-xs text-text-2 leading-relaxed">
                 Estimate equipment failure risk from machine operating inputs. AI4I physical benchmark evaluated; clear distinction from unvalidated solar factory machinery.
               </p>
-              <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
-                <div className="flex justify-between text-slate-600">
-                  <span>Engine:</span>
-                  <span className="font-mono font-medium">AI4I 2020 Pipeline</span>
+              <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-xs">
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Engine:</span>
+                  <span className="font-mono font-medium text-text">AI4I 2020 Pipeline</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Evaluation:</span>
-                  <span className="font-mono text-purple-700">Acc 96.67% · AUC 0.931</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Evaluation:</span>
+                  <span className="font-mono font-medium text-text">Acc 96.67% · AUC 0.931</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Failure Modes:</span>
-                  <span className="font-mono text-slate-800">TWF, HDF, PWF, OSF, RNF</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Failure Modes:</span>
+                  <span className="font-mono text-text">TWF, HDF, PWF, OSF, RNF</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Validation Status:</span>
-                  <span className="font-medium text-amber-700">Benchmark Evaluated</span>
+                <div className="flex justify-between text-text-2">
+                  <span className="text-text-3">Validation Status:</span>
+                  <span className="font-medium text-brand-text">Benchmark Evaluated</span>
                 </div>
               </div>
             </div>
             <Link
               href="/predictive-maintenance"
-              className="mt-5 inline-flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
+              className="mt-5 inline-flex items-center justify-between rounded-lg bg-surface border border-border px-3 py-2 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
             >
               <span>Maintenance Center</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#F2B941]" />
+              <ArrowRight className="h-3.5 w-3.5 text-brand-text" />
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Domain Segregation & Scientific Transparency Notice */}
-      <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0B0909] text-[#F2B941]">
-            <ShieldCheck className="h-5 w-5" />
+      {/* Dev Mode Data Flow & Guided Tour */}
+      {isDev && (
+        <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+                Developer Telemetry & Architecture
+              </span>
+              <h3 className="text-sm font-bold text-text">Live Architecture & Demonstration Stages</h3>
+            </div>
+            <span className="rounded bg-brand-tint px-2 py-0.5 font-mono text-xs font-bold text-brand-text">
+              DEV MODE ACTIVE
+            </span>
           </div>
-          <div className="space-y-1">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-              Rigorous Scientific Transparency &amp; Domain Isolation Invariant
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              SolarVision AI operates under an uncompromised zero-fabrication pledge. All four modules maintain independent lifecycle contracts:
-              <strong> Model 1</strong> executes real-time vision defect localization on solar-cell EL/NIR images (PVELAD benchmark).
-              <strong> Model 2</strong> performs full-cell grayscale defectiveness screening using EfficientNet-B0 trained on ELPV (0.55 threshold, mandatory review).
-              <strong> Model 3</strong> predicts reference-normalized PV electrical power retention using a verified Sandia regression pipeline (R² 0.581), with UCI SECOM preserved as secondary benchmark.
-              <strong> Model 4</strong> evaluates electromechanical failure risk and 5 failure modes on the AI4I 2020 benchmark, distinct from unvalidated solar factory machinery.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* 6-STEP DEMONSTRATION WORKFLOW */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">
-              Live Demonstration Guide
-            </p>
-            <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
-              End-to-End Four-Model Tour
-            </h2>
-          </div>
-          <span className="hidden sm:inline-block rounded-full bg-[#FFF3C4] px-3 py-1 font-mono text-[11px] font-semibold text-amber-900">
-            6 Operational Stages
-          </span>
-        </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              n: "01",
-              title: "M1 Cell Inspection",
-              desc: "Upload EL/NIR frame to execute YOLO26n defect detection with bounding boxes.",
-              path: "/inspection",
-              icon: ScanLine,
-            },
-            {
-              n: "02",
-              title: "M2 Cell Screening",
-              desc: "Screen single-cell EL images using EfficientNet-B0 with 0.55 threshold and mandatory review.",
-              path: "/cell-screening",
-              icon: Scan,
-            },
-            {
-              n: "03",
-              title: "M3 Sandia Performance",
-              desc: "Predict normalized PV power retention from environmental and electrical parameters.",
-              path: "/predictive-quality",
-              icon: Activity,
-            },
-            {
-              n: "04",
-              title: "M4 Maintenance Benchmark",
-              desc: "Run AI4I physical milling machine inference and diagnose TWF, HDF, PWF failure modes.",
-              path: "/predictive-maintenance",
-              icon: Wrench,
-            },
-            {
-              n: "05",
-              title: "Inspection & Audit History",
-              desc: "Inspect immutable audit logs, SQLite records, and detection summaries.",
-              path: "/history",
-              icon: Clock3,
-            },
-            {
-              n: "06",
-              title: "Defect Analytics & Alerts",
-              desc: "Analyze Pareto distributions, class frequencies, and real-time operational notifications.",
-              path: "/analytics",
-              icon: Target,
-            },
-          ].map((step) => (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Link
-              key={step.n}
-              href={step.path}
-              className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/70 bg-[#FAF9F5] p-5 transition-all hover:-translate-y-0.5 hover:border-[#F2B941] hover:bg-white hover:shadow-md"
+              href="/cell-screening"
+              className="group rounded-xl border border-border bg-surface-subtle p-3.5 hover:border-brand transition-all"
             >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-slate-400 group-hover:text-[#F2B941]">
-                    STAGE {step.n}
-                  </span>
-                  <step.icon className="h-4 w-4 text-slate-400 group-hover:text-[#F2B941]" />
-                </div>
-                <h4 className="mt-3 text-sm font-bold text-slate-900 group-hover:text-slate-950">
-                  {step.title}
-                </h4>
-                <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                  {step.desc}
-                </p>
+              <div className="flex items-center justify-between text-xs text-text-3 mb-1">
+                <span>Stage 02</span>
+                <Scan className="h-4 w-4 text-brand-text" />
               </div>
-              <div className="mt-4 flex items-center gap-1 text-[11px] font-semibold text-[#0B0909] group-hover:text-[#F2B941]">
-                <span>Launch Stage</span>
-                <ArrowRight className="h-3 w-3" />
-              </div>
+              <h4 className="text-xs font-semibold text-text group-hover:text-brand-text">
+                M2 Cell Screening
+              </h4>
+              <p className="mt-1 text-xs text-text-3 leading-relaxed">
+                EfficientNet-B0 cell classification with 0.55 cutoff and mandatory review.
+              </p>
             </Link>
-          ))}
-        </div>
-      </div>
 
-      {/* Latest Activity: Inspection History Table with Direct Links */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="mb-5 flex items-end justify-between">
+            <Link
+              href="/predictive-quality"
+              className="group rounded-xl border border-border bg-surface-subtle p-3.5 hover:border-brand transition-all"
+            >
+              <div className="flex items-center justify-between text-xs text-text-3 mb-1">
+                <span>Stage 03</span>
+                <Activity className="h-4 w-4 text-info" />
+              </div>
+              <h4 className="text-xs font-semibold text-text group-hover:text-info">
+                M3 Sandia Performance
+              </h4>
+              <p className="mt-1 text-xs text-text-3 leading-relaxed">
+                Normalized PV power retention prediction via Sandia regression pipeline.
+              </p>
+            </Link>
+
+            <Link
+              href="/predictive-maintenance"
+              className="group rounded-xl border border-border bg-surface-subtle p-3.5 hover:border-brand transition-all"
+            >
+              <div className="flex items-center justify-between text-xs text-text-3 mb-1">
+                <span>Stage 04</span>
+                <Wrench className="h-4 w-4 text-text-2" />
+              </div>
+              <h4 className="text-xs font-semibold text-text">
+                M4 Equipment Health
+              </h4>
+              <p className="mt-1 text-xs text-text-3 leading-relaxed">
+                AI4I machine reliability evaluation and TWF/HDF/PWF failure mode analysis.
+              </p>
+            </Link>
+
+            <Link
+              href="/roadmap"
+              className="group rounded-xl border border-border bg-surface-subtle p-3.5 hover:border-brand transition-all"
+            >
+              <div className="flex items-center justify-between text-xs text-text-3 mb-1">
+                <span>Architecture</span>
+                <Cpu className="h-4 w-4 text-brand-text" />
+              </div>
+              <h4 className="text-xs font-semibold text-text group-hover:text-brand-text">
+                Data Flow Diagram
+              </h4>
+              <p className="mt-1 text-xs text-text-3 leading-relaxed">
+                Vite client → tRPC v11 → Express → FastAPI Inference → SQLite persistence.
+              </p>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Recent Inspection History */}
+      <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">
-              Live Records
-            </p>
-            <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
-              Recent Inspection History
-            </h2>
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+              Traceability Audit Trail
+            </span>
+            <h3 className="text-base font-bold text-text">Recent Inspection History</h3>
           </div>
           <Link
             href="/history"
-            className="text-xs font-semibold text-[#0B0909] hover:text-[#F2B941] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-2 hover:text-text transition-colors"
           >
-            View all history <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
+            <span>View All Records</span>
+            <ArrowRight className="h-3.5 w-3.5 text-text-3" />
           </Link>
         </div>
 
         {historyLoading ? (
-          <div className="space-y-3 py-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between py-3 border-b border-slate-100">
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-20" />
-              </div>
+          <div className="space-y-2 py-2">
+            {[1, 2, 3].map(i => (
+              <Skeleton key={i} className="h-14 w-full rounded-xl" />
             ))}
           </div>
         ) : history && history.length > 0 ? (
-          <div className="divide-y divide-slate-100">
-            {history.map((item) => {
+          <div className="divide-y divide-border/60">
+            {history.map(item => {
               const hasDefects = item.detectionsCount > 0;
               return (
                 <div
                   key={item.inspectionId}
                   onClick={() => setLocation(`/inspection/${item.inspectionId}`)}
-                  className="group flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between cursor-pointer rounded-xl px-2 transition-colors hover:bg-slate-50/80"
+                  className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 px-2 rounded-xl cursor-pointer hover:bg-surface-subtle transition-colors"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <span
                       className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-                        hasDefects ? "bg-amber-500" : "bg-emerald-500"
+                        hasDefects ? "bg-warning" : "bg-success"
                       }`}
                     />
-                    <div>
-                      <p className="text-sm font-semibold text-slate-800 group-hover:text-[#0B0909]">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-text truncate group-hover:text-brand-text transition-colors">
                         {item.sourceFilename}
                       </p>
-                      <p className="mt-0.5 font-mono text-[10px] text-slate-400">
-                        {item.inspectionId.slice(0, 8)} · {new Date(item.createdAt).toLocaleString()}
+                      <p className="font-mono text-xs text-text-3">
+                        {item.inspectionId.slice(0, 8)} • {new Date(item.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        hasDefects
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-emerald-50 text-emerald-700"
-                      }`}
-                    >
+                  <div className="flex items-center gap-4 shrink-0 text-xs">
+                    <StatusBadge tone={hasDefects ? "warning" : "success"}>
                       {item.detectionsCount} defect{item.detectionsCount === 1 ? "" : "s"}
-                    </span>
-                    <span className="font-mono text-xs text-slate-500">
+                    </StatusBadge>
+                    <span className="font-mono text-text-3 hidden sm:inline">
                       {Math.round(item.processingTimeMs)} ms
                     </span>
-                    <StatusBadge tone={item.status === "completed" ? "success" : "danger"}>
-                      {item.status}
-                    </StatusBadge>
-                    <ExternalLink className="h-3.5 w-3.5 text-slate-300 group-hover:text-[#0B0909] transition-colors" />
+                    <ExternalLink className="h-3.5 w-3.5 text-text-3 group-hover:text-text transition-colors" />
                   </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <EmptyData
-            compact
-            title="No inspections yet"
-            description="Run your first EL/NIR inspection to populate this activity feed directly from the database."
+          <EmptyState
+            title="No Inspections Yet"
+            description="Run your first EL/NIR cell inspection to populate this persistent activity log directly from the database."
+            action={
+              <Link
+                href="/inspection"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-ink/90 transition-colors shadow-xs"
+              >
+                <ScanLine className="h-3.5 w-3.5 text-brand" />
+                <span>Start First Inspection</span>
+              </Link>
+            }
           />
         )}
-      </div>
+      </section>
     </div>
   );
 }

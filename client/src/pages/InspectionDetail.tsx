@@ -1,38 +1,29 @@
+import React, { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Compass,
-  Copy,
-  Database,
-  ExternalLink,
-  Layers,
-  LogIn,
-  Maximize2,
-  RefreshCw,
-  ScanLine,
-  ShieldAlert,
-} from "lucide-react";
-import { useState } from "react";
-import { Link, useRoute } from "wouter";
-import { EmptyData, PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
-import { DetectionTable } from "@/components/solarvision/DetectionTable";
-import { ConfidenceDisclaimer } from "@/components/solarvision/ConfidenceDisclaimer";
-import { ImageViewerModal } from "@/components/solarvision/ImageViewerModal";
-import { AuthGuard, SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
-import { isUnauthorizedError } from "@/lib/auth-helpers";
+import { useRoute, Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { startLogin } from "@/const";
+import { useAppMode } from "@/contexts/ModeContext";
+import { isUnauthorizedError } from "@/lib/auth-helpers";
+import { ArrowLeft, Compass, Copy, Download, Share2, Terminal } from "lucide-react";
 import { toast } from "sonner";
+
+// Shared SolarVision UI Components
+import PageHeader from "@/components/solarvision/PageHeader";
+import ReportLayout from "@/components/solarvision/ReportLayout";
+import ModelBadge from "@/components/solarvision/ModelBadge";
+import StatusBadge from "@/components/solarvision/StatusBadge";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+import ImageViewer from "@/components/solarvision/ImageViewer";
+import DetectionTable from "@/components/solarvision/DetectionTable";
+import Inspector from "@/components/solarvision/Inspector";
+import AuthGuard from "@/components/solarvision/AuthGuard";
+import { EmptyState, ErrorState, Skeleton } from "@/components/solarvision/StateComponents";
 
 export default function InspectionDetail() {
   const [, params] = useRoute("/inspection/:inspectionId");
   const inspectionId = params?.inspectionId || "";
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { isDev } = useAppMode();
 
   const { data: systemSettings } = trpc.system.getSettings.useQuery();
   const enableRootCause = Boolean(systemSettings?.enableRootCause);
@@ -42,305 +33,208 @@ export default function InspectionDetail() {
     { enabled: Boolean(isAuthenticated && inspectionId) }
   );
 
-  const [viewMode, setViewMode] = useState<"annotated" | "original">("annotated");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [copiedId, setCopiedId] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
 
-  const copyId = () => {
-    if (!inspectionId) return;
-    navigator.clipboard.writeText(inspectionId);
-    setCopiedId(true);
-    toast.success("Inspection ID copied");
-    setTimeout(() => setCopiedId(false), 2000);
-  };
-
-  const isAuthError = isUnauthorizedError(error);
+  // 'I' shortcut in Dev mode
+  useEffect(() => {
+    if (!isDev) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "i" || e.key === "I") && !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        setInspectorOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDev]);
 
   if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-64 rounded-xl" />
-          <Skeleton className="h-9 w-32 rounded-xl" />
+          <Skeleton className="h-8 w-64 rounded-xl" />
+          <Skeleton className="h-8 w-32 rounded-xl" />
         </div>
-        <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-          <Skeleton className="h-[460px] rounded-2xl" />
-          <div className="space-y-4">
-            <Skeleton className="h-[180px] rounded-2xl" />
-            <Skeleton className="h-[260px] rounded-2xl" />
-          </div>
-        </div>
+        <Skeleton className="h-[520px] rounded-2xl" />
       </div>
     );
   }
 
   return (
     <AuthGuard
-      title="Authentication required to view inspection evidence"
-      description="Annotated solar cell imagery, bounding box coordinates, and defect classification records are restricted to authenticated operators and quality engineers."
+      title="Authentication Required for Stored Inspection Evidence"
+      description="Historical defect bounding boxes, cell telemetry coordinates, and ISO traceability logs are restricted to authenticated operators."
     >
       <div>
-        {isError && isAuthError ? (
-          <div>
-            <PageIntro
-              eyebrow="Access Control"
-              title="Authorization required for this record."
-              description="Your session has expired or does not have authorization to view this inspection record. Please sign in to verify operator identity."
-              action={
+        {isError || !data || !data.inspection ? (
+          <div className="space-y-6">
+            <PageHeader
+              title="Inspection Record Not Found"
+              description={`Could not retrieve persisted record for UUID ${inspectionId}.`}
+              actions={
                 <Link
                   href="/history"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B0909] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-800"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
                 >
-                  <ArrowLeft className="h-4 w-4" /> Back to history
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span>Back to Records</span>
                 </Link>
               }
             />
-            <SessionExpiredBanner onRetry={() => refetch()} />
-          </div>
-        ) : isError || !data || !data.inspection ? (
-          <div>
-            <PageIntro
-              eyebrow="Inspection Traceability"
-              title="Stored inspection record unavailable."
-              description={`Could not retrieve record for inspection ID ${inspectionId}. It may still be syncing, the identifier may be invalid, or the record does not exist in the database.`}
-              action={
-                <Link
-                  href="/history"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B0909] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-800"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back to history
-                </Link>
-              }
-            />
-            <EmptyData
-              title="No inspection found"
-              description="Verify the inspection UUID or return to the history table to select an existing persisted record."
+            <EmptyState
+              title="Record Unavailable"
+              description="Verify the record UUID or return to the history table to select an existing persisted inspection."
             />
           </div>
         ) : (
           (() => {
             const inspection = data.inspection as any;
             const detections = (data.detections || []) as any[];
-            const createdAtDate = new Date(inspection.createdAt);
+            const defectCount = detections.length;
+            const maxConfidence =
+              defectCount > 0 ? Math.max(...detections.map(d => Number(d.confidence || 0))) : 0;
 
-            const activeImage =
-              viewMode === "annotated"
-                ? inspection.annotatedImageUrl || inspection.inputImageUrl
-                : inspection.inputImageUrl || inspection.annotatedImageUrl;
+            const viewerDetections = detections.map((d, i) => ({
+              id: i,
+              class: d.defect_type || d.defectType || "defect",
+              label: d.defect_type || d.defectType || "defect",
+              confidence: Number(d.confidence || 0),
+              bbox: [Number(d.x1), Number(d.y1), Number(d.x2), Number(d.y2)] as [number, number, number, number],
+            }));
+
+            const handleExportCsv = () => {
+              if (detections.length === 0) {
+                toast.info("No detections to export.");
+                return;
+              }
+              const headers = "DefectType,Confidence,X1,Y1,X2,Y2\n";
+              const rows = detections
+                .map(
+                  d =>
+                    `${d.defect_type || d.defectType},${(Number(d.confidence) * 100).toFixed(1)}%,${d.x1},${d.y1},${d.x2},${d.y2}`
+                )
+                .join("\n");
+              const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.setAttribute("href", url);
+              link.setAttribute("download", `solarvision_record_${inspection.inspectionId.slice(0, 8)}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              toast.success("CSV export downloaded");
+            };
 
             return (
-              <div>
-                <PageIntro
-                  eyebrow="Stored Inspection Record"
-                  title={inspection.sourceFilename || "Inspection Detail"}
-                  description={`Persisted on ${createdAtDate.toLocaleDateString()} at ${createdAtDate.toLocaleTimeString()} · Engine: ${inspection.modelName}`}
-                  action={
-                    <div className="flex items-center gap-2">
+              <div className="space-y-6">
+                <ReportLayout
+                  title={`Inspection Record: ${inspection.sourceFilename || "EL Cell Image"}`}
+                  reportId={inspection.inspectionId}
+                  timestamp={inspection.createdAt}
+                  operatorName={user?.name || "Authorized Operator"}
+                  modelBadge={<ModelBadge model="M1" />}
+                  statusBadge={
+                    <StatusBadge tone={defectCount > 0 ? "warning" : "success"}>
+                      {defectCount > 0 ? `${defectCount} Defect(s) Recorded` : "Clear / Zero Detections"}
+                    </StatusBadge>
+                  }
+                  verdictHeadline={
+                    defectCount > 0
+                      ? `${defectCount} structural defect${defectCount === 1 ? "" : "s"} persisted in factory record`
+                      : "Zero defect patterns detected above model cutoff"
+                  }
+                  verdictTone={defectCount > 0 ? "warning" : "success"}
+                  verdictStats={[
+                    { label: "Detected Defects", value: defectCount },
+                    {
+                      label: "Max Confidence",
+                      value: defectCount > 0 ? `${(maxConfidence * 100).toFixed(1)}%` : "—",
+                    },
+                    {
+                      label: "Engine Execution",
+                      value: `${Math.round(Number(inspection.executionTimeMs || 0))} ms`,
+                    },
+                  ]}
+                  mandatoryNoticeNode={
+                    <NoticeBar
+                      tone="warning"
+                      message="Academic prototype: not factory-certified. Zero detections does not certify a defect-free solar cell."
+                      details={
+                        <p>
+                          Persisted record evaluated with YOLO26n weights on PVELAD benchmark.
+                          Results conform to zero-fabrication standards and are read directly from persistent storage.
+                        </p>
+                      }
+                    />
+                  }
+                  evidenceNode={
+                    <ImageViewer
+                      imageUrl={inspection.annotatedImageUrl || inspection.inputImageUrl || ""}
+                      originalImageUrl={inspection.inputImageUrl || undefined}
+                      detections={viewerDetections}
+                      highlightedIndex={highlightedIndex}
+                      onHighlightIndex={setHighlightedIndex}
+                      title={inspection.sourceFilename || "Stored Visual Evidence"}
+                    />
+                  }
+                  findingsNode={
+                    <DetectionTable
+                      detections={detections}
+                      highlightedIndex={highlightedIndex}
+                      onHighlightIndex={setHighlightedIndex}
+                    />
+                  }
+                  actionsNode={
+                    <>
+                      {isDev && (
+                        <button
+                          onClick={() => setInspectorOpen(prev => !prev)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs"
+                        >
+                          <Terminal className="h-3.5 w-3.5 text-brand-text" />
+                          <span>Inspector</span>
+                        </button>
+                      )}
                       {enableRootCause && (
                         <Link
                           href={`/root-cause/${inspection.inspectionId}`}
-                          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#F2B941]/40 bg-[#FFF3C4] px-3.5 text-xs font-semibold text-[#0B0909] shadow-sm hover:bg-[#ffe899] transition-colors"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-brand/40 bg-brand-tint px-3 py-1.5 text-xs font-semibold text-brand-text hover:bg-brand/20 transition-colors shadow-xs"
                         >
-                          <Compass className="h-4 w-4 text-[#0B0909]" />
-                          Root Cause
+                          <Compass className="h-3.5 w-3.5 text-brand-text" />
+                          <span>Analyze Root Cause</span>
                         </Link>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={copyId}
-                        className="h-10 gap-1.5 rounded-xl border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-sm hover:border-slate-300"
-                      >
-                        <Copy className="h-3.5 w-3.5 text-[#F2B941]" />
-                        {copiedId ? "Copied!" : "Copy UUID"}
-                      </Button>
-                      <Link
-                        href="/history"
-                        className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-[#0B0909] px-4 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(7,27,41,0.14)] transition-transform hover:-translate-y-0.5"
-                      >
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to history
-                      </Link>
-                    </div>
+                    </>
                   }
+                  onExportCsv={handleExportCsv}
                 />
 
-                <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
-                  {/* Left Column: Visual Evidence Card */}
-                  <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)] flex flex-col">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3C4] text-[#0B0909]">
-                          <ScanLine className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">
-                            Visual Evidence
-                          </p>
-                          <h2 className="text-xl font-semibold tracking-[-0.03em]">Detection Imagery</h2>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <StatusBadge tone={inspection.status === "completed" ? "success" : "danger"}>
-                          {inspection.status}
-                        </StatusBadge>
-                      </div>
-                    </div>
-
-                    {/* Image Viewport Container */}
-                    {activeImage ? (
-                      <div className="relative overflow-hidden rounded-2xl bg-[#0B0909] flex flex-col items-center justify-center min-h-[420px]">
-                        {/* Switcher & Maximize Header */}
-                        <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between">
-                          {inspection.annotatedImageUrl && inspection.inputImageUrl && (
-                            <div className="flex items-center rounded-xl bg-black/70 p-1 backdrop-blur-sm">
-                              <button
-                                onClick={() => setViewMode("annotated")}
-                                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                                  viewMode === "annotated"
-                                    ? "bg-[#F2B941] text-[#0B0909]"
-                                    : "text-slate-300 hover:text-white"
-                                }`}
-                              >
-                                Annotated YOLO
-                              </button>
-                              <button
-                                onClick={() => setViewMode("original")}
-                                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                                  viewMode === "original"
-                                    ? "bg-[#F2B941] text-[#0B0909]"
-                                    : "text-slate-300 hover:text-white"
-                                }`}
-                              >
-                                Raw Input
-                              </button>
-                            </div>
-                          )}
-
-                          <div className="ml-auto">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setIsModalOpen(true)}
-                              className="h-8 gap-1.5 rounded-xl bg-black/70 px-2.5 text-xs text-slate-200 backdrop-blur-sm hover:bg-black/90 hover:text-white"
-                            >
-                              <Maximize2 className="h-3.5 w-3.5 text-[#F2B941]" />
-                              Zoom & Inspect
-                            </Button>
-                          </div>
-                        </div>
-
-                        <img
-                          src={activeImage}
-                          alt="Inspection evidence"
-                          className="max-h-[560px] w-full object-contain p-2"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-1 min-h-[400px] flex-col items-center justify-center rounded-2xl bg-[#F4F0D7] p-8 text-center">
-                        <ScanLine className="h-10 w-10 text-slate-300" />
-                        <p className="mt-3 text-sm font-semibold text-slate-600">Image evidence unavailable</p>
-                        <p className="mt-1 text-xs text-slate-400">
-                          Storage path or bucket synchronization for this run was not recorded.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column: Execution Metrics & Defect List */}
-                  <div className="space-y-5">
-                    {/* Dark Metrics Card */}
-                    <div className="rounded-2xl bg-[#0B0909] p-6 text-white shadow-[0_12px_32px_rgba(7,27,41,0.15)]">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#F2B941]">
-                        Model Execution Metrics
-                      </p>
-
-                      <div className="mt-5 grid grid-cols-2 gap-4">
-                        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                          <p className="text-xs text-slate-400">Detections</p>
-                          <p className="mt-1 text-3xl font-semibold text-white">
-                            {inspection.detectionsCount}
-                          </p>
-                          <p className="mt-1 text-[10px] text-slate-500">Above cutoff</p>
-                        </div>
-
-                        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                          <p className="text-xs text-slate-400">YOLO Runtime</p>
-                          <p className="mt-1 font-mono text-3xl font-semibold text-white">
-                            {Math.round(inspection.processingTimeMs)}{" "}
-                            <span className="text-sm font-normal text-slate-400">ms</span>
-                          </p>
-                          <p className="mt-1 text-[10px] text-slate-500">Inference latency</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-5 space-y-2.5 border-t border-white/10 pt-4 text-xs">
-                        <div className="flex items-center justify-between text-slate-300">
-                          <span className="flex items-center gap-1.5 text-slate-400">
-                            <Database className="h-3.5 w-3.5 text-[#F2B941]" />
-                            Persistence Tier
-                          </span>
-                          <span className="font-mono text-[11px] truncate max-w-[180px]" title={inspection.persistenceStatus}>
-                            {inspection.persistenceStatus.replaceAll(",", " · ")}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-300">
-                          <span className="flex items-center gap-1.5 text-slate-400">
-                            <Clock className="h-3.5 w-3.5 text-[#F2B941]" />
-                            Timestamp
-                          </span>
-                          <span className="text-[11px]">{createdAtDate.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Defect Coordinates Card */}
-                    <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-                      <div className="mb-4 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Database className="h-4 w-4 text-[#F2B941]" />
-                          <h3 className="text-sm font-semibold">Persisted Defect Annotations</h3>
-                        </div>
-                        <span className="text-xs text-slate-400 font-medium">
-                          {detections.length} recorded
-                        </span>
-                      </div>
-
-                      {detections.length > 0 ? (
-                        <DetectionTable detections={detections} />
-                      ) : (
-                        <div className="rounded-xl bg-[#F4F0D7] p-5 text-center">
-                          <CheckCircle2 className="mx-auto h-6 w-6 text-emerald-600" />
-                          <p className="mt-2 text-xs font-semibold text-slate-700">
-                            Zero defects stored for this cell
-                          </p>
-                          <p className="mt-1 text-[11px] text-slate-400">
-                            No defect candidates exceeded the inference threshold during this inspection run.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Disclaimer */}
-                <div className="mt-6">
-                  <ConfidenceDisclaimer
-                    threshold={0.25}
-                    detectionsCount={detections.length}
-                  />
-                </div>
-
-                {/* Fullscreen Image Zoom Modal */}
-                {activeImage && (
-                  <ImageViewerModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    originalUrl={inspection.inputImageUrl || activeImage}
-                    annotatedUrl={inspection.annotatedImageUrl || activeImage}
-                    filename={inspection.sourceFilename}
-                    detectionsCount={detections.length}
+                {/* Dev Mode Inspector Drawer */}
+                {isDev && (
+                  <Inspector
+                    open={inspectorOpen}
+                    onClose={() => setInspectorOpen(false)}
+                    data={{
+                      resultSummary: {
+                        inspectionId: inspection.inspectionId,
+                        sourceFilename: inspection.sourceFilename,
+                        defectCount,
+                        modelName: inspection.modelName,
+                        createdAt: inspection.createdAt,
+                      },
+                      rawResponse: data,
+                      modelInfo: {
+                        model: inspection.modelName || "YOLO26n",
+                        checkpoint: "backend/models/best.pt",
+                        dataset: "PVELAD (9 defect classes)",
+                      },
+                      storageInfo: {
+                        target: "SQLite (data/solarvision.db)",
+                        recordId: inspection.inspectionId,
+                        persisted: true,
+                      },
+                    }}
                   />
                 )}
               </div>

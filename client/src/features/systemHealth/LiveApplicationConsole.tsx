@@ -152,11 +152,11 @@ export function LiveApplicationConsole({
   };
 
   return (
-    <Card className="border border-slate-800 bg-[#0B0909] text-slate-100 shadow-md overflow-hidden rounded-2xl">
+    <Card className="border border-slate-800 bg-zinc-950 text-slate-100 shadow-md overflow-hidden rounded-2xl">
       {/* Console Top Toolbar */}
-      <div className="border-b border-slate-800 bg-[#121010] px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="border-b border-slate-800 bg-zinc-900 px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-700 text-[#F2B941] flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-700 text-brand-text flex items-center justify-center">
             <Terminal className="h-4 w-4" />
           </div>
           <div>
@@ -174,7 +174,7 @@ export function LiveApplicationConsole({
                 title={isPaused ? "Console streaming paused" : "Console streaming active"}
               />
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-xs text-slate-400">
               Showing {displayedLogs.length} events • Ring Buffer: {totalBuffered} / 500 buffered
             </p>
           </div>
@@ -247,7 +247,7 @@ export function LiveApplicationConsole({
       </div>
 
       {/* Filter Bar */}
-      <div className="border-b border-slate-800/80 bg-[#171414] px-5 py-2.5 flex flex-wrap items-center gap-3 text-xs">
+      <div className="border-b border-slate-800/80 bg-zinc-900/90 px-5 py-2.5 flex flex-wrap items-center gap-3 text-xs">
         {/* Search */}
         <div className="relative flex-1 min-w-[180px] max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
@@ -255,17 +255,17 @@ export function LiveApplicationConsole({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search logs..."
-            className="h-8 pl-8 pr-2.5 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 text-xs rounded-lg focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+            className="h-8 pl-8 pr-2.5 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 text-xs rounded-lg focus-visible:ring-1 focus-visible:ring-brand"
           />
         </div>
 
         {/* Level Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] font-medium">Level:</span>
+          <span className="text-slate-400 text-xs font-medium">Level:</span>
           <select
             value={selectedLevel}
             onChange={(e) => setSelectedLevel(e.target.value as any)}
-            className="h-8 px-2.5 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F2B941]"
+            className="h-8 px-2.5 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="ALL">ALL LEVELS</option>
             {LOG_LEVELS.map((lvl) => (
@@ -278,11 +278,11 @@ export function LiveApplicationConsole({
 
         {/* Service Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] font-medium">Service:</span>
+          <span className="text-slate-400 text-xs font-medium">Service:</span>
           <select
             value={selectedService}
             onChange={(e) => setSelectedService(e.target.value as any)}
-            className="h-8 px-2.5 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F2B941]"
+            className="h-8 px-2.5 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="ALL">ALL SERVICES</option>
             {LOG_SERVICES.map((srv) => (
@@ -295,11 +295,11 @@ export function LiveApplicationConsole({
 
         {/* Record Limit */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] font-medium">Display:</span>
+          <span className="text-slate-400 text-xs font-medium">Display:</span>
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="h-8 px-2.5 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F2B941]"
+            className="h-8 px-2.5 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value={50}>50 lines</option>
             <option value={100}>100 lines</option>
@@ -312,14 +312,14 @@ export function LiveApplicationConsole({
       {/* Terminal Output Area */}
       <div
         ref={scrollContainerRef}
-        className="h-80 md:h-96 overflow-y-auto p-4 font-mono text-[11.5px] leading-relaxed bg-[#0B0909] text-slate-200 select-text space-y-1"
+        className="h-80 md:h-96 overflow-y-auto p-4 font-mono text-xs leading-relaxed bg-zinc-950 text-slate-200 select-text space-y-1"
         style={{ scrollBehavior: isPaused ? "auto" : "smooth" }}
       >
         {displayedLogs.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 py-12">
             <Terminal className="h-8 w-8 text-slate-600 mb-2" />
             <p className="font-semibold text-xs text-slate-400">No diagnostic events to display</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               {localCleared ? "View was cleared locally" : "Adjust filters or perform operations to generate logs"}
             </p>
           </div>
@@ -347,7 +347,7 @@ export function LiveApplicationConsole({
       </div>
 
       {/* Console Disclaimer Footer */}
-      <div className="border-t border-slate-800/80 bg-[#121010] px-5 py-2.5 text-[11px] text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="border-t border-slate-800/80 bg-zinc-900 px-5 py-2.5 text-xs text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Info className="h-3.5 w-3.5 text-slate-500 shrink-0" />
           <span>

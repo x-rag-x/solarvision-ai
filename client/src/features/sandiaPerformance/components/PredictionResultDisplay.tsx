@@ -46,8 +46,8 @@ export function PredictionResultDisplay({
             <p className="text-xs text-rose-800 leading-relaxed">{error}</p>
             {limitations.length > 0 && (
               <div className="mt-3 space-y-1">
-                <span className="text-[11px] font-semibold text-rose-900 uppercase">Limitations & Boundary Notes:</span>
-                <ul className="list-disc pl-4 text-[11px] text-rose-700 space-y-0.5">
+                <span className="text-xs font-semibold text-rose-900 uppercase">Limitations & Boundary Notes:</span>
+                <ul className="list-disc pl-4 text-xs text-rose-700 space-y-0.5">
                   {limitations.map((lim, i) => (
                     <li key={i}>{lim}</li>
                   ))}
@@ -98,7 +98,7 @@ export function PredictionResultDisplay({
           <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
           <div>
             <p className="font-semibold text-amber-950">Isolated Test Mock Fixture</p>
-            <p className="text-amber-800 text-[11px] mt-0.5">
+            <p className="text-amber-800 text-xs mt-0.5">
               This prediction was produced by an isolated test mock fixture, not a trained production pipeline artifact.
             </p>
           </div>
@@ -109,7 +109,7 @@ export function PredictionResultDisplay({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-semibold gap-1 text-[10px]">
+            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-semibold gap-1 text-xs">
               <CheckCircle2 className="h-3 w-3 text-emerald-600" />
               INFERENCE_SUCCESS
             </Badge>
@@ -138,7 +138,7 @@ export function PredictionResultDisplay({
       {/* Main KPI Card */}
       <div className="rounded-2xl bg-[#0B0909] p-6 text-white shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#F2B941]">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#F2B941]">
             {targetName}
           </span>
           <div className="mt-2 flex items-baseline gap-2">
@@ -167,7 +167,7 @@ export function PredictionResultDisplay({
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-slate-400">Statistical Confidence:</span>
-            <span className="text-slate-400 italic text-[11px]">
+            <span className="text-slate-400 italic text-xs">
               {pred.confidence !== null && pred.confidence !== undefined
                 ? `${(pred.confidence * 100).toFixed(1)}%`
                 : "Deterministic Pipeline (N/A)"}
@@ -175,7 +175,7 @@ export function PredictionResultDisplay({
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-slate-400">Standard Uncertainty:</span>
-            <span className="text-slate-400 italic text-[11px]">
+            <span className="text-slate-400 italic text-xs">
               {pred.uncertainty !== null && pred.uncertainty !== undefined
                 ? `±${pred.uncertainty} ${targetUnit}`
                 : "Not Provided by Model"}
@@ -192,7 +192,7 @@ export function PredictionResultDisplay({
           </span>
           <div className="flex flex-wrap gap-1.5">
             {pred.features_used.map((f) => (
-              <Badge key={f} variant="outline" className="text-[11px] font-mono bg-white border-slate-200 text-slate-700">
+              <Badge key={f} variant="outline" className="text-xs font-mono bg-white border-slate-200 text-slate-700">
                 {f}
               </Badge>
             ))}
@@ -218,10 +218,10 @@ export function PredictionResultDisplay({
       {/* Limitations / Disclaimers */}
       {result.limitations && result.limitations.length > 0 && (
         <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 space-y-1.5 text-xs text-slate-600">
-          <span className="font-semibold text-slate-700 uppercase text-[10px] tracking-wider">
+          <span className="font-semibold text-slate-700 uppercase text-xs tracking-wider">
             Operational Limitations & Contract Caveats
           </span>
-          <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-slate-500">
+          <ul className="list-disc pl-4 space-y-0.5 text-xs text-slate-500">
             {result.limitations.map((lim, idx) => (
               <li key={idx}>{lim}</li>
             ))}

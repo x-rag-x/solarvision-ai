@@ -139,15 +139,15 @@ export function OperatorLoginDialog() {
         <div className="shrink-0 border-b border-slate-100 bg-white px-6 pt-6 pb-4 sm:px-8 sm:pt-7 sm:pb-5">
           <DialogHeader className="text-left space-y-2 pr-8 sm:pr-10">
             <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#0B0909] text-[#F2B941] shadow-md">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary shadow-md">
                 <Lock className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F2B941]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
                     Restricted Quality Zone
                   </span>
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-600">
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-mono text-slate-600">
                     Zero-Fabrication Mode
                   </span>
                 </div>
@@ -169,15 +169,15 @@ export function OperatorLoginDialog() {
           <div className="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5">
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <Label htmlFor="operator-passcode" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <KeyRound className="h-3.5 w-3.5 text-[#F2B941]" />
+                <KeyRound className="h-3.5 w-3.5 text-primary" />
                 Operator Access Passcode
               </Label>
               {passcodeRequired ? (
-                <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 border border-amber-300">
+                <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
                   Required in Staging
                 </span>
               ) : (
-                <span className="text-[10px] text-slate-400 font-mono">Optional</span>
+                <span className="text-xs text-slate-400 font-mono">Optional</span>
               )}
             </div>
             <Input
@@ -186,7 +186,7 @@ export function OperatorLoginDialog() {
               value={passcode}
               onChange={e => setPasscode(e.target.value)}
               placeholder={passcodeRequired ? "Enter operator passcode configured in Render" : "Enter passcode if configured"}
-              className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+              className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
 
@@ -229,7 +229,7 @@ export function OperatorLoginDialog() {
                     disabled={isPending}
                     type="button"
                     onClick={() => handleAuthenticate(op.id, op.name, op.role)}
-                    className="group flex w-full items-start gap-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 text-left transition-all hover:border-[#F2B941] hover:bg-[#FFFDF5] hover:shadow-sm disabled:opacity-50"
+                    className="group flex w-full items-start gap-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 text-left transition-all hover:border-primary hover:bg-canvas hover:shadow-sm disabled:opacity-50"
                   >
                     <div
                       className={cn(
@@ -243,14 +243,14 @@ export function OperatorLoginDialog() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="truncate text-sm font-bold text-slate-900">{op.name}</span>
-                          <span className="shrink-0 font-mono text-[10px] text-slate-400">({op.id})</span>
+                          <span className="shrink-0 font-mono text-xs text-slate-400">({op.id})</span>
                         </div>
-                        <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200">
+                        <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-700 border border-slate-200">
                           {op.badge}
                         </span>
                       </div>
                       <p className="mt-0.5 text-xs font-medium text-slate-700 truncate">{op.roleTitle}</p>
-                      <p className="mt-1 text-[11px] leading-relaxed text-slate-500">{op.description}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-slate-500">{op.description}</p>
                     </div>
                   </button>
                 );
@@ -277,7 +277,7 @@ export function OperatorLoginDialog() {
                   value={customId}
                   onChange={e => setCustomId(e.target.value)}
                   placeholder="e.g. OP-1042 or TECH-88"
-                  className="h-10 rounded-xl border-slate-300 font-mono text-xs focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+                  className="h-10 rounded-xl border-slate-300 font-mono text-xs focus-visible:ring-1 focus-visible:ring-primary"
                   required
                 />
               </div>
@@ -291,7 +291,7 @@ export function OperatorLoginDialog() {
                   value={customName}
                   onChange={e => setCustomName(e.target.value)}
                   placeholder="e.g. Jordan Miller"
-                  className="h-10 rounded-xl border-slate-300 text-xs focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+                  className="h-10 rounded-xl border-slate-300 text-xs focus-visible:ring-1 focus-visible:ring-primary"
                 />
               </div>
 
@@ -304,14 +304,14 @@ export function OperatorLoginDialog() {
                     className={cn(
                       "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all",
                       customRole === "user"
-                        ? "border-[#F2B941] bg-[#FFF3C4] font-semibold text-[#0B0909]"
+                        ? "border-primary bg-surface-elevated font-semibold text-primary-foreground"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     )}
                   >
-                    <UserCheck className="h-4 w-4 shrink-0 text-[#F2B941]" />
+                    <UserCheck className="h-4 w-4 shrink-0 text-primary" />
                     <div>
                       <p className="text-xs">Quality Operator</p>
-                      <p className="text-[10px] text-slate-500">Inspection & Analytics</p>
+                      <p className="text-xs text-slate-500">Inspection & Analytics</p>
                     </div>
                   </button>
                   <button
@@ -320,14 +320,14 @@ export function OperatorLoginDialog() {
                     className={cn(
                       "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all",
                       customRole === "admin"
-                        ? "border-[#F2B941] bg-[#FFF3C4] font-semibold text-[#0B0909]"
+                        ? "border-primary bg-surface-elevated font-semibold text-primary-foreground"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     )}
                   >
                     <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-700" />
                     <div>
                       <p className="text-xs">Plant Admin</p>
-                      <p className="text-[10px] text-slate-500">Full System Governance</p>
+                      <p className="text-xs text-slate-500">Full System Governance</p>
                     </div>
                   </button>
                 </div>
@@ -336,16 +336,16 @@ export function OperatorLoginDialog() {
               <Button
                 type="submit"
                 disabled={loginMutation.isPending || !customId.trim()}
-                className="mt-2 h-11 w-full gap-2 rounded-xl bg-[#0B0909] text-xs font-semibold text-white shadow-md hover:bg-slate-800 disabled:opacity-50"
+                className="mt-2 h-11 w-full gap-2 rounded-xl bg-primary text-xs font-semibold text-white shadow-md hover:bg-slate-800 disabled:opacity-50"
               >
                 {loginMutation.isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     Signing in…
                   </>
                 ) : (
                   <>
-                    <LogIn className="h-4 w-4 text-[#F2B941]" />
+                    <LogIn className="h-4 w-4 text-primary" />
                     Sign In with Operator ID
                   </>
                 )}
@@ -358,7 +358,7 @@ export function OperatorLoginDialog() {
         <div className="shrink-0 border-t border-slate-100 bg-slate-50/80 px-6 py-3.5 sm:px-8">
           <div className="flex items-start gap-2.5 text-left">
             <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500" />
-            <div className="text-[11px] leading-relaxed text-slate-600">
+            <div className="text-xs leading-relaxed text-slate-600">
               <span className="font-semibold text-slate-900">Audit Compliance:</span> Every YOLO26n inspection
               run is cryptographically bound to the authenticated operator's identity and timestamped in the
               factory quality database.

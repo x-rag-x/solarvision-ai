@@ -193,7 +193,7 @@ export function DynamicPredictionForm({
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-amber-700">
             <Sliders className="h-6 w-6" />
           </div>
-          <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] font-mono">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs font-mono">
             SCHEMA_PENDING_TRAINER
           </Badge>
           <h3 className="text-lg font-bold text-slate-900">
@@ -203,7 +203,7 @@ export function DynamicPredictionForm({
             In accordance with zero-fabrication standards, feature input fields are generated dynamically from the trainer's <code className="font-mono text-amber-900 bg-amber-100/60 px-1 py-0.5 rounded">feature_schema.json</code>. No arbitrary sensor fields are assumed or hardcoded.
           </p>
           <div className="pt-2">
-            <span className="text-[11px] text-slate-500 font-mono">
+            <span className="text-xs text-slate-500 font-mono">
               Listening for contract delivery at: /sandia-performance/schema
             </span>
           </div>
@@ -234,11 +234,11 @@ export function DynamicPredictionForm({
             <span className="text-xs font-semibold uppercase tracking-wider text-[#F2B941]">
               Contract-Driven Telemetry Input
             </span>
-            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-[10px] font-mono">
+            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
               {features.length} Features Defined
             </Badge>
             {targetDefinition && (
-              <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-[10px] font-mono">
+              <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-mono">
                 Target: {targetDefinition.target_name || (targetDefinition as any).targetName} ({targetDefinition.target_unit || (targetDefinition as any).targetUnit || "raw"})
               </Badge>
             )}
@@ -292,7 +292,7 @@ export function DynamicPredictionForm({
                 placeholder="e.g. PV-MOD-2026-X1"
                 className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs focus:ring-[#F2B941]"
               />
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 Optional array, string, or coupon identifier for audit tracking.
               </p>
             </div>
@@ -303,7 +303,7 @@ export function DynamicPredictionForm({
                 {targetDefinition?.target_name || "Pmp (Maximum Power Output)"}{" "}
                 <span className="ml-1 text-slate-400">[{targetDefinition?.target_unit || "W"}]</span>
               </div>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 Dynamically mapped from trainer target_definition.json.
               </p>
             </div>
@@ -346,7 +346,7 @@ export function DynamicPredictionForm({
                   </div>
 
                   {feat.unit && (
-                    <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 border-slate-200 bg-slate-50 text-slate-600">
+                    <Badge variant="outline" className="text-xs font-mono px-1.5 py-0 border-slate-200 bg-slate-50 text-slate-600">
                       {feat.unit}
                     </Badge>
                   )}
@@ -367,7 +367,7 @@ export function DynamicPredictionForm({
                 </div>
 
                 {/* Helper / Boundary Constraints */}
-                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                <div className="flex items-center justify-between text-xs text-slate-400">
                   <span>Type: {feat.type}</span>
                   {(feat.min_value !== undefined || feat.max_value !== undefined) && (
                     <span>
@@ -376,7 +376,7 @@ export function DynamicPredictionForm({
                   )}
                 </div>
 
-                {err && <p className="text-[10px] text-rose-600 font-medium">{err}</p>}
+                {err && <p className="text-xs text-rose-600 font-medium">{err}</p>}
               </div>
             );
           })}

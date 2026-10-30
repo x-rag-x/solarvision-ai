@@ -12,7 +12,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { SystemHealthSummary } from "./types";
@@ -40,29 +39,29 @@ export function OverallSummaryCard({
     switch (overallStatus) {
       case "healthy":
         return (
-          <Badge className="bg-emerald-500/15 text-emerald-800 border-emerald-300 font-bold px-3 py-1 text-sm gap-1.5 shadow-sm">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <Badge className="bg-success-soft text-success border-success-border font-bold px-3 py-1 text-xs gap-1.5 shadow-xs">
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
             OPERATIONAL — ALL PRIMARY SYSTEMS HEALTHY
           </Badge>
         );
       case "degraded":
         return (
-          <Badge className="bg-amber-500/15 text-amber-800 border-amber-300 font-bold px-3 py-1 text-sm gap-1.5 shadow-sm">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <Badge className="bg-warning-soft text-warning border-warning-border font-bold px-3 py-1 text-xs gap-1.5 shadow-xs">
+            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
             DEGRADED — ONE OR MORE SUB-SERVICES AT RISK
           </Badge>
         );
       case "unavailable":
         return (
-          <Badge className="bg-red-500/15 text-red-800 border-red-300 font-bold px-3 py-1 text-sm gap-1.5 shadow-sm">
-            <XCircle className="h-4 w-4 text-red-600" />
+          <Badge className="bg-danger-soft text-danger border-danger-border font-bold px-3 py-1 text-xs gap-1.5 shadow-xs">
+            <XCircle className="h-3.5 w-3.5 text-danger" />
             OUTAGE — PRIMARY SERVICES OFFLINE
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-slate-200 text-slate-800 border-slate-300 font-bold px-3 py-1 text-sm gap-1.5">
-            <Activity className="h-4 w-4 text-slate-500" />
+          <Badge className="bg-surface-elevated text-text-muted border-border font-bold px-3 py-1 text-xs gap-1.5">
+            <Activity className="h-3.5 w-3.5 text-text-subtle" />
             CHECKING SYSTEM STATUS...
           </Badge>
         );
@@ -73,75 +72,47 @@ export function OverallSummaryCard({
   const isDbConnected = sqliteDb?.state === "connected";
 
   return (
-    <Card className="border border-slate-200/80 bg-white shadow-sm overflow-hidden rounded-2xl">
-      <div className="bg-[#0B0909] text-white px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <Card className="border border-border bg-surface shadow-xs overflow-hidden rounded-2xl">
+      <div className="bg-surface-elevated/70 px-6 py-4 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-[#F2B941] shadow-[0_0_8px_rgba(242,185,65,0.8)]" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#F2B941]">
-              Platform Health & Telemetry
+            <span className="flex h-2 w-2 rounded-full bg-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Platform Status & Summary
             </p>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            SolarVision AI System Health
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Real-time multi-model inference pipeline, authoritative SQLite database, and diagnostic event stream
-          </p>
+          <h2 className="text-base font-bold tracking-tight text-text">
+            SolarVision AI Service Matrix
+          </h2>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onToggleAutoRefresh}
-            className={cn(
-              "h-9 px-3 text-xs font-semibold rounded-xl border gap-1.5 transition-colors",
-              autoRefresh
-                ? "bg-emerald-950/40 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/50"
-                : "bg-white/10 text-slate-300 border-white/20 hover:bg-white/20"
-            )}
-          >
-            <Timer className="h-3.5 w-3.5" />
-            {autoRefresh ? `Auto-Refresh (${autoRefreshIntervalSec}s)` : "Auto-Refresh Off"}
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={onRefreshAll}
-            disabled={isLoading}
-            className="h-9 px-4 text-xs font-semibold rounded-xl bg-[#F2B941] text-[#0B0909] hover:bg-[#e0a937] shadow-sm gap-1.5"
-          >
-            <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
-            {isLoading ? "Refreshing..." : "Refresh All"}
-          </Button>
+          {getStatusBadge()}
         </div>
       </div>
 
-      <div className="px-6 py-5 bg-[#FAFAF7] border-b border-slate-200/80">
+      <div className="px-6 py-5 bg-canvas/40 border-b border-border">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
-            {getStatusBadge()}
-
-            <div className="flex items-center gap-2 text-xs text-slate-600 bg-white px-3 py-1 rounded-xl border border-slate-200">
-              <Database className="h-3.5 w-3.5 text-slate-500" />
+            <div className="flex items-center gap-2 text-xs text-text-muted bg-surface px-3 py-1.5 rounded-lg border border-border">
+              <Database className="h-3.5 w-3.5 text-text-subtle" />
               <span>Authoritative DB:</span>
               <span
                 className={cn(
                   "font-bold",
-                  isDbConnected ? "text-emerald-700" : "text-red-700"
+                  isDbConnected ? "text-success" : "text-danger"
                 )}
               >
                 {isDbConnected ? "SQLite Connected" : "Disconnected"}
               </span>
               {sqliteDb?.pingLatencyMs !== null && sqliteDb?.pingLatencyMs !== undefined && (
-                <span className="text-[11px] text-slate-400">({sqliteDb.pingLatencyMs}ms)</span>
+                <span className="text-xs text-text-subtle">({sqliteDb.pingLatencyMs}ms)</span>
               )}
             </div>
           </div>
 
-          <div className="text-xs text-slate-500 flex items-center gap-1.5">
-            <span className="font-medium text-slate-700">Last Telemetry Check:</span>
+          <div className="text-xs text-text-muted flex items-center gap-1.5">
+            <span className="font-medium text-text">Last Telemetry Check:</span>
             <span>
               {summary?.lastRefreshed
                 ? new Date(summary.lastRefreshed).toLocaleTimeString()
@@ -152,58 +123,58 @@ export function OverallSummaryCard({
 
         {/* Counter Pills */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-          <div className="bg-white rounded-xl border border-slate-200 p-3 flex items-center justify-between shadow-xs">
+          <div className="bg-surface rounded-xl border border-border p-3.5 flex items-center justify-between shadow-xs">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-subtle">
                 Healthy Services
               </p>
-              <p className="text-2xl font-bold text-emerald-700 mt-0.5">
+              <p className="text-2xl font-bold text-success mt-1 tabular-nums">
                 {summary?.healthyCount ?? "—"}
               </p>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-success-soft text-success flex items-center justify-center">
               <ShieldCheck className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-3 flex items-center justify-between shadow-xs">
+          <div className="bg-surface rounded-xl border border-border p-3.5 flex items-center justify-between shadow-xs">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-subtle">
                 Degraded
               </p>
-              <p className="text-2xl font-bold text-amber-600 mt-0.5">
+              <p className="text-2xl font-bold text-warning mt-1 tabular-nums">
                 {summary?.degradedCount ?? "—"}
               </p>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-warning-soft text-warning flex items-center justify-center">
               <AlertTriangle className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-3 flex items-center justify-between shadow-xs">
+          <div className="bg-surface rounded-xl border border-border p-3.5 flex items-center justify-between shadow-xs">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-subtle">
                 Unavailable
               </p>
-              <p className="text-2xl font-bold text-red-600 mt-0.5">
+              <p className="text-2xl font-bold text-danger mt-1 tabular-nums">
                 {summary?.unavailableCount ?? "—"}
               </p>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-danger-soft text-danger flex items-center justify-center">
               <ShieldAlert className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-3 flex items-center justify-between shadow-xs">
+          <div className="bg-surface rounded-xl border border-border p-3.5 flex items-center justify-between shadow-xs">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-subtle">
                 Not Configured
               </p>
-              <p className="text-2xl font-bold text-slate-500 mt-0.5">
+              <p className="text-2xl font-bold text-text-subtle mt-1 tabular-nums">
                 {summary?.notConfiguredCount ?? "—"}
               </p>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-surface-elevated text-text-subtle flex items-center justify-center">
               <Server className="h-5 w-5" />
             </div>
           </div>
@@ -212,4 +183,3 @@ export function OverallSummaryCard({
     </Card>
   );
 }
-

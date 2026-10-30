@@ -1,5 +1,10 @@
-import { ArrowRight, Bot, BrainCircuit, Cable, CheckCircle2, Compass, Cpu, DatabaseZap, Scan, Wrench, Zap } from "lucide-react";
-import { PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
+import React from "react";
+import { ArrowRight, Bot, BrainCircuit, CheckCircle2, Compass, Cpu, Layers, Scan, ShieldCheck, Wrench, Zap } from "lucide-react";
+import PageHeader from "@/components/solarvision/PageHeader";
+import StatusBadge from "@/components/solarvision/StatusBadge";
+import ModelBadge from "@/components/solarvision/ModelBadge";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+import { Link } from "wouter";
 
 const phases = [
   {
@@ -8,7 +13,8 @@ const phases = [
     status: "Implemented",
     tone: "success" as const,
     icon: Bot,
-    copy: "EL/NIR image upload, YOLO / PyTorch inference, bounding boxes, confidence scores, annotated evidence, history, and defect analytics on PVELAD benchmark.",
+    path: "/inspection",
+    copy: "EL/NIR image upload, YOLO26n / PyTorch inference, bounding boxes, confidence scores, annotated evidence, history, and defect analytics on PVELAD benchmark.",
   },
   {
     id: "M2",
@@ -16,6 +22,7 @@ const phases = [
     status: "Implemented",
     tone: "success" as const,
     icon: Scan,
+    path: "/cell-screening",
     copy: "Full-cell grayscale screening on ELPV benchmark (2,624 images) using EfficientNet-B0. Evaluates individual cropped cells with 0.55 decision cutoff and mandatory operator review policy.",
   },
   {
@@ -24,6 +31,7 @@ const phases = [
     status: "Implemented",
     tone: "success" as const,
     icon: Zap,
+    path: "/predictive-quality",
     copy: "Predict reference-normalized PV power retention from electrical and environmental features using Sandia PV research pipeline (MAE 0.793 pp, R² 0.581), with secondary UCI SECOM benchmark accessible.",
   },
   {
@@ -32,6 +40,7 @@ const phases = [
     status: "Benchmark Evaluated",
     tone: "neutral" as const,
     icon: Wrench,
+    path: "/predictive-maintenance",
     copy: "AI4I 2020 physical milling benchmark evaluated with 5 failure modes (TWF, HDF, PWF, OSF, RNF) at 96.67% accuracy. Distinguished clearly from unvalidated solar factory machinery.",
   },
 ];
@@ -39,78 +48,85 @@ const phases = [
 export default function Roadmap() {
   return (
     <div className="space-y-6">
-      <PageIntro
-        eyebrow="Product Architecture & Model Registry"
-        title="Four-Model Operational Architecture."
-        description="SolarVision AI is modular and grounded in empirical validation. All four operational models maintain strict zero-fabrication contracts and independent lifecycle boundaries."
+      {/* Page Header */}
+      <PageHeader
+        title="Four-Model Operational Architecture"
+        description="SolarVision AI is modular, evidence-first, and grounded in empirical validation. All four operational models maintain strict zero-fabrication contracts and independent lifecycle boundaries."
+        badge={<span className="rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-semibold text-text border border-border">Lifecycle Governance</span>}
       />
 
-      <div className="relative space-y-4">
+      <NoticeBar
+        tone="info"
+        message="Zero-Fabrication Contract: Every reported accuracy, defect count, and parameter is verified against physical model checkpoints."
+        details={
+          <p>
+            No synthetic placeholders or assumed numbers are served to operators. Each model operates inside an
+            independent boundary with documented training datasets, evaluation thresholds, and operational review policies.
+          </p>
+        }
+      />
+
+      {/* 4 Models List */}
+      <div className="space-y-4">
         {phases.map((phase, index) => (
           <div
             key={phase.id}
-            className="relative grid gap-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)] md:grid-cols-[110px_1fr_auto] md:items-center"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-2xl border border-border bg-surface p-6 shadow-xs hover:border-brand/40 transition-colors"
           >
-            <div className="flex items-center gap-4 md:block">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#F4F0D7] px-3 py-1.5 font-mono text-xs font-medium text-slate-500">
-                <span className="text-[#F2B941]">{phase.id}</span>
-                <span className="text-slate-300">/</span>
-                <span>0{index + 1}</span>
+            <div className="flex items-start gap-4">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-surface-subtle border border-border text-text">
+                <phase.icon className="h-6 w-6 text-brand-text" />
               </div>
-              <phase.icon className="hidden h-9 w-9 text-slate-200 md:mt-5 md:block" />
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-brand-text bg-brand-tint px-2 py-0.5 rounded">
+                    {phase.id}
+                  </span>
+                  <h3 className="text-base font-bold text-text">{phase.title}</h3>
+                  <StatusBadge tone={phase.tone}>{phase.status}</StatusBadge>
+                </div>
+                <p className="text-xs text-text-3 max-w-2xl leading-relaxed">{phase.copy}</p>
+              </div>
             </div>
 
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-xl font-semibold tracking-[-0.03em]">{phase.title}</h2>
-                <StatusBadge tone={phase.tone}>{phase.status}</StatusBadge>
-              </div>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{phase.copy}</p>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <CheckCircle2 className="h-4 w-4 text-[#F2B941]" />
-              {phase.status}
-            </div>
+            <Link
+              href={phase.path}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shrink-0 shadow-xs"
+            >
+              <span>Launch Module</span>
+              <ArrowRight className="h-3.5 w-3.5 text-text-3" />
+            </Link>
           </div>
         ))}
       </div>
 
-      {/* Optional / Experimental Root Cause Note */}
-      <div className="rounded-2xl border border-slate-200/80 bg-[#FAF9F5] p-6 text-slate-800">
-        <div className="flex items-start gap-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#FFF3C4] text-[#0B0909]">
+      {/* Optional Experimental Root Cause Note */}
+      <div className="rounded-2xl border border-border bg-surface-subtle p-6 space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface text-brand-text border border-border">
             <Compass className="h-5 w-5" />
           </div>
-          <div className="space-y-1">
-            <h3 className="text-sm font-bold text-slate-900">
+          <div>
+            <h4 className="text-sm font-bold text-text">
               Optional Experimental Module: Manufacturing Root Cause Analysis
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed max-w-3xl">
-              An auxiliary forensic correlation module for joining inspection defect coordinates with factory SCADA sensors, batches, and machines. Managed via <strong>Settings &gt; Optional / Experimental Modules</strong>, and deactivated by default to maintain strict separation from the four core trained models.
-            </p>
+            </h4>
+            <span className="font-mono text-xs text-text-3">Beta Stage · Disabled by Default</span>
           </div>
         </div>
+        <p className="text-xs text-text-3 leading-relaxed max-w-3xl pl-12">
+          An auxiliary forensic correlation module for joining inspection defect coordinates with factory SCADA sensors, batches, and machines. Managed via <strong>Settings &gt; Optional / Experimental Modules</strong>, and deactivated by default to maintain strict separation from the four core trained models.
+        </p>
       </div>
 
-      <div className="rounded-2xl bg-[#0B0909] p-6 text-white">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#F2B941]">
-              Zero-Fabrication Contract
-            </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em]">
-              Inspection → Screening → Performance → Maintenance
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              Every prediction is backed by verified model checkpoints or reproducible benchmark datasets, with explicit provenance and no synthetic quality claims.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 font-mono text-xs text-[#F2B941]">
-            <DatabaseZap className="h-4 w-4" />
-            4 Active Models <ArrowRight className="h-4 w-4" />
-          </div>
+      {/* Bottom Invariant Guarantee Card */}
+      <div className="rounded-2xl bg-ink p-6 text-white space-y-3">
+        <div className="flex items-center gap-2 text-brand">
+          <ShieldCheck className="h-5 w-5" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Zero-Fabrication Guarantee</span>
         </div>
+        <p className="text-xs text-white/80 leading-relaxed max-w-3xl">
+          SolarVision AI strictly separates benchmark experiments from validated factory equipment. No artificial confidence metrics or manufactured pass rates are presented.
+        </p>
       </div>
     </div>
   );

@@ -76,7 +76,7 @@ export function MaintenanceInputPanel({
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Operating Telemetry Input
             </span>
-            <Badge className="bg-[#0B0909] text-white text-[10px] font-mono">
+            <Badge className="bg-[#0B0909] text-white text-xs font-mono">
               6 Physical Features
             </Badge>
           </div>
@@ -110,7 +110,7 @@ export function MaintenanceInputPanel({
               >
                 <div className="flex items-center justify-between">
                   <Badge
-                    className={`text-[9px] font-mono uppercase ${
+                    className={`text-xs font-mono uppercase ${
                       preset.sourceCategory === "authentic_benchmark_record"
                         ? isSelected
                           ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
@@ -125,7 +125,7 @@ export function MaintenanceInputPanel({
                       : "Synthetic Stress"}
                   </Badge>
                   <span
-                    className={`text-[10px] font-bold ${
+                    className={`text-xs font-bold ${
                       preset.expectedClassification === "FAILURE"
                         ? "text-rose-500"
                         : "text-emerald-500"
@@ -136,7 +136,7 @@ export function MaintenanceInputPanel({
                 </div>
                 <p className="mt-2 text-xs font-bold truncate">{preset.name}</p>
                 <p
-                  className={`mt-1 text-[11px] leading-relaxed line-clamp-2 ${
+                  className={`mt-1 text-xs leading-relaxed line-clamp-2 ${
                     isSelected ? "text-slate-300" : "text-slate-500"
                   }`}
                 >
@@ -172,7 +172,7 @@ export function MaintenanceInputPanel({
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-xs text-slate-400">
               Determines tool wear threshold (L: 240m, M: 215m, H: 180m).
             </p>
           </div>
@@ -184,7 +184,7 @@ export function MaintenanceInputPanel({
                 <Thermometer className="h-3.5 w-3.5 text-blue-500" />
                 Air Temperature [K]
               </label>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-xs text-slate-400 font-mono">
                 {(Number(measurements.airTemperatureK) - 273.15).toFixed(1)} °C
               </span>
             </div>
@@ -197,7 +197,7 @@ export function MaintenanceInputPanel({
               onChange={(e) => handleChangeField("airTemperatureK", parseFloat(e.target.value) || 0)}
               className="font-mono text-xs"
             />
-            <p className="text-[10px] text-slate-400">Plausible range: 290.0 K – 320.0 K</p>
+            <p className="text-xs text-slate-400">Plausible range: 290.0 K – 320.0 K</p>
           </div>
 
           {/* Process Temperature */}
@@ -207,7 +207,7 @@ export function MaintenanceInputPanel({
                 <Flame className="h-3.5 w-3.5 text-rose-500" />
                 Process Temperature [K]
               </label>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-xs text-slate-400 font-mono">
                 {(Number(measurements.processTemperatureK) - 273.15).toFixed(1)} °C
               </span>
             </div>
@@ -220,7 +220,7 @@ export function MaintenanceInputPanel({
               onChange={(e) => handleChangeField("processTemperatureK", parseFloat(e.target.value) || 0)}
               className="font-mono text-xs"
             />
-            <p className="text-[10px] text-slate-400">Plausible range: 295.0 K – 330.0 K</p>
+            <p className="text-xs text-slate-400">Plausible range: 295.0 K – 330.0 K</p>
           </div>
 
           {/* Rotational Speed */}
@@ -238,7 +238,7 @@ export function MaintenanceInputPanel({
               onChange={(e) => handleChangeField("rotationalSpeedRpm", parseInt(e.target.value, 10) || 0)}
               className="font-mono text-xs"
             />
-            <p className="text-[10px] text-slate-400">Normal operating range: 1100 – 2900 rpm</p>
+            <p className="text-xs text-slate-400">Normal operating range: 1100 – 2900 rpm</p>
           </div>
 
           {/* Torque */}
@@ -256,7 +256,7 @@ export function MaintenanceInputPanel({
               onChange={(e) => handleChangeField("torqueNm", parseFloat(e.target.value) || 0)}
               className="font-mono text-xs"
             />
-            <p className="text-[10px] text-slate-400">Normal operating range: 10.0 – 80.0 Nm</p>
+            <p className="text-xs text-slate-400">Normal operating range: 10.0 – 80.0 Nm</p>
           </div>
 
           {/* Tool Wear */}
@@ -274,7 +274,7 @@ export function MaintenanceInputPanel({
               onChange={(e) => handleChangeField("toolWearMin", parseInt(e.target.value, 10) || 0)}
               className="font-mono text-xs"
             />
-            <p className="text-[10px] text-slate-400">Cumulative cutting duration in minutes</p>
+            <p className="text-xs text-slate-400">Cumulative cutting duration in minutes</p>
           </div>
         </div>
       </div>
@@ -288,12 +288,12 @@ export function MaintenanceInputPanel({
           <div className="grid gap-3 sm:grid-cols-4 text-xs">
             {/* Mechanical Power */}
             <div className="rounded-xl border border-slate-200/80 bg-white p-3">
-              <p className="text-slate-400 text-[11px]">Mechanical Power</p>
+              <p className="text-slate-400 text-xs">Mechanical Power</p>
               <p className="font-mono font-bold text-slate-900 mt-0.5">
                 {derived.powerWatts.toLocaleString()} W
               </p>
               <span
-                className={`mt-1 inline-block text-[10px] font-semibold ${
+                className={`mt-1 inline-block text-xs font-semibold ${
                   derived.isPowerAbnormal ? "text-rose-600" : "text-emerald-600"
                 }`}
               >
@@ -303,12 +303,12 @@ export function MaintenanceInputPanel({
 
             {/* Thermal Delta */}
             <div className="rounded-xl border border-slate-200/80 bg-white p-3">
-              <p className="text-slate-400 text-[11px]">Thermal Delta (ΔT)</p>
+              <p className="text-slate-400 text-xs">Thermal Delta (ΔT)</p>
               <p className="font-mono font-bold text-slate-900 mt-0.5">
                 {derived.deltaTemperatureK.toFixed(2)} K
               </p>
               <span
-                className={`mt-1 inline-block text-[10px] font-semibold ${
+                className={`mt-1 inline-block text-xs font-semibold ${
                   derived.isDeltaTAbnormal ? "text-rose-600" : "text-emerald-600"
                 }`}
               >
@@ -318,12 +318,12 @@ export function MaintenanceInputPanel({
 
             {/* Overstrain Product */}
             <div className="rounded-xl border border-slate-200/80 bg-white p-3">
-              <p className="text-slate-400 text-[11px]">Overstrain Product</p>
+              <p className="text-slate-400 text-xs">Overstrain Product</p>
               <p className="font-mono font-bold text-slate-900 mt-0.5">
                 {derived.overstrainProductNmMin.toLocaleString()} Nm·min
               </p>
               <span
-                className={`mt-1 inline-block text-[10px] font-semibold ${
+                className={`mt-1 inline-block text-xs font-semibold ${
                   derived.isOverstrainAbnormal ? "text-rose-600" : "text-emerald-600"
                 }`}
               >
@@ -333,12 +333,12 @@ export function MaintenanceInputPanel({
 
             {/* Tool Wear Status */}
             <div className="rounded-xl border border-slate-200/80 bg-white p-3">
-              <p className="text-slate-400 text-[11px]">Tool Wear Limit</p>
+              <p className="text-slate-400 text-xs">Tool Wear Limit</p>
               <p className="font-mono font-bold text-slate-900 mt-0.5">
                 {measurements.toolWearMin} / {measurements.productType === "H" ? 180 : measurements.productType === "M" ? 215 : 240} min
               </p>
               <span
-                className={`mt-1 inline-block text-[10px] font-semibold ${
+                className={`mt-1 inline-block text-xs font-semibold ${
                   derived.isToolWearAbnormal ? "text-rose-600" : "text-emerald-600"
                 }`}
               >

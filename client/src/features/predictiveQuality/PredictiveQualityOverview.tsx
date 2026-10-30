@@ -1,14 +1,3 @@
-/**
- * SolarVision AI — Model 3: Predictive Quality & Performance Monitoring
- * Main Integrated Industrial Dashboard Overview
- * 
- * Supports both:
- * 1. Primary: Sandia Solar Electrical Performance Prediction (Default Model 3 View)
- * 2. Secondary: UCI SECOM process quality benchmark & dual-domain validation
- * 
- * Strictly preserves SECOM functionality while establishing Sandia as the primary Model 3 operational view.
- */
-
 import React, { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import {
@@ -32,11 +21,18 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
+import { useAppMode } from "@/contexts/ModeContext";
 import { AuthGuard } from "@/components/solarvision/AuthGuard";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+
+// Shared SolarVision UI Components
+import PageHeader from "@/components/solarvision/PageHeader";
+import ModelBadge from "@/components/solarvision/ModelBadge";
+import StatusBadge from "@/components/solarvision/StatusBadge";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+
 import { BenchmarkEvaluationCard } from "./components/BenchmarkEvaluationCard";
 import { ConfusionMatrixCard } from "./components/ConfusionMatrixCard";
 import { DualDomainStatusBanner } from "./components/DualDomainStatusBanner";
@@ -49,194 +45,183 @@ export type Model3Mode = "sandia_performance" | "secom_benchmark";
 
 export function PredictiveQualityOverview() {
   const [location] = useLocation();
+  const { isDev, isProd } = useAppMode();
   const [activeTab, setActiveTab] = useState<ActiveTab>("benchmark");
-  // Sandia Solar Electrical Performance is the primary default Model 3 view
   const [modelMode, setModelMode] = useState<Model3Mode>("sandia_performance");
 
-  // Synchronize mode from route or query params if explicitly requested
+  // Synchronize mode from URL search param or path
   useEffect(() => {
-    if (
-      location.includes("secom") ||
-      (typeof window !== "undefined" && window.location.search.includes("mode=secom"))
-    ) {
-      setModelMode("secom_benchmark");
-    } else if (
-      location.includes("sandia") ||
-      (typeof window !== "undefined" && window.location.search.includes("mode=sandia"))
-    ) {
-      setModelMode("sandia_performance");
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get("view");
+      if (view === "secom" || location.includes("secom")) {
+        setModelMode("secom_benchmark");
+        return;
+      }
+      if (view === "sandia" || location.includes("sandia")) {
+        setModelMode("sandia_performance");
+        return;
+      }
     }
   }, [location]);
 
   return (
     <AuthGuard
-      title="Authentication required for predictive quality operations"
-      description="Access to Model 3 predictive quality forecasting, in-situ sensor metrology, and factory yield risk models is strictly restricted to authenticated operators and quality engineers."
+      title="Authentication Required for Performance Forecasting"
+      description="Access to Model 3 electrical performance forecasting, IV curve metrology, and yield regression pipelines is restricted to authenticated operators."
     >
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Page Top Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        <PageHeader
+          title={
+            modelMode === "sandia_performance"
+              ? "Solar Electrical Performance Forecast"
+              : "Predictive Quality Benchmark"
+          }
+          description={
+            modelMode === "sandia_performance"
+              ? "Calibrated reference-normalized PV electrical power retention prediction using verified Sandia National Laboratories research pipeline."
+              : "In-situ process telemetry modeling and multi-sensor yield excursion prediction based on the UCI SECOM semiconductor dataset."
+          }
+          badge={<ModelBadge model="M3" />}
+          actions={
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F2B941]">
-                Quality Operations / M3
-              </span>
-              <Badge className="bg-[#0B0909] text-white text-[10px] font-mono">
-                Model 3 Predictive Operations
-              </Badge>
+              {modelMode === "sandia_performance" ? (
+                <StatusBadge tone="success">Sandia Pipeline Verified</StatusBadge>
+              ) : (
+                <StatusBadge tone="info">SECOM Benchmark Ready</StatusBadge>
+              )}
             </div>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              {modelMode === "sandia_performance"
-                ? "Solar Electrical Performance Prediction"
-                : "Predictive Quality Monitoring"}
-            </h1>
-            <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-              {modelMode === "sandia_performance"
-                ? "Calibrated environmental sensor telemetry modeling, IV curve prediction, and Sandia National Laboratories dataset integration."
-                : "In-situ process telemetry modeling, multi-sensor yield excursion prediction, and dual-domain validation."}
-            </p>
-          </div>
+          }
+        />
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            {modelMode === "sandia_performance" ? (
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-[#F2B941]" />
-                <span className="font-semibold text-slate-900">Sandia PSEL Primary</span>
-                <span className="mx-1 text-slate-300">•</span>
-                <span className="font-mono text-[11px] text-slate-500">Contract v1.0.0</span>
-                <span className="mx-1 text-slate-300">•</span>
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-emerald-700 font-medium">Pipeline Verified</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span>Benchmark Ready</span>
-                <span className="mx-1 text-slate-300">•</span>
-                <span className="h-2 w-2 rounded-full bg-rose-500" />
-                <span>Solar Not Trained</span>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Mandatory Domain & Methodological Notice */}
+        <NoticeBar
+          tone="info"
+          message={
+            modelMode === "sandia_performance"
+              ? "Sandia National Laboratories PV Research: Target power_retention_pct with verified MAE 0.793 pp · RMSE 1.107 pp · R² 0.581."
+              : "UCI SECOM Benchmark: Semiconductor manufacturing sensor dataset; not certified for crystalline solar cells."
+          }
+          details={
+            <div className="space-y-1.5">
+              <p>
+                <strong>Scientific Isolation:</strong> Model 3 evaluates solar cell IV degradation against the Sandia regression pipeline.
+              </p>
+              <p>
+                The secondary UCI SECOM benchmark is preserved in developer mode for process excursion research but is isolated from solar factory certification.
+              </p>
+            </div>
+          }
+        />
 
-        {/* Dual Mode Switcher: Sandia FIRST on left, UCI SECOM SECOND on right */}
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
-          {/* OPTION 1: Sandia Solar Electrical Performance (Primary Default) */}
-          <button
-            type="button"
-            data-testid="mode-tab-sandia"
-            onClick={() => setModelMode("sandia_performance")}
-            className={cn(
-              "flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all cursor-pointer",
-              modelMode === "sandia_performance"
-                ? "bg-[#0B0909] text-white shadow-sm"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-            )}
-          >
-            <Zap
-              className={cn(
-                "h-4 w-4",
-                modelMode === "sandia_performance" ? "text-[#F2B941]" : "text-amber-500"
-              )}
-            />
-            Sandia Solar Electrical Performance
-            <span
-              className={cn(
-                "rounded-full px-1.5 py-0.5 text-[10px] font-mono",
+        {/* Mode Switcher Segmented Control (Available in Dev mode, or when requested) */}
+        {isDev && (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface p-1.5 shadow-xs">
+            {/* OPTION 1: Sandia Solar Electrical Performance */}
+            <button
+              type="button"
+              data-testid="mode-tab-sandia"
+              onClick={() => setModelMode("sandia_performance")}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer ${
                 modelMode === "sandia_performance"
-                  ? "bg-white/20 text-[#F2B941]"
-                  : "bg-amber-100 text-amber-800"
-              )}
+                  ? "bg-ink text-white shadow-xs"
+                  : "text-text-2 hover:bg-surface-subtle hover:text-text"
+              }`}
             >
-              Primary Model 3
-            </span>
-          </button>
+              <Zap
+                className={`h-4 w-4 ${
+                  modelMode === "sandia_performance" ? "text-brand" : "text-brand-text"
+                }`}
+              />
+              <span>Sandia Solar Electrical Performance</span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-xs font-mono ${
+                  modelMode === "sandia_performance"
+                    ? "bg-white/20 text-brand"
+                    : "bg-surface-subtle text-text-3 border border-border"
+                }`}
+              >
+                Primary M3
+              </span>
+            </button>
 
-          {/* OPTION 2: UCI SECOM Process Benchmark (Secondary Tab) */}
-          <button
-            type="button"
-            data-testid="mode-tab-secom"
-            onClick={() => setModelMode("secom_benchmark")}
-            className={cn(
-              "flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all cursor-pointer",
-              modelMode === "secom_benchmark"
-                ? "bg-[#0B0909] text-white shadow-sm"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-            )}
-          >
-            <Cpu
-              className={cn(
-                "h-4 w-4",
-                modelMode === "secom_benchmark" ? "text-[#F2B941]" : "text-slate-500"
-              )}
-            />
-            UCI SECOM Process Benchmark
-            <span
-              className={cn(
-                "rounded-full px-1.5 py-0.5 text-[10px] font-mono",
+            {/* OPTION 2: UCI SECOM Process Benchmark */}
+            <button
+              type="button"
+              data-testid="mode-tab-secom"
+              onClick={() => setModelMode("secom_benchmark")}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer ${
                 modelMode === "secom_benchmark"
-                  ? "bg-white/20 text-[#F2B941]"
-                  : "bg-slate-100 text-slate-700"
-              )}
+                  ? "bg-ink text-white shadow-xs"
+                  : "text-text-2 hover:bg-surface-subtle hover:text-text"
+              }`}
             >
-              Secondary Benchmark
-            </span>
-          </button>
-        </div>
-
-        {/* WORKFLOW 1 (Default): Sandia Solar Electrical Performance Prediction */}
-        {modelMode === "sandia_performance" && (
-          <SandiaPerformanceDashboard />
+              <Cpu
+                className={`h-4 w-4 ${
+                  modelMode === "secom_benchmark" ? "text-brand" : "text-text-3"
+                }`}
+              />
+              <span>UCI SECOM Process Benchmark</span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-xs font-mono ${
+                  modelMode === "secom_benchmark"
+                    ? "bg-white/20 text-brand"
+                    : "bg-surface-subtle text-text-3 border border-border"
+                }`}
+              >
+                Secondary
+              </span>
+            </button>
+          </div>
         )}
 
-        {/* WORKFLOW 2 (Secondary): UCI SECOM Predictive Quality (Preserved 100%) */}
+        {/* WORKFLOW 1 (Default): Sandia Solar Electrical Performance Prediction */}
+        {modelMode === "sandia_performance" && <SandiaPerformanceDashboard />}
+
+        {/* WORKFLOW 2 (Secondary): UCI SECOM Predictive Quality */}
         {modelMode === "secom_benchmark" && (
-          <div className="space-y-8">
-            {/* Dual Domain Status & Safety Quarantine Notice */}
+          <div className="space-y-6">
             <DualDomainStatusBanner />
 
-            {/* Main Dashboard Tabs */}
-            <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ActiveTab)}>
-              <div className="border-b border-slate-200">
-                <TabsList className="h-12 w-full justify-start rounded-none bg-transparent p-0 gap-2 sm:gap-6 overflow-x-auto">
+            {/* SECOM Tabs */}
+            <Tabs value={activeTab} onValueChange={val => setActiveTab(val as ActiveTab)}>
+              <div className="border-b border-border">
+                <TabsList className="h-10 w-full justify-start rounded-none bg-transparent p-0 gap-4">
                   <TabsTrigger
                     value="benchmark"
-                    className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-ink data-[state=active]:text-text"
                   >
-                    <Cpu className="mr-2 h-4 w-4 text-[#F2B941]" />
+                    <Cpu className="mr-2 h-3.5 w-3.5 text-text-3" />
                     UCI SECOM Benchmark
                   </TabsTrigger>
                   <TabsTrigger
                     value="prediction"
-                    className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-ink data-[state=active]:text-text"
                   >
-                    <Play className="mr-2 h-4 w-4 text-emerald-600" />
-                    Benchmark Prediction Simulator
+                    <Play className="mr-2 h-3.5 w-3.5 text-success" />
+                    Prediction Simulator
                   </TabsTrigger>
                   <TabsTrigger
                     value="solar_readiness"
-                    className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-3 sm:px-4 pb-3 pt-2 text-xs font-semibold text-slate-500 transition-all hover:text-slate-900 data-[state=active]:border-[#0B0909] data-[state=active]:text-slate-900 data-[state=active]:shadow-none"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 text-xs font-semibold text-text-3 data-[state=active]:border-ink data-[state=active]:text-text"
                   >
-                    <Sun className="mr-2 h-4 w-4 text-rose-600" />
+                    <Sun className="mr-2 h-3.5 w-3.5 text-warning" />
                     Solar PV Factory Readiness
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              {/* Tab 1: SECOM Benchmark Evaluation Dashboard */}
-              <TabsContent value="benchmark" className="mt-6 space-y-6">
+              <TabsContent value="benchmark" className="mt-4 space-y-4">
                 <BenchmarkEvaluationCard />
                 <ConfusionMatrixCard />
               </TabsContent>
 
-              {/* Tab 2: Prediction Simulator */}
-              <TabsContent value="prediction" className="mt-6 space-y-6">
+              <TabsContent value="prediction" className="mt-4 space-y-4">
                 <PredictionSimulator />
               </TabsContent>
 
-              {/* Tab 3: Solar PV Factory Readiness */}
-              <TabsContent value="solar_readiness" className="mt-6 space-y-6">
+              <TabsContent value="solar_readiness" className="mt-4 space-y-4">
                 <SolarReadinessPanel />
               </TabsContent>
             </Tabs>
@@ -246,3 +231,5 @@ export function PredictiveQualityOverview() {
     </AuthGuard>
   );
 }
+
+export default PredictiveQualityOverview;

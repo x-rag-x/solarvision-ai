@@ -3,6 +3,10 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { openOperatorLoginModal } from "@/const";
 import { toast } from "sonner";
+import { RefreshCw, Timer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/solarvision/PageHeader";
+import { StatusBadge } from "@/components/solarvision/StatusBadge";
 import {
   OverallSummaryCard,
   DatabaseHealthCard,
@@ -137,7 +141,51 @@ export default function SystemHealthPage() {
   const m4 = getModelData("model4");
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 max-w-7xl mx-auto">
+      <PageHeader
+        title="System Health & Diagnostics"
+        description="Real-time multi-model inference pipeline readiness, authoritative SQLite database connectivity, and diagnostic event stream."
+        badge={
+          <StatusBadge
+            tone={
+              summary?.overallStatus === "healthy"
+                ? "success"
+                : summary?.overallStatus === "degraded"
+                ? "warning"
+                : "neutral"
+            }
+          >
+            {summary?.overallStatus
+              ? `System ${summary.overallStatus.toUpperCase()}`
+              : "Active Monitoring"}
+          </StatusBadge>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className="h-9 px-3 text-xs font-semibold rounded-lg border-border bg-surface text-text hover:bg-canvas gap-1.5"
+            >
+              <Timer className="h-3.5 w-3.5 text-text-subtle" />
+              {autoRefresh ? "Auto-Refresh (10s)" : "Auto-Refresh Off"}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleRefreshAll}
+              disabled={overviewQuery.isFetching}
+              className="h-9 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:opacity-95 gap-1.5 shadow-sm"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${overviewQuery.isFetching ? "animate-spin" : ""}`}
+              />
+              {overviewQuery.isFetching ? "Refreshing..." : "Refresh Telemetry"}
+            </Button>
+          </div>
+        }
+      />
+
       {/* 1. Overall System Health Summary Banner */}
       <OverallSummaryCard
         summary={summary}
@@ -154,12 +202,12 @@ export default function SystemHealthPage() {
       )}
 
       {/* 3. Model 1-4 Readiness & Health Cards */}
-      <div>
-        <div className="mb-3 px-1">
-          <h2 className="text-base font-bold text-slate-900 tracking-tight">
+      <div className="space-y-3">
+        <div className="px-1">
+          <h2 className="text-base font-bold text-text tracking-tight">
             Multi-Model Inference Readiness & Artifact Integrity
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-muted">
             Real-time status of all four AI models, trained artifact checkpoints, backend bridges, and operational governance constraints
           </p>
         </div>
@@ -212,12 +260,12 @@ export default function SystemHealthPage() {
       </div>
 
       {/* 4. Live Application Diagnostic Console */}
-      <div>
-        <div className="mb-3 px-1">
-          <h2 className="text-base font-bold text-slate-900 tracking-tight">
+      <div className="space-y-3">
+        <div className="px-1">
+          <h2 className="text-base font-bold text-text tracking-tight">
             Diagnostic Telemetry & Live Event Log
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-muted">
             Real-time structured event stream from Node backend, FastAPI bridges, Model inference pipelines, and SQLite persistence
           </p>
         </div>

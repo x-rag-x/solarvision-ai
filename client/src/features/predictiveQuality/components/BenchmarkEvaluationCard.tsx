@@ -41,10 +41,10 @@ export function BenchmarkEvaluationCard() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-[#0B0909] text-[#F2B941] text-[10px] font-mono tracking-wider uppercase">
+              <Badge className="bg-[#0B0909] text-[#F2B941] text-xs font-mono tracking-wider uppercase">
                 {meta.modelVersion}
               </Badge>
-              <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-[10px] font-semibold">
+              <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs font-semibold">
                 Evaluation Verified
               </Badge>
               <span className="text-xs text-slate-400 font-mono">
@@ -91,7 +91,7 @@ export function BenchmarkEvaluationCard() {
             <p className="mt-2 text-2xl font-bold text-slate-900">
               {meta.totalSamples.toLocaleString()}
             </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               1,096 train / 235 val / 236 test
             </p>
           </div>
@@ -104,7 +104,7 @@ export function BenchmarkEvaluationCard() {
             <p className="mt-2 text-2xl font-bold text-slate-900">
               590 <span className="text-xs font-normal text-slate-500">→ 444</span>
             </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               116 zero-var, 28 NaN pruned
             </p>
           </div>
@@ -117,7 +117,7 @@ export function BenchmarkEvaluationCard() {
             <p className="mt-2 text-2xl font-bold text-amber-900">
               {meta.classDistribution.imbalanceRatio} : 1
             </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               1,463 Pass vs 104 Fail
             </p>
           </div>
@@ -130,7 +130,7 @@ export function BenchmarkEvaluationCard() {
             <p className="mt-2 text-2xl font-bold text-slate-900 font-mono">
               τ* = {m.thresholdUsed}
             </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Cost-sensitive failure recall
             </p>
           </div>
@@ -156,7 +156,7 @@ export function BenchmarkEvaluationCard() {
               title={`Fail: ${meta.classDistribution.failPct}%`}
             />
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               <span>Conforming Wafers (93.36%)</span>
@@ -177,7 +177,7 @@ export function BenchmarkEvaluationCard() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Balanced Accuracy
             </p>
-            <Badge className="bg-slate-100 text-slate-700 text-[10px] font-mono">
+            <Badge className="bg-slate-100 text-slate-700 text-xs font-mono">
               Held-Out Test
             </Badge>
           </div>
@@ -188,7 +188,7 @@ export function BenchmarkEvaluationCard() {
             <span>Raw Accuracy: {(m.accuracy * 100).toFixed(1)}%</span>
             <span>Pass Spec: {(m.specificityPass * 100).toFixed(1)}%</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400 leading-snug">
+          <p className="mt-2 text-xs text-slate-400 leading-snug">
             Arithmetic mean of sensitivity and specificity, correcting for extreme class imbalance.
           </p>
         </Card>
@@ -199,7 +199,7 @@ export function BenchmarkEvaluationCard() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Failure Recall (Sensitivity)
             </p>
-            <Badge className="bg-amber-50 text-amber-800 border-amber-200 text-[10px] font-mono">
+            <Badge className="bg-amber-50 text-amber-800 border-amber-200 text-xs font-mono">
               Cost-Sensitive
             </Badge>
           </div>
@@ -210,7 +210,7 @@ export function BenchmarkEvaluationCard() {
             <span>Precision: {(m.precisionFail * 100).toFixed(1)}%</span>
             <span>Fail F1: {m.f1Fail.toFixed(3)}</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400 leading-snug">
+          <p className="mt-2 text-xs text-slate-400 leading-snug">
             Captures 44.4% of yield scrap wafers at τ = 0.07 threshold (vs 0.0% with standard 0.50 cutoff).
           </p>
         </Card>
@@ -221,7 +221,7 @@ export function BenchmarkEvaluationCard() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Discrimination Metrics
             </p>
-            <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-[10px] font-mono">
+            <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs font-mono">
               Ranking
             </Badge>
           </div>
@@ -236,7 +236,7 @@ export function BenchmarkEvaluationCard() {
               <p className="text-2xl font-bold text-slate-900 font-mono">{m.prAuc.toFixed(4)}</p>
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400 leading-snug">
+          <p className="mt-3 text-xs text-slate-400 leading-snug">
             Chronological split temporal drift accounts for the drop from 0.821 (stratified) to 0.637 (chronological).
           </p>
         </Card>
@@ -247,7 +247,7 @@ export function BenchmarkEvaluationCard() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Calibration & Brier Score
             </p>
-            <Badge className="bg-blue-50 text-blue-800 border-blue-200 text-[10px] font-mono">
+            <Badge className="bg-blue-50 text-blue-800 border-blue-200 text-xs font-mono">
               Probability
             </Badge>
           </div>
@@ -262,7 +262,7 @@ export function BenchmarkEvaluationCard() {
               <p className="text-2xl font-bold text-slate-900 font-mono">{m.ece.toFixed(4)}</p>
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400 leading-snug">
+          <p className="mt-3 text-xs text-slate-400 leading-snug">
             Expected Calibration Error (ECE) is 3.04%, indicating well-calibrated posterior probabilities without softmax artifacts.
           </p>
         </Card>
@@ -273,7 +273,7 @@ export function BenchmarkEvaluationCard() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               F1 Harmonic Means
             </p>
-            <Badge className="bg-slate-100 text-slate-700 text-[10px] font-mono">
+            <Badge className="bg-slate-100 text-slate-700 text-xs font-mono">
               Aggregate
             </Badge>
           </div>
@@ -288,7 +288,7 @@ export function BenchmarkEvaluationCard() {
               <p className="text-2xl font-bold text-slate-900 font-mono">{m.weightedF1.toFixed(3)}</p>
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400 leading-snug">
+          <p className="mt-3 text-xs text-slate-400 leading-snug">
             Pass F1 = {m.f1Pass.toFixed(3)} reflects strong specificity on conforming silicon runs.
           </p>
         </Card>
@@ -299,7 +299,7 @@ export function BenchmarkEvaluationCard() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Operational Scope
             </p>
-            <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[10px]">
+            <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs">
               Microchip Only
             </Badge>
           </div>

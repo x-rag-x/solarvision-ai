@@ -59,10 +59,10 @@ export function SolarFactoryReadinessPanel() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-rose-800">
                   Solar Manufacturing Domain
                 </span>
-                <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] font-mono">
+                <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-mono">
                   NOT_TRAINED
                 </Badge>
-                <Badge className="bg-rose-950 text-rose-300 text-[10px] font-mono">
+                <Badge className="bg-rose-950 text-rose-300 text-xs font-mono">
                   DATASET_BLOCKED
                 </Badge>
               </div>
@@ -94,7 +94,7 @@ export function SolarFactoryReadinessPanel() {
             <p className="text-2xl font-bold font-mono text-slate-900 mt-1">
               {readiness?.tableCounts.telemetryReadings ?? 0}
             </p>
-            <span className="text-[10px] text-rose-600 font-medium">
+            <span className="text-xs text-rose-600 font-medium">
               pdm_telemetry_features rows
             </span>
           </div>
@@ -104,7 +104,7 @@ export function SolarFactoryReadinessPanel() {
             <p className="text-2xl font-bold font-mono text-slate-900 mt-1">
               {readiness?.tableCounts.cmmsWorkOrders ?? 0}
             </p>
-            <span className="text-[10px] text-rose-600 font-medium">
+            <span className="text-xs text-rose-600 font-medium">
               Maintenance work orders
             </span>
           </div>
@@ -114,7 +114,7 @@ export function SolarFactoryReadinessPanel() {
             <p className="text-2xl font-bold font-mono text-rose-700 mt-1">
               {readiness?.tableCounts.verifiedFailureEvents ?? 0}
             </p>
-            <span className="text-[10px] text-rose-600 font-medium">
+            <span className="text-xs text-rose-600 font-medium">
               Ground-truth failure logs (0)
             </span>
           </div>
@@ -124,7 +124,7 @@ export function SolarFactoryReadinessPanel() {
             <p className="text-2xl font-bold font-mono text-rose-700 mt-1">
               {readiness?.tableCounts.eligibleTrainingTrajectories ?? 0}
             </p>
-            <span className="text-[10px] text-rose-600 font-medium">
+            <span className="text-xs text-rose-600 font-medium">
               Required: &gt;= 100 runs
             </span>
           </div>
@@ -155,7 +155,7 @@ export function SolarFactoryReadinessPanel() {
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Machine Telemetry Instrumentation
               </span>
-              <Badge className="bg-slate-200 text-slate-800 text-[10px] font-mono">
+              <Badge className="bg-slate-200 text-slate-800 text-xs font-mono">
                 4 Critical Stations
               </Badge>
             </div>
@@ -176,7 +176,7 @@ export function SolarFactoryReadinessPanel() {
                   <span className="font-mono text-xs font-bold text-slate-900">{machine.id}</span>
                   <h4 className="text-sm font-bold text-slate-900">{machine.name}</h4>
                 </div>
-                <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] font-mono">
+                <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-mono">
                   UNINSTRUMENTED
                 </Badge>
               </div>
@@ -188,7 +188,7 @@ export function SolarFactoryReadinessPanel() {
 
               <div className="text-xs space-y-1">
                 <p className="font-semibold text-slate-700">Required IoT Sensor Channels:</p>
-                <ul className="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
+                <ul className="grid grid-cols-2 gap-1 text-xs text-slate-500">
                   {machine.criticalSensorTypes.map((sensor, sIdx) => (
                     <li key={sIdx} className="flex items-center gap-1.5">
                       <span className="h-1 w-1 rounded-full bg-slate-400" />

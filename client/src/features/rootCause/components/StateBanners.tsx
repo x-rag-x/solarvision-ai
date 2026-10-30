@@ -51,7 +51,7 @@ export function ModelNotTrainedBanner({
           </div>
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-md border border-amber-500/30 bg-amber-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-900">
+              <span className="rounded-md border border-amber-500/30 bg-amber-100 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-900">
                 Model 2 Lifecycle: Untrained
               </span>
               <span className="text-xs text-amber-800">
@@ -67,7 +67,7 @@ export function ModelNotTrainedBanner({
               wear, vacuum pressure). The training checkpoint has not yet been compiled.
             </p>
             <div className="mt-3 rounded-xl border border-amber-200/80 bg-white/80 p-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                 Required Training Prerequisites
               </p>
               <ul className="mt-2 space-y-1.5 text-xs text-slate-600">
@@ -129,7 +129,7 @@ export function NoManufacturingDataBanner({
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="rounded-md border border-blue-400/40 bg-blue-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-blue-900">
+              <span className="rounded-md border border-blue-400/40 bg-blue-100 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-900">
                 Data Dependency Missing
               </span>
               {inspectionId && (
@@ -146,7 +146,7 @@ export function NoManufacturingDataBanner({
               lacks linked batch metadata, machine identifiers, or sensor measurements in the database.
               Root Cause Analysis requires process telemetry (furnace temperatures, squeegee pressure, or machine codes) to determine physical etiology.
             </p>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               To evaluate root cause, assign a valid <code className="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">batchId</code> or select an inspection logged from an active production line.
             </p>
           </div>
@@ -181,7 +181,7 @@ export function PredictionInProgressSkeleton() {
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#F2B941] text-slate-950">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-slate-950">
               <Loader2 className="h-5 w-5 animate-spin" />
             </div>
             <div>
@@ -193,7 +193,7 @@ export function PredictionInProgressSkeleton() {
               </p>
             </div>
           </div>
-          <span className="rounded-full bg-[#FFF3C4] px-3 py-1 text-xs font-semibold text-slate-900">
+          <span className="rounded-full bg-surface-elevated px-3 py-1 text-xs font-semibold text-slate-900">
             Inferring Candidates
           </span>
         </div>
@@ -202,14 +202,14 @@ export function PredictionInProgressSkeleton() {
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-              <Layers className="h-4 w-4 text-[#F2B941]" />
+              <Layers className="h-4 w-4 text-primary" />
               Step 1: Feature Extraction
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
+            <p className="mt-1 text-xs text-slate-500">
               Parsing 9 defect classes and bounding box spatial centroids
             </p>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-              <div className="h-full w-full bg-[#087e6d] rounded-full" />
+              <div className="h-full w-full bg-success rounded-full" />
             </div>
           </div>
 
@@ -218,11 +218,11 @@ export function PredictionInProgressSkeleton() {
               <Gauge className="h-4 w-4 text-blue-500" />
               Step 2: Sensor Cross-Matching
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
+            <p className="mt-1 text-xs text-slate-500">
               Aligning temperature, squeegee pressure, and vacuum curves
             </p>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-              <div className="h-full w-2/3 bg-[#F2B941] animate-pulse rounded-full" />
+              <div className="h-full w-2/3 bg-primary animate-pulse rounded-full" />
             </div>
           </div>
 
@@ -231,7 +231,7 @@ export function PredictionInProgressSkeleton() {
               <Flame className="h-4 w-4 text-purple-500" />
               Step 3: Random Forest / Multi-Modal Ranking
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
+            <p className="mt-1 text-xs text-slate-500">
               Evaluating decision tree ensemble feature importances and cause candidates
             </p>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
@@ -277,7 +277,7 @@ export function PredictionFailureBanner({
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="rounded-md border border-rose-400/40 bg-rose-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-rose-900">
+              <span className="rounded-md border border-rose-400/40 bg-rose-100 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-rose-900">
                 Inference Failure
               </span>
             </div>
@@ -288,7 +288,7 @@ export function PredictionFailureBanner({
               {message}
             </p>
             {details && (
-              <div className="mt-2 rounded-lg bg-white/80 p-2.5 font-mono text-[11px] text-rose-950 border border-rose-200">
+              <div className="mt-2 rounded-lg bg-white/80 p-2.5 font-mono text-xs text-rose-950 border border-rose-200">
                 {details}
               </div>
             )}
@@ -327,7 +327,7 @@ export function ModelUnavailableBanner({ onCheckAgain }: { onCheckAgain?: () => 
             <ServerOff className="h-6 w-6" />
           </div>
           <div className="space-y-1.5">
-            <span className="rounded-md border border-slate-300 bg-slate-200 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-800">
+            <span className="rounded-md border border-slate-300 bg-slate-200 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-slate-800">
               Service Offline
             </span>
             <h3 className="text-base font-bold text-slate-900">

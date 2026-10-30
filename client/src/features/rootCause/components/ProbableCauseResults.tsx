@@ -73,7 +73,7 @@ export function ProbableCauseResults({
       case "equipment":
         return <Wrench className="h-3.5 w-3.5 text-blue-600" />;
       case "process":
-        return <Sliders className="h-3.5 w-3.5 text-[#F2B941]" />;
+        return <Sliders className="h-3.5 w-3.5 text-primary" />;
       case "material":
         return <Droplets className="h-3.5 w-3.5 text-purple-600" />;
       case "environment":
@@ -103,7 +103,7 @@ export function ProbableCauseResults({
       {/* Header with Model Info */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Model 2 Inference Output
           </span>
           <h3 className="text-sm font-bold text-slate-900">
@@ -112,10 +112,10 @@ export function ProbableCauseResults({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
             {prediction.inferenceTimeMs}ms inference
           </span>
-          <span className="font-mono text-[11px] text-slate-400">
+          <span className="font-mono text-xs text-slate-400">
             v{prediction.modelVersionId}
           </span>
         </div>
@@ -132,7 +132,7 @@ export function ProbableCauseResults({
               key={candidate.causeCode}
               className={`rounded-xl border p-4.5 transition-all ${
                 candidate.rank === 1
-                  ? "border-[#F2B941] bg-[#FFFDF5] shadow-[0_4px_16px_rgba(242,185,65,0.08)]"
+                  ? "border-primary bg-canvas shadow-sm"
                   : "border-slate-200 bg-white"
               }`}
             >
@@ -142,7 +142,7 @@ export function ProbableCauseResults({
                   <span
                     className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg text-xs font-black ${
                       candidate.rank === 1
-                        ? "bg-[#F2B941] text-slate-950 shadow-sm"
+                        ? "bg-primary text-slate-950 shadow-sm"
                         : "bg-slate-200 text-slate-700"
                     }`}
                   >
@@ -153,12 +153,12 @@ export function ProbableCauseResults({
                       {candidate.title}
                     </h4>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 capitalize">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 capitalize">
                         {getCategoryIcon(candidate.category)}
                         {candidate.category} factor
                       </span>
                       <span
-                        className={`rounded border px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider ${getUrgencyBadge(
+                        className={`rounded border px-1.5 py-0.2 text-xs font-bold uppercase tracking-wider ${getUrgencyBadge(
                           candidate.urgency
                         )}`}
                       >
@@ -172,15 +172,15 @@ export function ProbableCauseResults({
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
                     <span className="text-base font-black text-slate-900">{confPct}%</span>
-                    <p className="text-[10px] text-slate-400 font-medium">Model Probability</p>
+                    <p className="text-xs text-slate-400 font-medium">Model Probability</p>
                   </div>
                   <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-200">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         confPct >= 70
-                          ? "bg-[#087e6d]"
+                          ? "bg-success"
                           : confPct >= 40
-                          ? "bg-[#F2B941]"
+                          ? "bg-primary"
                           : "bg-slate-400"
                       }`}
                       style={{ width: `${confPct}%` }}
@@ -197,7 +197,7 @@ export function ProbableCauseResults({
               {/* Contributing Evidence Factors */}
               {candidate.evidence.length > 0 && (
                 <div className="mt-3 rounded-lg border border-slate-200/80 bg-white/90 p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
                     Supporting Telemetric & Defect Evidence
                   </p>
                   <div className="mt-2 space-y-2">
@@ -210,7 +210,7 @@ export function ProbableCauseResults({
                           <span className="font-semibold text-slate-800">{ev.factorName}: </span>
                           <span className="text-slate-600">{ev.description}</span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 text-[11px] font-mono">
+                        <div className="flex items-center gap-2 shrink-0 text-xs font-mono">
                           <span className="text-slate-500">Obs:</span>
                           <span className="font-bold text-slate-900">
                             {ev.observedValue} {ev.unit || ""}
@@ -229,9 +229,9 @@ export function ProbableCauseResults({
 
               {/* Recommended Engineering Action */}
               <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50/60 p-3">
-                <Lightbulb className="h-4 w-4 text-[#F2B941] shrink-0 mt-0.5" />
+                <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-900">
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-900">
                     Corrective Recommendation
                   </p>
                   <p className="mt-0.5 text-xs text-slate-800">
@@ -242,13 +242,13 @@ export function ProbableCauseResults({
 
               {/* Validation / Feedback Action */}
               <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100">
-                <span className="text-[11px] text-slate-400">
+                <span className="text-xs text-slate-400">
                   Process Engineer Feedback:
                 </span>
                 {feedback ? (
                   <span
                     className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                      feedback === "verified" ? "text-[#087e6d]" : "text-slate-500"
+                      feedback === "verified" ? "text-success" : "text-slate-500"
                     }`}
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />

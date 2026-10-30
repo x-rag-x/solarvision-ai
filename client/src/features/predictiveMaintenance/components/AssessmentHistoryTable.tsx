@@ -75,7 +75,7 @@ export function AssessmentHistoryTable({
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Database Assessment History
             </span>
-            <Badge className="bg-[#0B0909] text-white text-[10px] font-mono">
+            <Badge className="bg-[#0B0909] text-white text-xs font-mono">
               {history.length} Record{history.length !== 1 ? "s" : ""}
             </Badge>
           </div>
@@ -112,7 +112,7 @@ export function AssessmentHistoryTable({
       <div className="mt-6 overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+            <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-xs">
               <th className="pb-3 pr-4">Timestamp</th>
               <th className="pb-3 px-4">Station / Machine</th>
               <th className="pb-3 px-4">Variant</th>
@@ -129,7 +129,7 @@ export function AssessmentHistoryTable({
               const isWarn = item.classification === "WARNING";
               return (
                 <tr key={index} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="py-3.5 pr-4 text-slate-500 font-mono text-[11px]">
+                  <td className="py-3.5 pr-4 text-slate-500 font-mono text-xs">
                     {new Date(item.timestamp).toLocaleTimeString()}
                   </td>
                   <td className="py-3.5 px-4 font-semibold text-slate-800">
@@ -146,7 +146,7 @@ export function AssessmentHistoryTable({
                   </td>
                   <td className="py-3.5 px-4">
                     <Badge
-                      className={`text-[10px] font-mono ${
+                      className={`text-xs font-mono ${
                         isFail
                           ? "bg-rose-100 text-rose-800 border-rose-300"
                           : isWarn
@@ -170,7 +170,7 @@ export function AssessmentHistoryTable({
                       variant="ghost"
                       size="sm"
                       onClick={() => onReloadAssessment(item)}
-                      className="h-7 gap-1 text-[11px] rounded-lg text-slate-600 hover:text-slate-950"
+                      className="h-7 gap-1 text-xs rounded-lg text-slate-600 hover:text-slate-950"
                     >
                       <RotateCcw className="h-3 w-3" />
                       Reload

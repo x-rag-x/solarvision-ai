@@ -1,9 +1,9 @@
-import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { openOperatorLoginModal, startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lock, LogIn, ShieldAlert, ArrowLeft, RefreshCw } from "lucide-react";
+import { openOperatorLoginModal } from "@/const";
+import { ArrowLeft, Lock, LogIn, ShieldAlert } from "lucide-react";
+import React from "react";
 import { Link } from "wouter";
 
 interface AuthGuardProps {
@@ -14,19 +14,17 @@ interface AuthGuardProps {
 
 export function AuthGuard({
   children,
-  title = "Authentication required for inspection operations",
-  description = "Access to the YOLO26n computer vision pipeline, annotated cell evidence, defect history, and manufacturing analytics is strictly restricted to authenticated operators and quality engineers.",
+  title = "Authentication required",
+  description = "This inspection workstation is governed by quality audit compliance. Please sign in with your verified operator credentials to execute inference.",
 }: AuthGuardProps) {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="space-y-6 py-8">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-64 rounded-xl" />
-          <Skeleton className="h-9 w-32 rounded-xl" />
-        </div>
-        <div className="grid gap-5 xl:grid-cols-2">
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64 rounded-xl" />
+        <Skeleton className="h-4 w-96 rounded-lg" />
+        <div className="grid gap-6 md:grid-cols-2">
           <Skeleton className="h-[380px] rounded-2xl" />
           <Skeleton className="h-[380px] rounded-2xl" />
         </div>
@@ -37,45 +35,36 @@ export function AuthGuard({
   if (!isAuthenticated || !user) {
     return (
       <div className="py-10">
-        <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_50px_rgba(7,27,41,0.06)] text-center sm:p-12">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#0B0909] text-[#F2B941] shadow-[0_8px_24px_rgba(11,9,9,0.18)]">
-            <Lock className="h-7 w-7" />
+        <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-8 shadow-sm text-center sm:p-12">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-xl bg-canvas border border-border text-text">
+            <Lock className="h-6 w-6" />
           </div>
 
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-[#F2B941]">
+          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-text-muted">
             Restricted Quality Zone
           </p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-text">
             {title}
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-xs leading-relaxed text-slate-500 sm:text-sm">
+          <p className="mx-auto mt-3 max-w-lg text-xs leading-relaxed text-text-muted sm:text-sm">
             {description}
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
               onClick={() => openOperatorLoginModal()}
-              className="h-11 w-full gap-2 rounded-xl bg-[#0B0909] px-6 text-xs font-semibold text-white shadow-md hover:bg-slate-800 sm:w-auto"
+              className="h-10 w-full gap-2 rounded-lg bg-primary px-6 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-95 sm:w-auto"
             >
-              <LogIn className="h-4 w-4 text-[#F2B941]" />
+              <LogIn className="h-4 w-4" />
               Sign in with Operator ID
             </Button>
             <Link
               href="/"
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-xs font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900 sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-5 text-xs font-semibold text-text transition-colors hover:bg-canvas sm:w-auto"
             >
               <ArrowLeft className="h-4 w-4" />
               Return to overview
             </Link>
-          </div>
-
-          <div className="mt-8 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-left">
-            <div className="flex items-start gap-3">
-              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              <div className="text-xs text-amber-900">
-                <span className="font-semibold">Security Policy Note:</span> Unauthenticated sessions cannot execute AI inference, access stored defect coordinates, or inspect production telemetry.
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -85,48 +74,56 @@ export function AuthGuard({
   return <>{children}</>;
 }
 
-export function SessionExpiredBanner({
-  onRetry,
+export function InlineAuthPrompt({
+  actionName = "this operation",
+  compact = false,
 }: {
-  onRetry?: () => void;
+  actionName?: string;
+  compact?: boolean;
 }) {
+  const { user } = useAuth();
+  if (user) return null;
+
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border border-warning-border bg-warning-soft px-3.5 py-2 text-xs text-text">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="h-3.5 w-3.5 text-warning shrink-0" />
+          <span>Operator sign-in required to execute {actionName}.</span>
+        </div>
+        <button
+          onClick={() => openOperatorLoginModal()}
+          className="font-semibold text-primary hover:underline ml-2 shrink-0 text-xs"
+        >
+          Sign in
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="my-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3.5">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-700">
-            <ShieldAlert className="h-5 w-5" />
-          </div>
+    <div className="rounded-xl border border-warning-border bg-warning-soft p-4 text-xs text-text">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start gap-2.5">
+          <ShieldAlert className="h-4 w-4 text-warning shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-semibold text-rose-900">Session Expired or Unauthorized</h4>
-            <p className="mt-1 text-xs text-rose-700">
-              Your authentication session is no longer active. You must re-authenticate to view or update inspection data.
+            <p className="font-semibold text-text">Session Not Authenticated</p>
+            <p className="text-text-muted mt-0.5">
+              You are viewing in read-only preview mode. Sign in to record {actionName} into database lineage.
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 sm:shrink-0">
-          {onRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              className="h-9 gap-1.5 border-rose-200 bg-white text-xs font-medium text-rose-900 hover:bg-rose-50"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Retry
-            </Button>
-          )}
-          <Button
-            size="sm"
-            onClick={() => openOperatorLoginModal()}
-            className="h-9 gap-1.5 rounded-xl bg-[#0B0909] px-4 text-xs font-semibold text-white hover:bg-slate-800"
-          >
-            <LogIn className="h-3.5 w-3.5 text-[#F2B941]" />
-            Sign in again
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          onClick={() => openOperatorLoginModal()}
+          className="h-8 gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:opacity-95 shrink-0"
+        >
+          <LogIn className="h-3.5 w-3.5" />
+          Sign in
+        </Button>
       </div>
     </div>
   );
 }
+
+export default AuthGuard;
