@@ -145,7 +145,7 @@ export function PredictionSimulator() {
               <h3 className="text-base font-bold text-slate-900 sm:text-lg">
                 UCI SECOM Benchmark Prediction Workflow
               </h3>
-              <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-mono">
+              <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-mono">
                 Domain Isolated
               </Badge>
             </div>
@@ -180,11 +180,11 @@ export function PredictionSimulator() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${active ? "text-[#F2B941]" : "text-slate-500"}`}>
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${active ? "text-[#F2B941]" : "text-slate-500"}`}>
                       {preset.tag}
                     </span>
                     <Badge
-                      className={`text-[9px] font-mono uppercase ${
+                      className={`text-xs font-mono uppercase ${
                         preset.expectedOutcome === "FAIL"
                           ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
                           : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
@@ -194,7 +194,7 @@ export function PredictionSimulator() {
                     </Badge>
                   </div>
                   <p className="mt-2 text-sm font-bold truncate">{preset.name}</p>
-                  <p className={`mt-1 text-[11px] leading-relaxed line-clamp-2 ${active ? "text-slate-300" : "text-slate-500"}`}>
+                  <p className={`mt-1 text-xs leading-relaxed line-clamp-2 ${active ? "text-slate-300" : "text-slate-500"}`}>
                     {preset.description}
                   </p>
                 </button>
@@ -281,7 +281,7 @@ export function PredictionSimulator() {
                 <span className="text-xs font-bold uppercase tracking-wider text-rose-800 font-mono">
                   {error.code}
                 </span>
-                <Badge className="bg-rose-200 text-rose-900 border-rose-300 text-[10px]">
+                <Badge className="bg-rose-200 text-rose-900 border-rose-300 text-xs">
                   Rejected
                 </Badge>
               </div>
@@ -318,7 +318,7 @@ export function PredictionSimulator() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Verified Prediction Output
                 </span>
-                <Badge className="bg-slate-200 text-slate-800 text-[10px] font-mono">
+                <Badge className="bg-slate-200 text-slate-800 text-xs font-mono">
                   {prediction.modelVersion}
                 </Badge>
               </div>
@@ -371,7 +371,7 @@ export function PredictionSimulator() {
                   <p className="mt-1 text-2xl font-bold font-mono text-slate-900">
                     {(prediction.probabilityFail * 100).toFixed(2)}%
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-xs text-slate-400">
                     CI: [{(prediction.confidenceInterval.low * 100).toFixed(1)}%, {(prediction.confidenceInterval.high * 100).toFixed(1)}%]
                   </p>
                 </div>
@@ -380,7 +380,7 @@ export function PredictionSimulator() {
                   <p className="mt-1 text-2xl font-bold font-mono text-slate-900">
                     {(prediction.probabilityPass * 100).toFixed(2)}%
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-xs text-slate-400">
                     Probability sum = 1.0 (calibrated)
                   </p>
                 </div>
@@ -420,14 +420,14 @@ export function PredictionSimulator() {
                         <span className="font-semibold text-slate-900">
                           {feat.featureName || `Sensor Channel #${feat.featureIndex}`}
                         </span>
-                        <p className="text-[11px] text-slate-500">{feat.description}</p>
+                        <p className="text-xs text-slate-500">{feat.description}</p>
                       </div>
                       <div className="text-right">
                         <span className="font-mono font-semibold text-slate-800">
                           Z: {feat.zScore > 0 ? `+${feat.zScore}` : feat.zScore} σ
                         </span>
                         <Badge
-                          className={`ml-2 text-[9px] ${
+                          className={`ml-2 text-xs ${
                             feat.impactDirection === "increases_risk"
                               ? "bg-rose-100 text-rose-800 border-rose-300"
                               : "bg-emerald-100 text-emerald-800 border-emerald-300"

@@ -1,3 +1,4 @@
+import React from "react";
 import { trpc } from "@/lib/trpc";
 import {
   AlertCircle,
@@ -18,77 +19,102 @@ import {
   ShieldCheck,
   Sliders,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "wouter";
-import { DataSourceNote, EmptyData, PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
 import { HISTORICAL_MODEL_EVALUATION } from "@/lib/modelData";
 import { DEFECT_CLASS_LIST, getDefectMeta } from "@/lib/defects";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+
+// Shared SolarVision UI Components
+import PageHeader from "@/components/solarvision/PageHeader";
+import ModelBadge from "@/components/solarvision/ModelBadge";
+import StatusBadge from "@/components/solarvision/StatusBadge";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+import StatCard from "@/components/solarvision/StatCard";
 
 export default function ModelPerformance() {
-  const { data: modelStatus, isLoading } = trpc.model.status.useQuery();
+  const { data: modelStatus } = trpc.model.status.useQuery();
   const { data: model2Status } = trpc.model2Elpv.status.useQuery();
   const { data: sandiaStatus } = trpc.sandiaPerformance.status.useQuery();
   const { data: model4Status } = trpc.predictiveMaintenance.status.useQuery();
   const ready = Boolean(modelStatus?.exists);
 
   return (
-    <div>
-      <PageIntro
-        eyebrow="Model Registry & Governance"
-        title="Model status & benchmark evaluation."
-        description="Review active checkpoint availability, inference readiness, supported defect classes, and historical evaluation benchmark metrics. In accordance with strict engineering integrity, benchmark metrics are explicitly labeled as static held-out evaluation results, not live production certification."
+    <div className="space-y-6">
+      {/* Page Header */}
+      <PageHeader
+        title="Model Registry & Governance"
+        description="Review active checkpoint availability, architecture parameters, and evaluation benchmark results across all 4 machine learning pipelines."
+        badge={<span className="rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-semibold text-text border border-border">4 Operational Engines</span>}
+        actions={
+          <div className="flex items-center gap-2">
+            <StatusBadge tone={ready ? "success" : "warning"}>
+              {ready ? "M1 YOLO Checkpoint Active" : "CLI Fallback Mode"}
+            </StatusBadge>
+            <Link
+              href="/inspection"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink/90 transition-colors shadow-xs"
+            >
+              <span>Test Inspection</span>
+              <ArrowRight className="h-3 w-3 text-brand" />
+            </Link>
+          </div>
+        }
       />
 
-      <DataSourceNote configured={ready} />
+      {/* Mandatory Scientific Transparency Notice */}
+      <NoticeBar
+        tone="info"
+        message="Governance Invariant: Benchmark evaluation results are recorded on independent held-out subsets; not certified for autonomous factory rejection."
+        details={
+          <p>
+            In accordance with zero-fabrication standards, training-time metrics (e.g. YOLO 91.87% internal validation)
+            are distinguished from held-out generalization figures (69.75% mAP@50 on 792 unseen EL images).
+          </p>
+        }
+      />
 
-      {/* Top Grid: Model Architecture & Runtime Readiness */}
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        {/* Active Checkpoint Architecture Card */}
-        <div className="rounded-2xl bg-[#0B0909] p-6 text-white shadow-[0_12px_32px_rgba(7,27,41,0.15)] flex flex-col justify-between">
+      {/* Top Grid: Model Architecture & Runtime Specifications */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Active Checkpoint Architecture Card (7 cols) */}
+        <div className="lg:col-span-7 rounded-2xl bg-ink text-white p-6 shadow-sm flex flex-col justify-between space-y-5">
           <div>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#F2B941]">
-                  Active Checkpoint
-                </p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-white">
-                  Ultralytics YOLO26n / YOLOv8n
+                <span className="text-xs font-semibold uppercase tracking-wider text-brand">
+                  Active Checkpoint (Model 1)
+                </span>
+                <h2 className="mt-1 text-xl font-bold text-white">
+                  Ultralytics YOLO26n (best.pt)
                 </h2>
-                <p className="mt-1 text-xs text-slate-400">
-                  Single-stage anchor-free CNN (50 epochs, mAP@50=91.87% on internal validation)
+                <p className="mt-1 text-xs text-white/70">
+                  Single-stage anchor-free CNN (50 epochs, mAP@50=91.87% on internal validation; 69.75% on held-out test).
                 </p>
               </div>
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-[#F2B941]">
-                <BrainCircuit className="h-6 w-6" />
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-brand">
+                <BrainCircuit className="h-5 w-5" />
               </div>
             </div>
 
             <div className="mt-6 space-y-3 text-xs">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-slate-400">Model Status</span>
+              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <span className="text-white/60">Checkpoint Status</span>
                 <StatusBadge tone={ready ? "success" : "danger"}>
-                  {ready ? "Checkpoint Verified" : "Checkpoint Missing"}
+                  {ready ? "Verified (backend/models/best.pt)" : "Missing / CLI Fallback"}
                 </StatusBadge>
               </div>
 
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-slate-400">Parameter Count</span>
-                <span className="font-mono text-slate-200">
-                  {HISTORICAL_MODEL_EVALUATION.parameterCount.toLocaleString()} (146 fused layers)
+              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <span className="text-white/60">Parameter Complexity</span>
+                <span className="font-mono text-white/90">
+                  {HISTORICAL_MODEL_EVALUATION.parameterCount.toLocaleString()} weights (5.2 GFLOPs @ 640×640)
                 </span>
               </div>
 
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-slate-400">Computational Complexity</span>
-                <span className="font-mono text-slate-200">5.2 GFLOPs · 640×640 input</span>
-              </div>
-
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-slate-400">SHA-256 Checksum</span>
+              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <span className="text-white/60">SHA-256 Checksum</span>
                 <span
-                  className="max-w-[200px] truncate font-mono text-[10px] text-slate-400"
+                  className="font-mono text-xs text-brand truncate max-w-[220px]"
                   title={HISTORICAL_MODEL_EVALUATION.checkpointSha256}
                 >
                   {HISTORICAL_MODEL_EVALUATION.checkpointSha256}
@@ -96,264 +122,141 @@ export default function ModelPerformance() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Runtime Inference Path</span>
-                <span
-                  className="max-w-[220px] truncate font-mono text-[10px] text-slate-400"
-                  title={modelStatus?.modelPath}
-                >
-                  {modelStatus?.modelPath || "backend/models/best.pt"}
-                </span>
+                <span className="text-white/60">Supported Defect Classes</span>
+                <span className="font-mono font-semibold text-white">9 Classes (PVELAD Schema)</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl bg-white/5 p-3 text-[11px] text-slate-400 border border-white/10 flex items-center gap-2">
-            <Cpu className="h-4 w-4 text-[#F2B941] shrink-0" />
-            <span>Inference Bridge: Python Ultralytics runtime via subprocess & CLI</span>
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/70">
+            <span>FastAPI Bridge with CLI Fallback</span>
+            <span className="font-mono text-xs text-brand">PVELAD EL2021 Benchmark</span>
           </div>
         </div>
 
-        {/* Runtime Gateways & Operational State */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)] flex flex-col justify-between">
+        {/* Runtime Settings Card (5 cols) */}
+        <div className="lg:col-span-5 rounded-2xl border border-border bg-surface p-6 shadow-xs flex flex-col justify-between space-y-4">
           <div>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">
-                  Integration Gateways
-                </p>
-                <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-slate-900">
-                  Inference Readiness
-                </h2>
-              </div>
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3C4] text-[#0B0909]">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-4 text-xs">
-              <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-slate-800">Weights Checkpoint Present</p>
-                  <p className="mt-0.5 text-[11px] text-slate-500">
-                    `best.pt` detected on disk. The single-stage YOLO model is ready to process input frames.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                <Database className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-slate-800">
-                    Persistence Layer: {modelStatus?.supabaseConfigured ? "Supabase Cloud" : "SQLite Local"}
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-slate-500">
-                    Completed inspections and bounding boxes are saved with full timestamp lineage.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                <Sliders className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-slate-800">Baseline Production Threshold: 0.25</p>
-                  <p className="mt-0.5 text-[11px] text-slate-500">
-                    Calibrated to avoid false alarms from benign multi-busbar solder joints and crystal grain textures.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
-            <span className="text-xs text-slate-500">Want to test an EL/NIR cell?</span>
-            <Link
-              href="/inspection"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#F2B941] hover:text-[#0B0909]"
-            >
-              Go to inspection <ExternalLink className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Prominent Historical Evaluation Notice & KPI Banner */}
-      <div className="mt-6 rounded-2xl border border-amber-300/80 bg-amber-50/70 p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-800">
-            <AlertTriangle className="h-5 w-5" />
-          </div>
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-base font-semibold text-amber-950">
-                Historical Benchmark Evaluation Subset (PVELAD / EL2021 Benchmark)
-              </h3>
-              <span className="rounded-full bg-amber-200/80 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900">
-                Held-Out Subset: 792 Images
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+                Model Operating Guidelines
               </span>
+              <Scale className="h-4 w-4 text-text-3" />
             </div>
 
-            <p className="mt-2 text-xs leading-relaxed text-amber-900/90">
-              <strong>Mandatory Scientific Disclosure:</strong> The metrics displayed below represent{" "}
-              <em>historical evaluation benchmark results</em> evaluated on an independent held-out test sample of{" "}
-              <strong>792 EL images</strong> (stratified across 9 defect classes from the PVELAD dataset at threshold 0.25).
-              These metrics reflect real-world generalization on unseen cells (mAP@50 = 69.75%), distinguished from the internal training/validation run (50 epochs, mAP@50 = 91.87%).
-              In adherence to strict engineering integrity, this model is{" "}
-              <strong>not presented as universally accurate or 100% production-certified</strong>.
-            </p>
-          </div>
-        </div>
+            <div className="mt-4 space-y-3 text-xs">
+              <div className="rounded-xl border border-border bg-surface-subtle p-3 space-y-1">
+                <span className="font-semibold text-text flex items-center gap-1.5">
+                  <Sliders className="h-3.5 w-3.5 text-brand-text" />
+                  Baseline Cutoff: 0.25
+                </span>
+                <p className="text-text-3 leading-relaxed">
+                  Calibrated to reject optical noise from multi-busbar solder joints while capturing significant cracks.
+                </p>
+              </div>
 
-        {/* Historical Evaluation Key Metrics Cards */}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <div className="rounded-xl border border-amber-200/80 bg-white p-4">
-            <p className="text-[11px] font-medium text-slate-500">mAP@50</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.mAP50 * 100).toFixed(2)}%
-            </p>
-            <p className="mt-0.5 text-[10px] text-slate-400">Mean Average Precision</p>
-          </div>
-
-          <div className="rounded-xl border border-amber-200/80 bg-white p-4">
-            <p className="text-[11px] font-medium text-slate-500">mAP@50–95</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.mAP50_95 * 100).toFixed(2)}%
-            </p>
-            <p className="mt-0.5 text-[10px] text-slate-400">COCO primary metric</p>
+              <div className="rounded-xl border border-border bg-surface-subtle p-3 space-y-1">
+                <span className="font-semibold text-text flex items-center gap-1.5">
+                  <Database className="h-3.5 w-3.5 text-text-3" />
+                  Factory Persistence
+                </span>
+                <p className="text-text-3 leading-relaxed">
+                  Completed inference bounding boxes, execution latency, and source file metadata are permanently committed.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="rounded-xl border border-amber-200/80 bg-white p-4">
-            <p className="text-[11px] font-medium text-slate-500">Precision (0.25)</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.precision * 100).toFixed(2)}%
-            </p>
-            <p className="mt-0.5 text-[10px] text-slate-400">1,379 True Positives</p>
-          </div>
-
-          <div className="rounded-xl border border-amber-200/80 bg-white p-4">
-            <p className="text-[11px] font-medium text-slate-500">Recall (0.25)</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.recall * 100).toFixed(2)}%
-            </p>
-            <p className="mt-0.5 text-[10px] text-slate-400">512 False Negatives</p>
-          </div>
-
-          <div className="rounded-xl border border-amber-200/80 bg-white p-4">
-            <p className="text-[11px] font-medium text-slate-500">Overall F1 Score</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.f1 * 100).toFixed(2)}%
-            </p>
-            <p className="mt-0.5 text-[10px] text-slate-400">Harmonic mean P & R</p>
-          </div>
-
-          <div className="rounded-xl border border-amber-200/80 bg-white p-4">
-            <p className="text-[11px] font-medium text-slate-500">Evaluation Sample</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {HISTORICAL_MODEL_EVALUATION.evaluationSubsetImages}
-            </p>
-            <p className="mt-0.5 text-[10px] text-slate-400">Held-out test images</p>
-          </div>
+          <Link
+            href="/inspection"
+            className="inline-flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-xs font-semibold text-text hover:bg-surface-subtle transition-colors shadow-xs"
+          >
+            <span>Launch M1 Defect Detection</span>
+            <ExternalLink className="h-3.5 w-3.5 text-brand-text" />
+          </Link>
         </div>
       </div>
 
-      {/* Threshold Comparison: Standard (0.25) vs High-Sensitivity (0.10) */}
-      <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#FFF3C4] text-[#0B0909]">
-              <Scale className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">
-                Operating Threshold Ladder Comparison
-              </h3>
-              <p className="text-xs text-slate-400">
-                Trade-off analysis between standard production threshold (0.25) and high sensitivity (0.10)
-              </p>
-            </div>
+      {/* Held-out Benchmark KPI Strip */}
+      <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-3">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+              Held-Out Generalization Evaluation (PVELAD / 792 Images)
+            </span>
+            <h3 className="text-base font-bold text-text mt-0.5">
+              Independent Model 1 Benchmark Metrics
+            </h3>
           </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 text-[10px] uppercase tracking-[0.16em] text-slate-400 bg-slate-50/50">
-                <th className="px-4 py-3 font-semibold">Operating Mode</th>
-                <th className="py-3 font-semibold">Threshold</th>
-                <th className="py-3 font-semibold">True Positives</th>
-                <th className="py-3 font-semibold">False Positives</th>
-                <th className="py-3 font-semibold">False Negatives</th>
-                <th className="py-3 font-semibold">Precision</th>
-                <th className="py-3 font-semibold">Recall</th>
-                <th className="py-3 font-semibold">F1 Score</th>
-                <th className="py-3 pr-4 font-semibold">Operational Application</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              <tr className="bg-emerald-50/30">
-                <td className="px-4 py-3.5 font-semibold text-emerald-800">
-                  Standard Production (Default)
-                </td>
-                <td className="py-3.5 font-mono font-bold text-slate-900">0.25</td>
-                <td className="py-3.5 font-mono text-emerald-700">1,379</td>
-                <td className="py-3.5 font-mono text-amber-700">515</td>
-                <td className="py-3.5 font-mono text-rose-700">512</td>
-                <td className="py-3.5 font-mono font-semibold">72.81%</td>
-                <td className="py-3.5 font-mono font-semibold">72.92%</td>
-                <td className="py-3.5 font-mono font-bold text-emerald-800">72.87%</td>
-                <td className="py-3.5 pr-4 text-xs text-slate-600">
-                  Balanced quality gate; prevents false alarms from busbars.
-                </td>
-              </tr>
-              <tr className="bg-amber-50/30">
-                <td className="px-4 py-3.5 font-semibold text-amber-800">
-                  High Sensitivity Mode
-                </td>
-                <td className="py-3.5 font-mono font-bold text-slate-900">0.10</td>
-                <td className="py-3.5 font-mono text-emerald-700">1,554 (+175)</td>
-                <td className="py-3.5 font-mono text-rose-700">1,072 (+108%)</td>
-                <td className="py-3.5 font-mono text-emerald-700">337 (-175)</td>
-                <td className="py-3.5 font-mono font-semibold">59.18%</td>
-                <td className="py-3.5 font-mono font-semibold text-emerald-700">82.18%</td>
-                <td className="py-3.5 font-mono font-bold text-slate-700">68.81%</td>
-                <td className="py-3.5 pr-4 text-xs text-slate-600">
-                  Secondary review; catches faint cracks but requires human inspection.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Nine Supported Defect Classes */}
-      <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#FFF3C4] text-[#F2B941]">
-              <Layers className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">
-                Supported Defect Taxonomy (All 9 Classes)
-              </h3>
-              <p className="text-xs text-slate-400">
-                Full class breakdown with historical benchmark metrics (tested on 792 held-out images at threshold 0.25)
-              </p>
-            </div>
-          </div>
-
-          <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs font-semibold text-slate-700">
-            9 Classes Defined
+          <span className="rounded-full bg-surface-subtle border border-border px-2.5 py-0.5 font-mono text-xs text-text-2">
+            Threshold: 0.25
           </span>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 block">mAP@50</span>
+            <span className="font-mono text-xl font-bold text-text tabular-nums mt-0.5 block">
+              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.mAP50 * 100).toFixed(2)}%
+            </span>
+            <span className="text-xs text-text-3">Mean Average Precision</span>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 block">mAP@50-95</span>
+            <span className="font-mono text-xl font-bold text-text tabular-nums mt-0.5 block">
+              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.mAP50_95 * 100).toFixed(2)}%
+            </span>
+            <span className="text-xs text-text-3">COCO standard metric</span>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 block">Precision (0.25)</span>
+            <span className="font-mono text-xl font-bold text-text tabular-nums mt-0.5 block">
+              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.precision * 100).toFixed(2)}%
+            </span>
+            <span className="text-xs text-text-3">1,379 True Positives</span>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 block">Recall (0.25)</span>
+            <span className="font-mono text-xl font-bold text-text tabular-nums mt-0.5 block">
+              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.recall * 100).toFixed(2)}%
+            </span>
+            <span className="text-xs text-text-3">512 False Negatives</span>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-subtle p-3.5">
+            <span className="text-xs text-text-3 block">Overall F1</span>
+            <span className="font-mono text-xl font-bold text-text tabular-nums mt-0.5 block">
+              {(HISTORICAL_MODEL_EVALUATION.metricsAt025.f1 * 100).toFixed(2)}%
+            </span>
+            <span className="text-xs text-text-3">Harmonic mean P & R</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Nine Defect Classes Breakdown */}
+      <section className="rounded-2xl border border-border bg-surface p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-border pb-3">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+              Taxonomy & Class Verification
+            </span>
+            <h3 className="text-base font-bold text-text">Supported Defect Classes (9 Classes)</h3>
+          </div>
+          <span className="rounded-full bg-surface-subtle border border-border px-2.5 py-0.5 font-mono text-xs text-text-2">
+            PVELAD Standard
+          </span>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {HISTORICAL_MODEL_EVALUATION.classMetrics.map(item => {
             const meta = getDefectMeta(item.key);
             return (
               <div
                 key={item.key}
-                className="rounded-xl border border-slate-200/70 bg-[#fdfdfd] p-4 transition-all hover:border-slate-300 hover:shadow-sm"
+                className="rounded-xl border border-border bg-surface-subtle p-4 space-y-2.5 hover:border-brand/40 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -362,282 +265,116 @@ export default function ModelPerformance() {
                       style={{ backgroundColor: meta.color }}
                     />
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900">{meta.label}</h4>
-                      <p className="font-mono text-[10px] text-slate-400">Class ID: {item.classId}</p>
+                      <h4 className="text-xs font-semibold text-text">{meta.label}</h4>
+                      <p className="font-mono text-xs text-text-3">ID: {item.classId}</p>
                     </div>
                   </div>
                   <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                    className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${
                       meta.severity === "critical"
-                        ? "bg-rose-100 text-rose-700"
+                        ? "bg-danger-tint text-danger border border-danger/20"
                         : meta.severity === "high"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-slate-100 text-slate-600"
+                        ? "bg-warning-tint text-brand-text border border-warning/20"
+                        : "bg-surface text-text-2 border border-border"
                     }`}
                   >
                     {meta.severity}
                   </span>
                 </div>
 
-                <p className="mt-2.5 text-xs leading-relaxed text-slate-500 min-h-[38px]">
+                <p className="text-xs text-text-3 leading-relaxed min-h-[36px]">
                   {meta.description}
                 </p>
 
-                {/* Historical Benchmark Metrics for this class */}
-                <div className="mt-4 border-t border-slate-100 pt-3">
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2">
-                    <span>Ground Truth in 792 Set:</span>
-                    <span className="font-mono font-semibold text-slate-800">
-                      {item.groundTruthCount}
+                <div className="grid grid-cols-3 gap-2 rounded-lg bg-surface p-2 text-center border border-border/60 text-xs">
+                  <div>
+                    <span className="text-xs text-text-3 block">Precision</span>
+                    <span className="font-mono font-semibold text-text">
+                      {(item.precision * 100).toFixed(1)}%
                     </span>
                   </div>
-
-                  <div className="grid grid-cols-3 gap-2 rounded-lg bg-slate-50 p-2 text-center">
-                    <div>
-                      <p className="text-[10px] text-slate-400 font-medium">Precision</p>
-                      <p className="mt-0.5 font-mono text-xs font-semibold text-slate-800">
-                        {(item.precision * 100).toFixed(1)}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-slate-400 font-medium">Recall</p>
-                      <p className="mt-0.5 font-mono text-xs font-semibold text-slate-800">
-                        {(item.recall * 100).toFixed(1)}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-slate-400 font-medium">F1 Score</p>
-                      <p className="mt-0.5 font-mono text-xs font-bold text-slate-900">
-                        {(item.f1 * 100).toFixed(1)}%
-                      </p>
-                    </div>
+                  <div>
+                    <span className="text-xs text-text-3 block">Recall</span>
+                    <span className="font-mono font-semibold text-text">
+                      {(item.recall * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xs text-text-3 block">F1 Score</span>
+                    <span className="font-mono font-semibold text-text">
+                      {(item.f1 * 100).toFixed(1)}%
+                    </span>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Model 2 ELPV Screening Benchmark Registry Section */}
-      <div className="mt-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-[#F2B941]/20 px-2 py-0.5 text-xs font-semibold text-[#8b6508] border border-[#F2B941]/40">
-                Model 2
-              </span>
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-mono text-slate-700">
-                solarvision_m2_elpv_binary_v1
-              </span>
-              <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-xs font-medium">
-                Checkpoint Active
-              </span>
-            </div>
-            <h3 className="mt-2 text-xl font-bold text-slate-900">
-              Model 2 — Full-Cell Grayscale EL Defect Screening
-            </h3>
-            <p className="text-xs text-slate-600 mt-0.5">
-              EfficientNet-B0 transfer learning on ELPV benchmark (CC BY-NC-SA 4.0). Evaluates individual cropped cells.
-            </p>
+      {/* Models 2, 3, 4 Governance Overviews */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Model 2 ELPV Card */}
+        <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between border-b border-border pb-2.5">
+            <span className="font-mono text-xs font-bold text-text">Model 2 · ELPV</span>
+            <StatusBadge tone="success">Active</StatusBadge>
           </div>
-          <Link href="/cell-screening">
-            <Button className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs">
-              Open Cell Screening UI
-            </Button>
-          </Link>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Benchmark Accuracy</span>
-            <span className="text-xl font-bold text-slate-900 mt-1 block">69.81%</span>
-            <span className="text-[10px] text-slate-500">215 / 308 correct</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Defective Recall</span>
-            <span className="text-xl font-bold text-slate-900 mt-1 block">68.67%</span>
-            <span className="text-[10px] text-slate-500">57 / 83 defective identified</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Defective Precision</span>
-            <span className="text-xl font-bold text-slate-900 mt-1 block">45.97%</span>
-            <span className="text-[10px] text-slate-500">57 / 124 flagged</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Decision Threshold</span>
-            <span className="text-xl font-bold text-slate-900 mt-1 block">0.55</span>
-            <span className="text-[10px] text-slate-500">Validation-selected</span>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 space-y-1">
-          <p className="font-semibold text-amber-950 flex items-center gap-1.5">
-            <ShieldAlert className="h-4 w-4 text-amber-700" />
-            Mandatory Operator Review Policy
+          <h4 className="text-xs font-bold text-text">EfficientNet-B0 Cell Screening</h4>
+          <p className="text-xs text-text-3 leading-relaxed">
+            Binary defectiveness screening trained on 2,624 images. Accuracy 69.81%, Recall 68.67% at threshold 0.55.
           </p>
-          <p className="leading-relaxed">
-            Every Model 2 output is designated <code>screening_only</code> with review status <code>pending</code>.
-            Zero automated PASS/REJECT decisions are permitted. True module independence is not established (44 modules, no source IDs).
-          </p>
-        </div>
-      </div>
-
-      {/* Model 3 Sandia Solar Electrical Performance Prediction Registry Section */}
-      <div className="mt-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800 border border-sky-300">
-                Model 3
-              </span>
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-mono text-slate-700">
-                sandia_solar_performance_v1
-              </span>
-              <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-xs font-medium">
-                Pipeline Verified
-              </span>
-            </div>
-            <h3 className="mt-2 text-xl font-bold text-slate-900">
-              Model 3 — Sandia Solar Electrical Performance Prediction
-            </h3>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Trained scikit-learn regression pipeline estimating reference-normalized PV power retention from environmental and electrical parameters.
-            </p>
-          </div>
-          <Link href="/predictive-quality">
-            <Button className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs">
-              Open Sandia Performance UI
-            </Button>
-          </Link>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Target Metric</span>
-            <span className="text-sm font-bold text-slate-900 mt-1 block font-mono">power_retention_pct</span>
-            <span className="text-[10px] text-slate-500">Normalized percentage</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Test MAE</span>
-            <span className="text-xl font-bold text-emerald-700 mt-1 block">0.793 pp</span>
-            <span className="text-[10px] text-slate-500">Percentage points</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Test RMSE</span>
-            <span className="text-xl font-bold text-slate-900 mt-1 block">1.107 pp</span>
-            <span className="text-[10px] text-slate-500">Residual error</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Test R² Score</span>
-            <span className="text-xl font-bold text-sky-800 mt-1 block">0.581</span>
-            <span className="text-[10px] text-slate-500">Variance explained</span>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50/60 p-3.5 text-xs text-sky-950 space-y-1">
-          <p className="font-semibold flex items-center gap-1.5 text-sky-900">
-            <Info className="h-4 w-4 text-sky-600" />
-            Research Domain &amp; Dual-Domain Governance
-          </p>
-          <p className="leading-relaxed">
-            Sandia predictions are derived from real outdoor field-monitored crystalline silicon research arrays. UCI SECOM semiconductor manufacturing wafer benchmark (590 features, ROC-AUC 0.821) is preserved as a secondary quality benchmark within the Predictive Quality center.
-          </p>
-        </div>
-      </div>
-
-      {/* Model 4 AI4I Equipment Predictive Maintenance Registry Section */}
-      <div className="mt-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800 border border-purple-300">
-                Model 4
-              </span>
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-mono text-slate-700">
-                ai4i-2020-benchmark-v1
-              </span>
-              <span className="rounded-md bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 text-xs font-medium">
-                Benchmark Evaluated
-              </span>
-            </div>
-            <h3 className="mt-2 text-xl font-bold text-slate-900">
-              Model 4 — AI-Based Equipment Predictive Maintenance
-            </h3>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Evaluated on the UCI AI4I 2020 predictive maintenance benchmark. Estimates machine failure risk across 5 distinct mechanical and thermal modes.
-            </p>
-          </div>
-          <Link href="/predictive-maintenance">
-            <Button className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs">
-              Open Maintenance Center UI
-            </Button>
-          </Link>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Benchmark Accuracy</span>
-            <span className="text-xl font-bold text-purple-700 mt-1 block">96.67%</span>
-            <span className="text-[10px] text-slate-500">Test split classification</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">ROC-AUC</span>
-            <span className="text-xl font-bold text-purple-700 mt-1 block">0.9307</span>
-            <span className="text-[10px] text-slate-500">Discrimination index</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Decision Threshold</span>
-            <span className="text-xl font-bold text-slate-900 mt-1 block">0.1981</span>
-            <span className="text-[10px] text-slate-500">Optimal F1 cutoff</span>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Failure Modes</span>
-            <span className="text-xs font-bold text-slate-900 mt-1.5 block font-mono">TWF, HDF, PWF, OSF, RNF</span>
-            <span className="text-[10px] text-slate-500">5 distinct mechanisms</span>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-xl border border-purple-200 bg-purple-50/60 p-3.5 text-xs text-purple-950 space-y-1">
-          <p className="font-semibold flex items-center gap-1.5 text-purple-900">
-            <ShieldAlert className="h-4 w-4 text-purple-700" />
-            Empirical Boundary Invariant
-          </p>
-          <p className="leading-relaxed">
-            Evaluated on synthetic physical milling telemetry (air/process temps, torque, rotational speed, tool wear). Not claimed as validated on solar cell factory laminators or stringer machines until in-situ solar factory telemetry is integrated.
-          </p>
-        </div>
-      </div>
-
-      {/* Operational Limitations & Known Model Blind Spots */}
-      <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50/50 p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-rose-100 text-rose-700">
-            <ShieldAlert className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-rose-950">
-              Known Blind Spots & Operational Safeguards
-            </h3>
-            <p className="text-xs text-rose-800/80">
-              Important boundaries identified during held-out evaluation that operators must observe
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {HISTORICAL_MODEL_EVALUATION.knownLimitations.map(item => (
-            <div
-              key={item.title}
-              className="rounded-xl border border-rose-200/70 bg-white p-4 text-xs"
+          <div className="pt-2 border-t border-border/60">
+            <Link
+              href="/cell-screening"
+              className="text-xs font-semibold text-brand-text hover:underline inline-flex items-center gap-1"
             >
-              <p className="font-semibold text-rose-900">{item.title}</p>
-              <p className="mt-1 text-slate-600 leading-relaxed">{item.impact}</p>
-              <p className="mt-2 text-rose-800 font-medium border-t border-rose-100 pt-2">
-                Action: {item.recommendation}
-              </p>
-            </div>
-          ))}
+              <span>Open Cell Screening</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Model 3 Sandia Card */}
+        <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between border-b border-border pb-2.5">
+            <span className="font-mono text-xs font-bold text-text">Model 3 · Sandia</span>
+            <StatusBadge tone="success">Verified</StatusBadge>
+          </div>
+          <h4 className="text-xs font-bold text-text">Solar Electrical Performance</h4>
+          <p className="text-xs text-text-3 leading-relaxed">
+            scikit-learn regression pipeline predicting power retention. MAE 0.793 pp, RMSE 1.107 pp, R² 0.581.
+          </p>
+          <div className="pt-2 border-t border-border/60">
+            <Link
+              href="/predictive-quality"
+              className="text-xs font-semibold text-brand-text hover:underline inline-flex items-center gap-1"
+            >
+              <span>Open Sandia Forecaster</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Model 4 AI4I Card */}
+        <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between border-b border-border pb-2.5">
+            <span className="font-mono text-xs font-bold text-text">Model 4 · AI4I</span>
+            <StatusBadge tone="neutral">Evaluated</StatusBadge>
+          </div>
+          <h4 className="text-xs font-bold text-text">Predictive Equipment Maintenance</h4>
+          <p className="text-xs text-text-3 leading-relaxed">
+            Gradient boosted pipeline evaluated on AI4I benchmark. Accuracy 96.67%, ROC-AUC 0.931 across 5 failure modes.
+          </p>
+          <div className="pt-2 border-t border-border/60">
+            <Link
+              href="/predictive-maintenance"
+              className="text-xs font-semibold text-brand-text hover:underline inline-flex items-center gap-1"
+            >
+              <span>Open Maintenance Center</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

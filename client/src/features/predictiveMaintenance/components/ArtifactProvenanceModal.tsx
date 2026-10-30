@@ -61,7 +61,7 @@ export function ArtifactProvenanceModal({
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Dataset Provenance & Certification
               </span>
-              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
                 Audited
               </Badge>
             </div>
@@ -125,7 +125,7 @@ export function ArtifactProvenanceModal({
               size="sm"
               variant="outline"
               onClick={handleCopyCitation}
-              className="h-7 gap-1.5 text-[11px] rounded-lg"
+              className="h-7 gap-1.5 text-xs rounded-lg"
             >
               {copied ? (
                 <>
@@ -140,7 +140,7 @@ export function ArtifactProvenanceModal({
               )}
             </Button>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-100/80 p-3 font-mono text-[11px] leading-relaxed text-slate-800">
+          <div className="rounded-xl border border-slate-200 bg-slate-100/80 p-3 font-mono text-xs leading-relaxed text-slate-800">
             {meta.datasetCitation}
           </div>
         </div>

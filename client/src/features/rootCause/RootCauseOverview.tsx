@@ -213,13 +213,13 @@ export function RootCauseOverview({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-md border border-[#F2B941]/30 bg-[#FFF3C4] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#0B0909]">
+              <span className="rounded-md border border-primary/30 bg-surface-elevated px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground">
                 Industry 4.0 • Model 2
               </span>
               <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    isModelTrained ? "bg-[#087e6d]" : "bg-amber-500"
+                    isModelTrained ? "bg-success" : "bg-amber-500"
                   }`}
                 />
                 {modelStatus?.status === "ready"
@@ -229,7 +229,7 @@ export function RootCauseOverview({
                   : "Model 2 Not Trained"}
               </span>
               <span
-                className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                className={`rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider border ${
                   readinessData?.datasetStatus === "DATASET_READY"
                     ? "bg-emerald-100 text-emerald-800 border-emerald-200"
                     : readinessData?.datasetStatus === "DATASET_INCOMPLETE"
@@ -270,7 +270,7 @@ export function RootCauseOverview({
               <Button
                 onClick={() => runDiagnosis()}
                 disabled={isLoading || !selectedInspection}
-                className="bg-[#F2B941] text-[#0B0909] font-bold text-xs hover:bg-[#e0a830] shadow-md transition-all disabled:opacity-60"
+                className="bg-primary text-primary-foreground font-bold text-xs hover:opacity-90 shadow-md transition-all disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -294,11 +294,11 @@ export function RootCauseOverview({
             onClick={() => setActiveTab("diagnosis")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap border-b-2 ${
               activeTab === "diagnosis"
-                ? "border-[#F2B941] bg-white text-slate-900 shadow-sm"
+                ? "border-primary bg-white text-slate-900 shadow-sm"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             }`}
           >
-            <Sparkles className="h-4 w-4 text-[#F2B941]" />
+            <Sparkles className="h-4 w-4 text-primary" />
             <span>Etiology Diagnosis</span>
           </button>
 
@@ -306,11 +306,11 @@ export function RootCauseOverview({
             onClick={() => setActiveTab("import")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap border-b-2 ${
               activeTab === "import"
-                ? "border-[#087e6d] bg-white text-slate-900 shadow-sm"
+                ? "border-success bg-white text-slate-900 shadow-sm"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             }`}
           >
-            <UploadCloud className="h-4 w-4 text-[#087e6d]" />
+            <UploadCloud className="h-4 w-4 text-success" />
             <span>CSV Data Import</span>
           </button>
 
@@ -318,11 +318,11 @@ export function RootCauseOverview({
             onClick={() => setActiveTab("link")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap border-b-2 ${
               activeTab === "link"
-                ? "border-[#087e6d] bg-white text-slate-900 shadow-sm"
+                ? "border-success bg-white text-slate-900 shadow-sm"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             }`}
           >
-            <LinkIcon className="h-4 w-4 text-[#087e6d]" />
+            <LinkIcon className="h-4 w-4 text-success" />
             <span>Inspection-to-Batch Linking</span>
           </button>
 
@@ -330,11 +330,11 @@ export function RootCauseOverview({
             onClick={() => setActiveTab("review")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap border-b-2 ${
               activeTab === "review"
-                ? "border-[#087e6d] bg-white text-slate-900 shadow-sm"
+                ? "border-success bg-white text-slate-900 shadow-sm"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             }`}
           >
-            <Microscope className="h-4 w-4 text-[#087e6d]" />
+            <Microscope className="h-4 w-4 text-success" />
             <span>Expert Ground-Truth Review</span>
           </button>
 
@@ -355,7 +355,7 @@ export function RootCauseOverview({
             )}
             <span>Dataset Readiness</span>
             <span
-              className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
+              className={`rounded-full px-1.5 py-0.2 text-xs font-bold ${
                 readinessData?.datasetStatus === "DATASET_READY"
                   ? "bg-emerald-100 text-emerald-700"
                   : readinessData?.datasetStatus === "DATASET_INCOMPLETE"
@@ -406,11 +406,11 @@ export function RootCauseOverview({
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                      <HistoryIcon className="h-4 w-4 text-[#F2B941]" />
+                      <HistoryIcon className="h-4 w-4 text-primary" />
                       Select Stored Inspection
                     </span>
                     {inspectionHistory && (
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-xs text-slate-400">
                         {inspectionHistory.length} record{inspectionHistory.length === 1 ? "" : "s"} found
                       </span>
                     )}
@@ -421,7 +421,7 @@ export function RootCauseOverview({
                     <select
                       value={activeInspectionId}
                       onChange={(e) => handleSelectInspection(e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-8 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#F2B941]"
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-8 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       <option value="">— Select an inspection to analyze —</option>
                       {isHistoryLoading && <option disabled>Loading database records...</option>}
@@ -444,13 +444,13 @@ export function RootCauseOverview({
                       placeholder="Or enter Inspection UUID..."
                       value={inputInspectionId}
                       onChange={(e) => setInputInspectionId(e.target.value)}
-                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#F2B941]"
+                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <Button
                       size="sm"
                       onClick={handleManualInspectionLoad}
                       disabled={!inputInspectionId.trim()}
-                      className="bg-[#0B0909] text-white text-xs font-semibold hover:bg-slate-800"
+                      className="bg-primary text-white text-xs font-semibold hover:bg-slate-800"
                     >
                       Load
                     </Button>

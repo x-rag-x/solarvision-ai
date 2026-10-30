@@ -49,7 +49,7 @@ export function ModelEvaluationSection({
             <span className="text-xs font-semibold uppercase tracking-wider text-[#F2B941]">
               Regression Benchmarks & Accuracy
             </span>
-            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-[10px] font-mono">
+            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
               Held-Out Test Partition
             </Badge>
           </div>
@@ -63,11 +63,11 @@ export function ModelEvaluationSection({
 
         <div className="flex items-center gap-2">
           {hasMetrics ? (
-            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] font-mono">
+            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs font-mono">
               TRAINER_CERTIFIED_METRICS
             </Badge>
           ) : (
-            <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] font-mono">
+            <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs font-mono">
               AWAITING_TRAINER_METRICS
             </Badge>
           )}
@@ -85,7 +85,7 @@ export function ModelEvaluationSection({
           <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
             In accordance with SolarVision AI engineering integrity rules, MAE, RMSE, and R² metrics are rendered exclusively from validated held-out test evaluations conducted by the model training lead.
           </p>
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-500 font-mono">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500 font-mono">
             <span>Expected: Mean Absolute Error (MAE)</span>
             <span>•</span>
             <span>Root Mean Squared Error (RMSE)</span>
@@ -97,46 +97,46 @@ export function ModelEvaluationSection({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* MAE */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               Mean Absolute Error (MAE)
             </span>
             <p className="mt-2 text-2xl font-bold font-mono text-slate-900">
               {metrics?.mae !== undefined ? metrics.mae.toFixed(4) : "—"}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1">Average absolute prediction deviation</p>
+            <p className="text-xs text-slate-400 mt-1">Average absolute prediction deviation</p>
           </div>
 
           {/* RMSE */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               Root Mean Squared Error (RMSE)
             </span>
             <p className="mt-2 text-2xl font-bold font-mono text-slate-900">
               {metrics?.rmse !== undefined ? metrics.rmse.toFixed(4) : "—"}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1">Sensitivity to large telemetry outliers</p>
+            <p className="text-xs text-slate-400 mt-1">Sensitivity to large telemetry outliers</p>
           </div>
 
           {/* R² Score */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               R² Determination
             </span>
             <p className="mt-2 text-2xl font-bold font-mono text-slate-900">
               {metrics?.r2 !== undefined ? metrics.r2.toFixed(4) : "—"}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1">Proportion of variance explained</p>
+            <p className="text-xs text-slate-400 mt-1">Proportion of variance explained</p>
           </div>
 
           {/* Test Samples */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
               Held-Out Test N
             </span>
             <p className="mt-2 text-2xl font-bold font-mono text-slate-900">
               {metrics?.heldOutTestSamples !== undefined ? metrics.heldOutTestSamples : "—"}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1">Independent evaluation observations</p>
+            <p className="text-xs text-slate-400 mt-1">Independent evaluation observations</p>
           </div>
         </div>
       )}

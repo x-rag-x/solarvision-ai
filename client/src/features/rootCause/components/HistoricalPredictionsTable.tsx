@@ -80,7 +80,7 @@ export function HistoricalPredictionsTable({
       {/* Table Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Audit Trail & Retrospective
           </span>
           <h3 className="text-sm font-bold text-slate-900">
@@ -134,7 +134,7 @@ export function HistoricalPredictionsTable({
         <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center">
           <History className="mx-auto h-8 w-8 text-slate-300 mb-2" />
           <p className="text-xs font-semibold text-slate-700">No Historical Records Found</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Past root cause predictions will appear here once Model 2 performs real inferences.
           </p>
         </div>
@@ -142,7 +142,7 @@ export function HistoricalPredictionsTable({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/70 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-slate-200 bg-slate-50/70 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 <th className="py-2.5 px-3">Date / Time</th>
                 <th className="py-2.5 px-3">Inspection ID</th>
                 <th className="py-2.5 px-3">Defect Class</th>
@@ -161,7 +161,7 @@ export function HistoricalPredictionsTable({
                 return (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                     {/* Timestamp */}
-                    <td className="py-3 px-3 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                    <td className="py-3 px-3 text-slate-500 font-mono text-xs whitespace-nowrap">
                       {new Date(item.createdAt).toLocaleString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -171,14 +171,14 @@ export function HistoricalPredictionsTable({
                     </td>
 
                     {/* Inspection ID */}
-                    <td className="py-3 px-3 font-mono text-[11px] text-slate-800 font-semibold max-w-[120px] truncate">
+                    <td className="py-3 px-3 font-mono text-xs text-slate-800 font-semibold max-w-[120px] truncate">
                       {item.inspectionId}
                     </td>
 
                     {/* Defect Class */}
                     <td className="py-3 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold ${meta.badgeBg} ${meta.badgeBorder} ${meta.badgeText}`}
+                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-bold ${meta.badgeBg} ${meta.badgeBorder} ${meta.badgeText}`}
                       >
                         <span
                           className="h-1.5 w-1.5 rounded-full"
@@ -189,9 +189,9 @@ export function HistoricalPredictionsTable({
                     </td>
 
                     {/* MES Context */}
-                    <td className="py-3 px-3 text-[11px] text-slate-600 whitespace-nowrap">
+                    <td className="py-3 px-3 text-xs text-slate-600 whitespace-nowrap">
                       <div>Batch: {item.batchNumber || "—"}</div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-xs text-slate-400">
                         Mach: {item.machineCode || "—"}
                       </div>
                     </td>
@@ -209,9 +209,9 @@ export function HistoricalPredictionsTable({
                           <div
                             className={`h-full rounded-full ${
                               confPct >= 70
-                                ? "bg-[#087e6d]"
+                                ? "bg-success"
                                 : confPct >= 40
-                                ? "bg-[#F2B941]"
+                                ? "bg-primary"
                                 : "bg-slate-400"
                             }`}
                             style={{ width: `${confPct}%` }}
@@ -223,7 +223,7 @@ export function HistoricalPredictionsTable({
                     {/* Verification Status */}
                     <td className="py-3 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${
                           item.status === "verified"
                             ? "bg-emerald-100 text-emerald-800"
                             : item.status === "dismissed"

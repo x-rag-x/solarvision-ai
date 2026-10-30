@@ -76,7 +76,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
               Operating Condition Assessment Verdict
             </span>
-            <Badge className="bg-[#0B0909] text-white text-[10px] font-mono">
+            <Badge className="bg-[#0B0909] text-white text-xs font-mono">
               Model 4 ({prediction.modelVersion})
             </Badge>
           </div>
@@ -139,7 +139,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
           {/* Calibrated Probabilities */}
           <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-slate-100 md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
             <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5">
-              <span className="text-[11px] text-slate-500 font-medium">Failure Probability</span>
+              <span className="text-xs text-slate-500 font-medium">Failure Probability</span>
               <p
                 className={`text-xl font-bold font-mono mt-0.5 ${
                   isFailure ? "text-rose-700" : isWarning ? "text-amber-700" : "text-slate-800"
@@ -149,31 +149,31 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                   ? `${(prediction.failureProbability * 100).toFixed(1)}%`
                   : "N/A"}
               </p>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-xs text-slate-400">
                 P(Fail | Condition)
               </span>
             </div>
 
             <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5">
-              <span className="text-[11px] text-slate-500 font-medium">Conforming Probability</span>
+              <span className="text-xs text-slate-500 font-medium">Conforming Probability</span>
               <p className="text-xl font-bold font-mono text-emerald-700 mt-0.5">
                 {prediction.healthyProbability !== null
                   ? `${(prediction.healthyProbability * 100).toFixed(1)}%`
                   : "N/A"}
               </p>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-xs text-slate-400">
                 P(Healthy | Condition)
               </span>
             </div>
 
             <div className="col-span-2 sm:col-span-1 rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5">
-              <span className="text-[11px] text-slate-500 font-medium">95% Confidence Interval</span>
+              <span className="text-xs text-slate-500 font-medium">95% Confidence Interval</span>
               <p className="text-sm font-bold font-mono text-slate-800 mt-1">
                 {prediction.confidenceInterval
                   ? `[${(prediction.confidenceInterval.low * 100).toFixed(1)}%, ${(prediction.confidenceInterval.high * 100).toFixed(1)}%]`
                   : "N/A"}
               </p>
-              <span className="text-[10px] text-slate-400">Calibrated Platt bounds</span>
+              <span className="text-xs text-slate-400">Calibrated Platt bounds</span>
             </div>
           </div>
         </div>
@@ -190,7 +190,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-950 font-mono">
                     Remaining Useful Life (RUL)
                   </span>
-                  <Badge className="bg-amber-200 text-amber-950 border-amber-300 text-[10px] font-mono">
+                  <Badge className="bg-amber-200 text-amber-950 border-amber-300 text-xs font-mono">
                     N/A (Operating Condition Classifier Only)
                   </Badge>
                 </div>
@@ -210,7 +210,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">
               Failure Mode Decomposition (Deterministic Physical Rules):
             </p>
-            <Badge className="bg-slate-200 text-slate-800 text-[10px] font-mono self-start sm:self-auto">
+            <Badge className="bg-slate-200 text-slate-800 text-xs font-mono self-start sm:self-auto">
               Rule-Based Engineering Criteria • Not Multi-Class Model
             </Badge>
           </div>
@@ -229,7 +229,7 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold">{mode.code}</span>
                     <Badge
-                      className={`text-[9px] font-mono ${
+                      className={`text-xs font-mono ${
                         mode.thresholdExceeded
                           ? "bg-rose-200 text-rose-900 border-rose-300"
                           : "bg-slate-100 text-slate-600 border-slate-200"
@@ -239,10 +239,10 @@ export function FailureResultCard({ prediction }: FailureResultCardProps) {
                     </Badge>
                   </div>
                   <p className="mt-1 text-xs font-bold truncate">{mode.name}</p>
-                  <p className="mt-1 text-[11px] leading-relaxed line-clamp-2 text-slate-500">
+                  <p className="mt-1 text-xs leading-relaxed line-clamp-2 text-slate-500">
                     {mode.description}
                   </p>
-                  <p className="mt-2 text-[10px] font-mono text-slate-400 border-t border-slate-100 pt-1.5">
+                  <p className="mt-2 text-xs font-mono text-slate-400 border-t border-slate-100 pt-1.5">
                     {mode.engineeringFormula}
                   </p>
                 </div>

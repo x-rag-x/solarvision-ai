@@ -64,7 +64,7 @@ export function ManufacturingContextSection({
       {/* Header and Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Process Telemetry & MES Context
           </span>
           <h3 className="text-sm font-bold text-slate-900">
@@ -75,7 +75,7 @@ export function ManufacturingContextSection({
         <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs">
           <button
             onClick={() => setActiveTab("all")}
-            className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               activeTab === "all"
                 ? "bg-white text-slate-900 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
@@ -85,7 +85,7 @@ export function ManufacturingContextSection({
           </button>
           <button
             onClick={() => setActiveTab("sensors")}
-            className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               activeTab === "sensors"
                 ? "bg-white text-slate-900 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
@@ -95,7 +95,7 @@ export function ManufacturingContextSection({
           </button>
           <button
             onClick={() => setActiveTab("machine")}
-            className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               activeTab === "machine"
                 ? "bg-white text-slate-900 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
@@ -105,7 +105,7 @@ export function ManufacturingContextSection({
           </button>
           <button
             onClick={() => setActiveTab("batch")}
-            className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               activeTab === "batch"
                 ? "bg-white text-slate-900 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
@@ -121,13 +121,13 @@ export function ManufacturingContextSection({
         <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-[#F2B941]" />
+              <Layers className="h-4 w-4 text-primary" />
               <span className="text-xs font-bold text-slate-800">
                 Batch: {batch.batchNumber}
               </span>
             </div>
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+              className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${
                 batch.status === "completed"
                   ? "bg-emerald-100 text-emerald-800"
                   : batch.status === "in_progress"
@@ -141,22 +141,22 @@ export function ManufacturingContextSection({
 
           <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Wafer Substrate</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Wafer Substrate</p>
               <p className="font-semibold text-slate-800">{batch.waferType}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Production Line</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Production Line</p>
               <p className="font-semibold text-slate-800">{batch.cellLine}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Yield Progress</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Yield Progress</p>
               <p className="font-semibold text-slate-800">
                 {batch.actualQuantity.toLocaleString()} / {batch.targetQuantity.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Ingot Lot</p>
-              <p className="font-semibold text-slate-800 font-mono text-[11px]">
+              <p className="text-xs uppercase font-semibold text-slate-400">Ingot Lot</p>
+              <p className="font-semibold text-slate-800 font-mono text-xs">
                 {batch.ingotBatch || "Standard Lot"}
               </p>
             </div>
@@ -175,7 +175,7 @@ export function ManufacturingContextSection({
               </span>
             </div>
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+              className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${
                 machine.status === "operational"
                   ? "bg-emerald-100 text-emerald-800"
                   : machine.status === "degraded"
@@ -189,15 +189,15 @@ export function ManufacturingContextSection({
 
           <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Line Location</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Line Location</p>
               <p className="font-semibold text-slate-800">{machine.location || machine.lineId}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Operating Hours</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Operating Hours</p>
               <p className="font-semibold text-slate-800">{machine.operatingHours} hrs</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Last Serviced</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Last Serviced</p>
               <p className="font-semibold text-slate-800">
                 {machine.lastMaintenanceAt
                   ? new Date(machine.lastMaintenanceAt).toLocaleDateString()
@@ -205,7 +205,7 @@ export function ManufacturingContextSection({
               </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-semibold text-slate-400">Service Due</p>
+              <p className="text-xs uppercase font-semibold text-slate-400">Service Due</p>
               <p className="font-semibold text-slate-800">
                 {machine.nextMaintenanceDue
                   ? new Date(machine.nextMaintenanceDue).toLocaleDateString()
@@ -227,7 +227,7 @@ export function ManufacturingContextSection({
               </span>
             </div>
             {anomalySensors.length > 0 && (
-              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
+              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-800">
                 {anomalySensors.length} Anomaly Flag{anomalySensors.length === 1 ? "" : "s"}
               </span>
             )}
@@ -256,7 +256,7 @@ export function ManufacturingContextSection({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                           {sensor.stage} • {sensor.sensorType}
                         </p>
                         <p className="text-xs font-bold text-slate-900 truncate">
@@ -265,12 +265,12 @@ export function ManufacturingContextSection({
                       </div>
 
                       {isOutOfRange ? (
-                        <span className="rounded-md border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 shrink-0 flex items-center gap-1">
+                        <span className="rounded-md border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-xs font-bold text-rose-800 shrink-0 flex items-center gap-1">
                           <AlertCircle className="h-3 w-3 text-rose-600" />
                           Deviation
                         </span>
                       ) : (
-                        <span className="rounded-md border border-emerald-300 bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 shrink-0 flex items-center gap-1">
+                        <span className="rounded-md border border-emerald-300 bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-800 shrink-0 flex items-center gap-1">
                           <CheckCircle className="h-3 w-3 text-emerald-600" />
                           Nominal
                         </span>
@@ -284,7 +284,7 @@ export function ManufacturingContextSection({
                         </span>
                         <span className="ml-1 text-xs text-slate-500">{sensor.unit}</span>
                       </div>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-xs text-slate-500">
                         Baseline: {sensor.baselineMin} – {sensor.baselineMax} {sensor.unit}
                       </span>
                     </div>

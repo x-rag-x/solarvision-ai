@@ -85,7 +85,7 @@ export function PredictionHistoryTable({
             <span className="text-xs font-semibold uppercase tracking-wider text-[#F2B941]">
               Audit Trail & Operational Records
             </span>
-            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-[10px] font-mono">
+            <Badge className="bg-slate-100 text-slate-800 border-slate-300 text-xs font-mono">
               {history.length} Inferences Logged
             </Badge>
           </div>
@@ -168,7 +168,7 @@ export function PredictionHistoryTable({
       ) : history.length > 0 ? (
         <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-[11px] font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-slate-50 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="px-4 py-3">Timestamp</th>
                 <th className="px-4 py-3">Module ID</th>
@@ -213,11 +213,11 @@ export function PredictionHistoryTable({
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {item.isMock ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px]">
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
                         MOCK
                       </Badge>
                     ) : (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">
+                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
                         PIPELINE
                       </Badge>
                     )}

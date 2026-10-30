@@ -40,7 +40,7 @@ export function DualDomainStatusBanner() {
                   <h3 className="text-sm font-bold text-slate-900">
                     Semiconductor Benchmark (UCI SECOM)
                   </h3>
-                  <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] uppercase font-semibold">
+                  <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs uppercase font-semibold">
                     Benchmark Only
                   </Badge>
                 </div>
@@ -49,7 +49,7 @@ export function DualDomainStatusBanner() {
                 </p>
               </div>
             </div>
-            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] font-mono">
+            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs font-mono">
               EVALUATED
             </Badge>
           </div>
@@ -77,7 +77,7 @@ export function DualDomainStatusBanner() {
                   <h3 className="text-sm font-bold text-slate-900">
                     Solar Manufacturing Quality Model
                   </h3>
-                  <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] uppercase font-semibold">
+                  <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs uppercase font-semibold">
                     Not Trained
                   </Badge>
                 </div>
@@ -86,7 +86,7 @@ export function DualDomainStatusBanner() {
                 </p>
               </div>
             </div>
-            <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] font-mono">
+            <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-mono">
               DATASET BLOCKED
             </Badge>
           </div>

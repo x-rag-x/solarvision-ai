@@ -44,13 +44,13 @@ export function ImageViewerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6">
-      <div className="relative flex flex-col h-[92vh] w-[95vw] max-w-6xl rounded-2xl bg-[#0B0909] border border-white/10 shadow-2xl overflow-hidden text-white">
+      <div className="relative flex flex-col h-[92vh] w-[95vw] max-w-6xl rounded-2xl bg-zinc-950 border border-white/10 shadow-2xl overflow-hidden text-white">
         {/* Header Toolbar */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-3.5 bg-black/40">
           <div className="flex items-center gap-3 min-w-0">
             <div>
               <h3 className="text-sm font-semibold truncate text-slate-100">{filename}</h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 {detectionsCount} defect{detectionsCount === 1 ? "" : "s"} identified · Zoom: {Math.round(zoom * 100)}%
               </p>
             </div>
@@ -63,7 +63,7 @@ export function ImageViewerModal({
                 onClick={() => setActiveTab("annotated")}
                 className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                   activeTab === "annotated"
-                    ? "bg-[#F2B941] text-[#0B0909]"
+                    ? "bg-primary text-primary-foreground"
                     : "text-slate-300 hover:text-white"
                 }`}
               >
@@ -73,7 +73,7 @@ export function ImageViewerModal({
                 onClick={() => setActiveTab("original")}
                 className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                   activeTab === "original"
-                    ? "bg-[#F2B941] text-[#0B0909]"
+                    ? "bg-primary text-primary-foreground"
                     : "text-slate-300 hover:text-white"
                 }`}
               >
@@ -119,7 +119,7 @@ export function ImageViewerModal({
               className="h-8 gap-1.5 text-xs border-white/20 bg-white/5 text-slate-200 hover:bg-white/15"
               title="Download image"
             >
-              <Download className="h-3.5 w-3.5 text-[#F2B941]" />
+              <Download className="h-3.5 w-3.5 text-primary" />
               Export
             </Button>
             <Button
@@ -135,7 +135,7 @@ export function ImageViewerModal({
         </div>
 
         {/* Image Canvas / Viewport */}
-        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-[#070606] cursor-grab active:cursor-grabbing">
+        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black cursor-grab active:cursor-grabbing">
           {currentImage ? (
             <div
               className="transition-transform duration-150 ease-out flex items-center justify-center"

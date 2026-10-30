@@ -283,11 +283,11 @@ export function RootCauseConfirmationReview({
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <ScanLine className="h-4 w-4 text-[#F2B941]" />
+                <ScanLine className="h-4 w-4 text-primary" />
                 Target Inspection Record
               </h3>
               {activeInspection && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="h-3 w-3" /> Valid Inspection
                 </span>
               )}
@@ -295,7 +295,7 @@ export function RootCauseConfirmationReview({
 
             {/* Quick Picker from Recent Inspections */}
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                 Select from Database Inspections
               </label>
               <select
@@ -305,7 +305,7 @@ export function RootCauseConfirmationReview({
                   handleResetForm();
                 }}
                 disabled={isHistoryLoading}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#087e6d]"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-success"
               >
                 <option value="">-- Choose an inspection from database ({historyList.length} available) --</option>
                 {historyList.map((item: any) => {
@@ -321,7 +321,7 @@ export function RootCauseConfirmationReview({
 
             {/* Manual UUID Input */}
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                 Or Input Inspection UUID Directly
               </label>
               <div className="relative">
@@ -348,13 +348,13 @@ export function RootCauseConfirmationReview({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Inspection Time:</span>
-                  <span className="font-mono text-[11px] text-slate-700">
+                  <span className="font-mono text-xs text-slate-700">
                     {new Date((activeInspection as any).createdAt).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Manufacturing Batch:</span>
-                  <span className="font-mono text-[11px] text-slate-800 font-semibold">
+                  <span className="font-mono text-xs text-slate-800 font-semibold">
                     {(activeInspection as any).batchId || (
                       <span className="text-amber-600 font-normal">Unlinked (Batch ID Missing)</span>
                     )}
@@ -362,7 +362,7 @@ export function RootCauseConfirmationReview({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Fabrication Machine:</span>
-                  <span className="font-mono text-[11px] text-slate-800">
+                  <span className="font-mono text-xs text-slate-800">
                     {(activeInspection as any).machineId || (
                       <span className="text-slate-400 font-normal">Unspecified</span>
                     )}
@@ -387,7 +387,7 @@ export function RootCauseConfirmationReview({
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Layers className="h-4 w-4 text-[#087e6d]" />
+                <Layers className="h-4 w-4 text-success" />
                 Detected Surface Defects (Model 1 Context)
               </h3>
               <span className="text-xs font-semibold text-slate-500">
@@ -405,7 +405,7 @@ export function RootCauseConfirmationReview({
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-500">
                   Select specific defect to link this root cause to, or leave unselected to apply to entire wafer:
                 </p>
                 <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
@@ -418,7 +418,7 @@ export function RootCauseConfirmationReview({
                         onClick={() => setSelectedDefectId(isSelected ? null : (det.id ?? idx))}
                         className={`cursor-pointer rounded-xl border p-2.5 transition-all text-xs flex items-center justify-between ${
                           isSelected
-                            ? "border-[#087e6d] bg-[#087e6d]/5 shadow-sm"
+                            ? "border-success bg-success/5 shadow-sm"
                             : "border-slate-100 bg-slate-50 hover:bg-slate-100/70"
                         }`}
                       >
@@ -429,12 +429,12 @@ export function RootCauseConfirmationReview({
                           />
                           <div>
                             <span className="font-semibold text-slate-800">{meta.label}</span>
-                            <span className="ml-2 font-mono text-[10px] text-slate-500">
+                            <span className="ml-2 font-mono text-xs text-slate-500">
                               {(det.confidence * 100).toFixed(1)}% conf
                             </span>
                           </div>
                         </div>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-xs font-mono text-slate-400">
                           #{idx + 1}
                         </span>
                       </div>
@@ -451,7 +451,7 @@ export function RootCauseConfirmationReview({
           <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Microscope className="h-5 w-5 text-[#087e6d]" />
+                <Microscope className="h-5 w-5 text-success" />
                 Expert Ground-Truth Annotation
               </h3>
               <p className="text-xs text-slate-500 mt-1">
@@ -462,7 +462,7 @@ export function RootCauseConfirmationReview({
 
             {/* Taxonomy Selector */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 1. Select Confirmed Root Cause Class <span className="text-red-500">*</span>
               </label>
 
@@ -476,7 +476,7 @@ export function RootCauseConfirmationReview({
                       onClick={() => setSelectedCause(cause)}
                       className={`cursor-pointer rounded-xl border p-3 transition-all text-left flex flex-col justify-between ${
                         isSelected
-                          ? "border-[#087e6d] bg-[#087e6d]/10 ring-2 ring-[#087e6d]/30"
+                          ? "border-success bg-success/10 ring-2 ring-success/30"
                           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                       }`}
                     >
@@ -486,7 +486,7 @@ export function RootCauseConfirmationReview({
                             {meta.label}
                           </span>
                           <span
-                            className={`rounded-full px-1.5 py-0.2 text-[9px] font-semibold uppercase tracking-wider ${
+                            className={`rounded-full px-1.5 py-0.2 text-xs font-semibold uppercase tracking-wider ${
                               meta.category === "process"
                                 ? "bg-amber-100 text-amber-800"
                                 : meta.category === "equipment"
@@ -499,14 +499,14 @@ export function RootCauseConfirmationReview({
                             {meta.category}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                           {meta.description}
                         </p>
                       </div>
                       <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-between">
-                        <span className="font-mono text-[9px] text-slate-400">{cause}</span>
+                        <span className="font-mono text-xs text-slate-400">{cause}</span>
                         {isSelected && (
-                          <CheckCircle2 className="h-4 w-4 text-[#087e6d]" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         )}
                       </div>
                     </div>
@@ -517,7 +517,7 @@ export function RootCauseConfirmationReview({
 
             {/* Verification Confidence Level */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 2. Verification Confidence & Cause Status <span className="text-red-500">*</span>
               </label>
 
@@ -535,7 +535,7 @@ export function RootCauseConfirmationReview({
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                     Verified Cause
                   </div>
-                  <p className="text-[10px] text-emerald-700 mt-1 leading-snug">
+                  <p className="text-xs text-emerald-700 mt-1 leading-snug">
                     Confirmed via physical cross-section, SEM, or furnace telemetry correlation.
                   </p>
                 </button>
@@ -553,7 +553,7 @@ export function RootCauseConfirmationReview({
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
                     Probable Cause
                   </div>
-                  <p className="text-[10px] text-amber-700 mt-1 leading-snug">
+                  <p className="text-xs text-amber-700 mt-1 leading-snug">
                     Strong correlation with process drift, awaiting destructive lab test confirmation.
                   </p>
                 </button>
@@ -571,7 +571,7 @@ export function RootCauseConfirmationReview({
                     <Info className="h-4 w-4 text-blue-600" />
                     Investigative Suspect
                   </div>
-                  <p className="text-[10px] text-blue-700 mt-1 leading-snug">
+                  <p className="text-xs text-blue-700 mt-1 leading-snug">
                     Suspected cause under active investigation by QA failure analysis lab.
                   </p>
                 </button>
@@ -580,7 +580,7 @@ export function RootCauseConfirmationReview({
 
             {/* Supporting Physical & Telemetry Evidence */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 3. Supporting Physical Evidence Factors <span className="text-red-500">* (Select at least 1)</span>
               </label>
 
@@ -592,7 +592,7 @@ export function RootCauseConfirmationReview({
                       key={opt.id}
                       className={`flex items-center gap-2 rounded-xl border p-2.5 cursor-pointer text-xs transition-colors ${
                         checked
-                          ? "border-[#087e6d] bg-[#087e6d]/5 text-slate-900 font-semibold"
+                          ? "border-success bg-success/5 text-slate-900 font-semibold"
                           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                       }`}
                     >
@@ -600,7 +600,7 @@ export function RootCauseConfirmationReview({
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleEvidence(opt.id)}
-                        className="rounded border-slate-300 text-[#087e6d] focus:ring-[#087e6d]"
+                        className="rounded border-slate-300 text-success focus:ring-success"
                       />
                       <span>{opt.label}</span>
                     </label>
@@ -611,7 +611,7 @@ export function RootCauseConfirmationReview({
 
             {/* Investigation Notes */}
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 4. Forensic Investigation Notes & Justification <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -619,14 +619,14 @@ export function RootCauseConfirmationReview({
                 onChange={(e) => setInvestigationNotes(e.target.value)}
                 rows={3}
                 placeholder="Detail physical inspection observations, furnace zone logs, metallization paste lot numbers, or operator interview notes..."
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#087e6d]"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-success"
               />
             </div>
 
             {/* Reviewer Identity & Timestamp */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                   Reviewer Identity <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -641,7 +641,7 @@ export function RootCauseConfirmationReview({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                   Verification Timestamp (UTC)
                 </label>
                 <div className="relative">
@@ -677,7 +677,7 @@ export function RootCauseConfirmationReview({
                   <div>
                     <div className="font-semibold">{statusMessage.text}</div>
                     {statusMessage.details && (
-                      <div className="mt-1 text-[11px] opacity-90">{statusMessage.details}</div>
+                      <div className="mt-1 text-xs opacity-90">{statusMessage.details}</div>
                     )}
                   </div>
                 </div>
@@ -700,7 +700,7 @@ export function RootCauseConfirmationReview({
               <Button
                 type="submit"
                 disabled={isSubmitting || !inspectionId || !selectedCause}
-                className="bg-[#087e6d] hover:bg-[#066356] text-white font-semibold text-xs"
+                className="bg-success hover:opacity-90 text-white font-semibold text-xs"
               >
                 {isSubmitting ? (
                   <>
@@ -741,7 +741,7 @@ export function RootCauseConfirmationReview({
                         {ROOT_CAUSE_DETAILS[ann.confirmedCause as RootCauseTaxonomyClass]?.label || ann.confirmedCause}
                       </div>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
                           ann.confidenceLevel === "confirmed"
                             ? "bg-emerald-100 text-emerald-800"
                             : ann.confidenceLevel === "probable"
@@ -753,14 +753,14 @@ export function RootCauseConfirmationReview({
                       </span>
                     </div>
 
-                    <div className="text-[11px] text-slate-500 font-mono flex flex-wrap gap-x-4 gap-y-1">
+                    <div className="text-xs text-slate-500 font-mono flex flex-wrap gap-x-4 gap-y-1">
                       <span>Inspection: {ann.inspectionId.slice(0, 8)}...</span>
                       <span>Verified by: {ann.verifiedBy}</span>
                       <span>Timestamp: {new Date(ann.verifiedAt).toLocaleString()}</span>
                     </div>
 
                     {ann.investigationNotes && (
-                      <p className="text-[11px] text-slate-600 border-t border-slate-200 pt-1.5 mt-1 whitespace-pre-wrap">
+                      <p className="text-xs text-slate-600 border-t border-slate-200 pt-1.5 mt-1 whitespace-pre-wrap">
                         {ann.investigationNotes}
                       </p>
                     )}

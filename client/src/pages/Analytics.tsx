@@ -1,3 +1,4 @@
+import React from "react";
 import { trpc } from "@/lib/trpc";
 import {
   BarChart3,
@@ -5,13 +6,11 @@ import {
   ChartNoAxesCombined,
   CheckCircle2,
   Database,
+  Download,
   Gauge,
   Layers3,
-  LogIn,
-  PieChart,
   RefreshCw,
   ShieldAlert,
-  Sparkles,
   Target,
 } from "lucide-react";
 import {
@@ -26,17 +25,23 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DataSourceNote, EmptyData, PageIntro } from "@/components/solarvision/Primitives";
-import { DEFECT_CLASSES, getDefectMeta } from "@/lib/defects";
-import { AuthGuard, SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
-import { isUnauthorizedError } from "@/lib/auth-helpers";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
+import { useAppMode } from "@/contexts/ModeContext";
+import { DEFECT_CLASSES, getDefectMeta } from "@/lib/defects";
+import { toast } from "sonner";
+
+// Shared SolarVision UI Components
+import PageHeader from "@/components/solarvision/PageHeader";
+import StatCard from "@/components/solarvision/StatCard";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+import AuthGuard from "@/components/solarvision/AuthGuard";
+import { DefectBadge } from "@/components/solarvision/DefectBadge";
+import { EmptyState, ErrorState, Skeleton } from "@/components/solarvision/StateComponents";
 
 export default function Analytics() {
   const { isAuthenticated } = useAuth();
+  const { isDev } = useAppMode();
+
   const {
     data: analyticsData,
     isLoading: analyticsLoading,
@@ -51,7 +56,6 @@ export default function Analytics() {
     data: statsData,
     isLoading: statsLoading,
     isError: isStatsError,
-    error: statsError,
     refetch: refetchStats,
   } = trpc.dashboard.stats.useQuery(undefined, {
     enabled: Boolean(isAuthenticated),
@@ -59,178 +63,163 @@ export default function Analytics() {
 
   const byType = analyticsData?.byType ?? [];
   const recentTrend = analyticsData?.recentTrend ?? [];
-  const configured = Boolean(analyticsData?.configured);
   const isLoading = analyticsLoading || statsLoading;
   const isError = isAnalyticsError || isStatsError;
-  const isAuthError = isUnauthorizedError(analyticsError) || isUnauthorizedError(statsError);
 
   const totalObservedDefects = byType.reduce((acc, curr) => acc + curr.count, 0);
-  const hasTypes = byType.length > 0;
-  const hasTrend = recentTrend.length > 0;
-
-  // Format trend data for chronological order
   const chronologicalTrend = [...recentTrend].reverse();
 
-  const handleRetry = () => {
-    refetchAnalytics();
-    refetchStats();
+  const handleExportCsv = () => {
+    if (byType.length === 0) {
+      toast.info("No analytics data to export.");
+      return;
+    }
+
+    const headers = "DefectType,Count,AvgConfidencePct\n";
+    const rows = byType
+      .map(t => `"${t.defectType}",${t.count},${(t.avgConfidence * 100).toFixed(1)}%`)
+      .join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `solarvision_defect_analytics_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Analytics CSV exported");
   };
 
   return (
     <AuthGuard
-      title="Authentication required for defect analytics"
+      title="Authentication Required for Defect Analytics"
       description="Aggregated manufacturing quality metrics, historical defect trends, and classification distributions are restricted to authenticated factory personnel."
     >
-      <div>
-        <PageIntro
-          eyebrow="Quality Intelligence & Trends"
-          title="Defect analytics."
-          description="Comprehensive analysis derived exclusively from real persisted inspection records in the database. In accordance with strict engineering integrity, zero synthetic or assumed manufacturing metrics are reported."
+      <div className="space-y-6">
+        {/* Page Top Header */}
+        <PageHeader
+          title="Defect Analytics & Process Intelligence"
+          description="Aggregated process distribution derived directly from persisted inspection records. In accordance with zero-fabrication guarantees, no synthetic metrics are computed."
+          badge={<span className="rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-semibold text-text border border-border">9 YOLO Classes</span>}
+          actions={
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportCsv}
+                disabled={byType.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs disabled:opacity-50"
+              >
+                <Download className="h-3.5 w-3.5 text-text-3" />
+                <span>Export CSV</span>
+              </button>
+              <button
+                onClick={() => {
+                  refetchAnalytics();
+                  refetchStats();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs"
+              >
+                <RefreshCw className="h-3.5 w-3.5 text-text-3" />
+                <span>Refresh</span>
+              </button>
+            </div>
+          }
         />
 
-        {isError && isAuthError && (
-          <SessionExpiredBanner onRetry={handleRetry} />
-        )}
+        {/* Provenance Notice */}
+        <NoticeBar
+          tone="info"
+          message="Quality Operations Audit: Defect frequencies and daily trend volumes calculated exclusively from verified database records."
+          details={
+            <p>
+              Metrics are aggregated from immutable inspection runs. When new inspections are committed,
+              class frequencies, confidence averages, and daily trend curves update automatically.
+            </p>
+          }
+        />
 
-        {isError && !isAuthError && (
-          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50/70 p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ShieldAlert className="h-5 w-5 text-rose-600" />
-                <div>
-                  <h4 className="text-sm font-semibold text-rose-950">Error Loading Analytics</h4>
-                  <p className="mt-0.5 text-xs text-rose-700">
-                    Failed to retrieve defect aggregation data from the database.
-                  </p>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleRetry}
-                className="h-9 gap-1.5 border-rose-300 bg-white text-xs font-medium text-rose-900 hover:bg-rose-50"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                Retry
-              </Button>
-            </div>
+        {/* Primary Statistics KPIs */}
+        {!isError && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Total Detected Defects"
+              value={isLoading ? "…" : totalObservedDefects}
+              caption="Aggregated across all runs"
+              icon={Target}
+            />
+            <StatCard
+              label="Processed Inspections"
+              value={isLoading ? "…" : statsData?.inspections ?? 0}
+              caption="Total historical frames"
+              icon={CheckCircle2}
+            />
+            <StatCard
+              label="Active Defect Classes"
+              value={isLoading ? "…" : `${byType.length} / 9`}
+              caption="Distinct classes identified in factory"
+              icon={Layers3}
+            />
+            <StatCard
+              label="Average Pipeline Latency"
+              value={
+                isLoading
+                  ? "…"
+                  : statsData?.avgProcessingTimeMs != null
+                  ? Math.round(statsData.avgProcessingTimeMs)
+                  : "—"
+              }
+              unit="ms"
+              caption="Ultralytics YOLO26n speed"
+              icon={Gauge}
+            />
           </div>
         )}
 
-        <DataSourceNote configured={configured && !isError} />
-
-        {/* KPI Stat Cards (Real Data Only - Never display 0 on auth failure) */}
+        {/* Charts & Breakdown */}
         {!isError && (
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="flex items-start justify-between">
+          <div className="grid gap-6 lg:grid-cols-12">
+            {/* Defect Frequency Bar Chart (7 cols) */}
+            <div className="lg:col-span-7 rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-border pb-3">
                 <div>
-                  <p className="text-xs font-medium text-slate-500">Persisted Inspections</p>
-                  <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#0B0909]">
-                    {isLoading ? "…" : statsData?.inspections ?? 0}
-                  </p>
-                  <p className="mt-1 text-[11px] text-slate-400">Total stored database runs</p>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+                    Class Distribution
+                  </span>
+                  <h3 className="text-sm font-semibold text-text">Defect Class Frequency</h3>
                 </div>
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#F2B941]/15 text-[#F2B941]">
-                  <Database className="h-5 w-5" />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500">Total Observed Defects</p>
-                  <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#0B0909]">
-                    {isLoading ? "…" : totalObservedDefects || (statsData?.detections ?? 0)}
-                  </p>
-                  <p className="mt-1 text-[11px] text-slate-400">Sum of all identified anomalies</p>
-                </div>
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#FDCD5E]/15 text-[#FDCD5E]">
-                  <Target className="h-5 w-5" />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500">Unique Defect Classes</p>
-                  <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#0B0909]">
-                    {isLoading ? "…" : `${byType.length} / 9`}
-                  </p>
-                  <p className="mt-1 text-[11px] text-slate-400">Active classes seen in database</p>
-                </div>
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-500/10 text-indigo-600">
-                  <Layers3 className="h-5 w-5" />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500">Average Inference Latency</p>
-                  <p className="mt-2 font-mono text-3xl font-semibold tracking-[-0.05em] text-[#0B0909]">
-                    {isLoading ? "…" : statsData?.avgProcessingTimeMs ? `${Math.round(statsData.avgProcessingTimeMs)} ms` : "—"}
-                  </p>
-                  <p className="mt-1 text-[11px] text-slate-400">Ultralytics model speed</p>
-                </div>
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700">
-                  <Gauge className="h-5 w-5" />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Charts & Categorical Breakdown */}
-        {!isError && (
-          <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-            {/* Defect Frequency Bar Chart */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3C4] text-[#F2B941]">
-                    <BarChart3 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold">Defect Class Frequency</h2>
-                    <p className="text-xs text-slate-400">Real counts grouped by defect label</p>
-                  </div>
-                </div>
+                <BarChart3 className="h-4 w-4 text-text-3" />
               </div>
 
               {isLoading ? (
                 <div className="h-[280px] w-full flex items-center justify-center">
-                  <Skeleton className="h-[240px] w-full rounded-xl" />
+                  <Skeleton className="h-[260px] w-full rounded-xl" />
                 </div>
-              ) : hasTypes ? (
+              ) : byType.length > 0 ? (
                 <div className="h-[280px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={byType} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E3E1DA" />
                       <XAxis
                         dataKey="defectType"
-                        tick={{ fontSize: 10, fill: "#64748b" }}
+                        tick={{ fontSize: 11, fill: "#6A665E" }}
                         angle={-25}
                         textAnchor="end"
                         interval={0}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "#6A665E" }} allowDecimals={false} />
                       <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
-                            const data = payload[0].payload;
-                            const meta = getDefectMeta(data.defectType);
+                            const d = payload[0].payload;
+                            const meta = getDefectMeta(d.defectType);
                             return (
-                              <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
-                                <p className="text-xs font-semibold text-slate-900">{meta.label}</p>
-                                <p className="mt-1 text-xs text-slate-500">
-                                  Occurrences: <span className="font-semibold text-slate-900">{data.count}</span>
+                              <div className="rounded-xl border border-border bg-surface p-3 shadow-lg text-xs space-y-1">
+                                <p className="font-semibold text-text">{meta.label}</p>
+                                <p className="text-text-2">
+                                  Occurrences: <span className="font-mono font-bold text-text">{d.count}</span>
                                 </p>
-                                <p className="text-[11px] text-slate-400">
-                                  Avg Confidence: {(data.avgConfidence * 100).toFixed(1)}%
+                                <p className="text-text-3 font-mono text-xs">
+                                  Avg Confidence: {(d.avgConfidence * 100).toFixed(1)}%
                                 </p>
                               </div>
                             );
@@ -238,10 +227,10 @@ export default function Analytics() {
                           return null;
                         }}
                       />
-                      <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                         {byType.map((entry, index) => {
                           const meta = getDefectMeta(entry.defectType);
-                          return <Cell key={`cell-${index}`} fill={meta.color || "#087e6d"} />;
+                          return <Cell key={`cell-${index}`} fill={meta.color || "#F2B941"} />;
                         })}
                       </Bar>
                     </BarChart>
@@ -249,60 +238,57 @@ export default function Analytics() {
                 </div>
               ) : (
                 <div className="h-[280px] grid place-items-center">
-                  <EmptyData
-                    compact
-                    title="No defect breakdown available"
-                    description="Run inspections to populate defect class frequency metrics."
+                  <EmptyState
+                    title="No Defect Frequency Data"
+                    description="Run inspections to populate Pareto frequency charts."
                   />
                 </div>
               )}
             </div>
 
-            {/* Daily Detection Volume Timeline */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3C4] text-[#F2B941]">
-                    <ChartNoAxesCombined className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold">14-Day Inspection Timeline</h2>
-                    <p className="text-xs text-slate-400">Daily inspection count and defect volume</p>
-                  </div>
+            {/* Daily Detection Volume Timeline (5 cols) */}
+            <div className="lg:col-span-5 rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+                    Daily Volume Trend
+                  </span>
+                  <h3 className="text-sm font-semibold text-text">14-Day Defect Timeline</h3>
                 </div>
+                <ChartNoAxesCombined className="h-4 w-4 text-text-3" />
               </div>
 
               {isLoading ? (
                 <div className="h-[280px] w-full flex items-center justify-center">
-                  <Skeleton className="h-[240px] w-full rounded-xl" />
+                  <Skeleton className="h-[260px] w-full rounded-xl" />
                 </div>
-              ) : hasTrend ? (
+              ) : chronologicalTrend.length > 0 ? (
                 <div className="h-[280px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={chronologicalTrend}
                       margin={{ top: 10, right: 10, left: -20, bottom: 25 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E3E1DA" />
                       <XAxis
                         dataKey="day"
-                        tick={{ fontSize: 10, fill: "#64748b" }}
+                        tick={{ fontSize: 10, fill: "#6A665E" }}
                         angle={-25}
                         textAnchor="end"
                       />
-                      <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "#6A665E" }} allowDecimals={false} />
                       <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
-                            const data = payload[0].payload;
+                            const d = payload[0].payload;
                             return (
-                              <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
-                                <p className="text-xs font-semibold text-slate-900">{data.day}</p>
-                                <p className="mt-1 text-xs text-slate-600">
-                                  Inspections: <span className="font-semibold text-slate-900">{data.inspections}</span>
+                              <div className="rounded-xl border border-border bg-surface p-3 shadow-lg text-xs space-y-1">
+                                <p className="font-semibold text-text">{d.day}</p>
+                                <p className="text-text-2">
+                                  Inspections: <span className="font-mono font-bold text-text">{d.inspections}</span>
                                 </p>
-                                <p className="text-xs text-[#8a5a00]">
-                                  Defects: <span className="font-semibold text-slate-900">{data.detections}</span>
+                                <p className="text-text-2">
+                                  Defects: <span className="font-mono font-bold text-brand-text">{d.defects}</span>
                                 </p>
                               </div>
                             );
@@ -312,30 +298,28 @@ export default function Analytics() {
                       />
                       <Line
                         type="monotone"
-                        dataKey="inspections"
-                        stroke="#087e6d"
-                        strokeWidth={2.5}
-                        dot={{ r: 3, fill: "#087e6d" }}
-                        name="Inspections"
+                        dataKey="defects"
+                        stroke="#8A5A00"
+                        strokeWidth={2}
+                        dot={{ r: 3, fill: "#F2B941" }}
+                        activeDot={{ r: 5 }}
                       />
                       <Line
                         type="monotone"
-                        dataKey="detections"
-                        stroke="#F2B941"
-                        strokeWidth={2}
+                        dataKey="inspections"
+                        stroke="#16130F"
+                        strokeWidth={1.5}
                         strokeDasharray="4 4"
-                        dot={{ r: 3, fill: "#F2B941" }}
-                        name="Defects"
+                        dot={{ r: 2 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
                 <div className="h-[280px] grid place-items-center">
-                  <EmptyData
-                    compact
-                    title="No timeline data logged"
-                    description="Daily inspection runs will be charted here over a 14-day rolling window."
+                  <EmptyState
+                    title="No Daily Trend Data"
+                    description="Timeline will populate as daily inspection batches are run."
                   />
                 </div>
               )}
@@ -343,43 +327,44 @@ export default function Analytics() {
           </div>
         )}
 
-        {/* Defect Class Severity & Confidence Table */}
-        {!isError && hasTypes && (
-          <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-            <h3 className="text-base font-semibold mb-4">Observed Defect Class Distribution</h3>
+        {/* Detailed Defect Class Breakdown Table */}
+        {!isError && byType.length > 0 && (
+          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+            <h3 className="text-sm font-semibold text-text">Itemized Defect Distribution</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400">
-                    <th className="py-3 font-semibold">Defect Class</th>
-                    <th className="py-3 font-semibold">Severity Rating</th>
-                    <th className="py-3 font-semibold">Count</th>
-                    <th className="py-3 font-semibold">Share of Defects</th>
-                    <th className="py-3 font-semibold">Mean Confidence</th>
+              <table className="w-full text-left text-xs min-w-[560px]">
+                <thead className="border-b border-border bg-surface-subtle text-xs text-text-3 font-semibold">
+                  <tr>
+                    <th className="py-2.5 px-3">Class Label</th>
+                    <th className="py-2.5 px-3">Severity Category</th>
+                    <th className="py-2.5 px-3">Recorded Occurrences</th>
+                    <th className="py-2.5 px-3">Average Model Confidence</th>
+                    <th className="py-2.5 px-3 text-right">Relative Share</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-border/60">
                   {byType.map(row => {
                     const meta = getDefectMeta(row.defectType);
-                    const share = totalObservedDefects > 0 ? ((row.count / totalObservedDefects) * 100).toFixed(1) : "0";
+                    const sharePct = totalObservedDefects > 0
+                      ? ((row.count / totalObservedDefects) * 100).toFixed(1)
+                      : "0.0";
+
                     return (
-                      <tr key={row.defectType} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 font-semibold text-slate-800">{meta.label}</td>
-                        <td className="py-3">
-                          <span
-                            className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                            style={{
-                              backgroundColor: `${meta.color}15`,
-                              color: meta.color,
-                            }}
-                          >
-                            {meta.severity.toUpperCase()}
-                          </span>
+                      <tr key={row.defectType} className="hover:bg-surface-subtle transition-colors">
+                        <td className="py-2.5 px-3">
+                          <DefectBadge defectType={row.defectType} size="sm" />
                         </td>
-                        <td className="py-3 font-semibold text-slate-900">{row.count}</td>
-                        <td className="py-3 text-slate-600">{share}%</td>
-                        <td className="py-3 font-mono text-slate-600">
+                        <td className="py-2.5 px-3">
+                          <span className="capitalize text-text-2 font-medium">{meta.category}</span>
+                        </td>
+                        <td className="py-2.5 px-3 font-mono font-semibold text-text tabular-nums">
+                          {row.count}
+                        </td>
+                        <td className="py-2.5 px-3 font-mono text-text-2 tabular-nums">
                           {(row.avgConfidence * 100).toFixed(1)}%
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-medium text-text-3 tabular-nums">
+                          {sharePct}%
                         </td>
                       </tr>
                     );

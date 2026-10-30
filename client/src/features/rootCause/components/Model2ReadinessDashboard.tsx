@@ -156,7 +156,7 @@ export function Model2ReadinessDashboard({
   if (isLoading && !readinessSummary) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#087e6d]" />
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-success" />
         <h4 className="mt-3 text-sm font-semibold text-slate-800">
           Auditing Model 2 Dataset Readiness...
         </h4>
@@ -271,13 +271,13 @@ export function Model2ReadinessDashboard({
         {/* Batches */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Batches</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Batches</span>
             <Database className="h-4 w-4 text-blue-500" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono text-slate-900">
             {batchesCount}
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
             <span>Target: &ge; 10</span>
             <span className={batchesCount > 0 ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>
               {batchesCount > 0 ? "OK" : "Missing"}
@@ -288,13 +288,13 @@ export function Model2ReadinessDashboard({
         {/* Machines */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Machines</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Machines</span>
             <Cpu className="h-4 w-4 text-purple-500" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono text-slate-900">
             {machinesCount}
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
             <span>Target: &ge; 3</span>
             <span className={machinesCount > 0 ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>
               {machinesCount > 0 ? "OK" : "Missing"}
@@ -305,13 +305,13 @@ export function Model2ReadinessDashboard({
         {/* Sensor Records */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Sensor Logs</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Sensor Logs</span>
             <BarChart3 className="h-4 w-4 text-amber-500" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono text-slate-900">
             {sensorRecordsCount}
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
             <span>Target: &ge; 500</span>
             <span className={sensorRecordsCount >= 500 ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>
               {sensorRecordsCount >= 500 ? "OK" : "Missing"}
@@ -322,13 +322,13 @@ export function Model2ReadinessDashboard({
         {/* Linked Inspections */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Linked Wafers</span>
-            <LinkIcon className="h-4 w-4 text-[#087e6d]" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Linked Wafers</span>
+            <LinkIcon className="h-4 w-4 text-success" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono text-slate-900">
             {linkedInspectionsCount}
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
             <span>Unlinked: {unlinkedCount}</span>
             <span className={linkedInspectionsCount > 0 ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>
               {linkedInspectionsCount > 0 ? `${linkedInspectionsCount}/${totalInspections}` : "0% Linked"}
@@ -339,13 +339,13 @@ export function Model2ReadinessDashboard({
         {/* Confirmed Annotations */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Confirmed Labels</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Confirmed Labels</span>
             <FileCheck className="h-4 w-4 text-emerald-500" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono text-slate-900">
             {confirmedLabelsCount}
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
             <span>Target: &ge; 100</span>
             <span className={confirmedLabelsCount >= 100 ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>
               {confirmedLabelsCount >= 100 ? "OK" : "Missing"}
@@ -356,13 +356,13 @@ export function Model2ReadinessDashboard({
         {/* Schema Canonical Dimensions */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Features</span>
-            <Layers className="h-4 w-4 text-[#F2B941]" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Features</span>
+            <Layers className="h-4 w-4 text-primary" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono text-slate-900">
             {readinessSummary?.canonicalFeatureCount ?? 48}
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
             <span>Schema v{readinessSummary?.schemaVersion || "2.0"}</span>
             <span className="text-emerald-600 font-bold">Standard</span>
           </div>
@@ -374,7 +374,7 @@ export function Model2ReadinessDashboard({
         {/* Left Column: Requirements Checklist (7 cols) */}
         <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <ShieldAlert className="h-4 w-4 text-[#087e6d]" />
+            <ShieldAlert className="h-4 w-4 text-success" />
             Model 2 Training Prerequisites & Gate Criteria
           </h3>
           <p className="text-xs text-slate-500">
@@ -395,11 +395,11 @@ export function Model2ReadinessDashboard({
                   <span className="font-semibold text-slate-900">
                     1. Manufacturing Batches Master Data
                   </span>
-                  <span className="font-mono text-[10px] text-slate-500">
+                  <span className="font-mono text-xs text-slate-500">
                     {batchesCount} / 10 required
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Provides cell line IDs, target quantities, start times, and processing lot boundaries.
                 </p>
               </div>
@@ -417,11 +417,11 @@ export function Model2ReadinessDashboard({
                   <span className="font-semibold text-slate-900">
                     2. Fabrication Machines Registry
                   </span>
-                  <span className="font-mono text-[10px] text-slate-500">
+                  <span className="font-mono text-xs text-slate-500">
                     {machinesCount} / 3 lines required
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Screen printers, sintering furnaces, and tabber/stringers associated with unique tool codes.
                 </p>
               </div>
@@ -439,11 +439,11 @@ export function Model2ReadinessDashboard({
                   <span className="font-semibold text-slate-900">
                     3. SCADA & Furnace Sensor Telemetry
                   </span>
-                  <span className="font-mono text-[10px] text-slate-500">
+                  <span className="font-mono text-xs text-slate-500">
                     {sensorRecordsCount} / 500 readings
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Continuous pyrometer temperatures, squeegee pressures, belt speeds, and vacuum levels.
                 </p>
               </div>
@@ -461,11 +461,11 @@ export function Model2ReadinessDashboard({
                   <span className="font-semibold text-slate-900">
                     4. Inspection-to-Batch Lineage Links
                   </span>
-                  <span className="font-mono text-[10px] text-slate-500">
+                  <span className="font-mono text-xs text-slate-500">
                     {linkedInspectionsCount} / 100 linked ({totalInspections} stored)
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Associates Model 1 cell inspection UUIDs with exact manufacturing batch and machine records.
                 </p>
               </div>
@@ -483,11 +483,11 @@ export function Model2ReadinessDashboard({
                   <span className="font-semibold text-slate-900">
                     5. Expert Ground-Truth Annotations
                   </span>
-                  <span className="font-mono text-[10px] text-slate-500">
+                  <span className="font-mono text-xs text-slate-500">
                     {confirmedLabelsCount} / 100 labels in SQLite
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Quality engineer confirmed physical root causes mapped to the 9-class manufacturing taxonomy.
                 </p>
               </div>
@@ -541,7 +541,7 @@ export function Model2ReadinessDashboard({
           {/* Quick Resolution Actions */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#087e6d]" />
+              <Sparkles className="h-4 w-4 text-success" />
               Dataset Remediation Workflow
             </h3>
             <p className="text-xs text-slate-500">
@@ -565,10 +565,10 @@ export function Model2ReadinessDashboard({
                 <>
                   <button
                     onClick={() => onNavigateToTab("import")}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#087e6d] hover:bg-[#087e6d]/5 transition-all text-left text-xs font-semibold text-slate-800"
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-success hover:bg-success/5 transition-all text-left text-xs font-semibold text-slate-800"
                   >
                     <div className="flex items-center gap-2">
-                      <UploadCloud className="h-4 w-4 text-[#087e6d]" />
+                      <UploadCloud className="h-4 w-4 text-success" />
                       <span>Step 1: Upload Manufacturing CSVs</span>
                     </div>
                     <ArrowRight className="h-4 w-4 text-slate-400" />
@@ -576,10 +576,10 @@ export function Model2ReadinessDashboard({
 
                   <button
                     onClick={() => onNavigateToTab("link")}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#087e6d] hover:bg-[#087e6d]/5 transition-all text-left text-xs font-semibold text-slate-800"
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-success hover:bg-success/5 transition-all text-left text-xs font-semibold text-slate-800"
                   >
                     <div className="flex items-center gap-2">
-                      <LinkIcon className="h-4 w-4 text-[#087e6d]" />
+                      <LinkIcon className="h-4 w-4 text-success" />
                       <span>Step 2: Link Inspections to Batches</span>
                     </div>
                     <ArrowRight className="h-4 w-4 text-slate-400" />
@@ -587,10 +587,10 @@ export function Model2ReadinessDashboard({
 
                   <button
                     onClick={() => onNavigateToTab("review")}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#087e6d] hover:bg-[#087e6d]/5 transition-all text-left text-xs font-semibold text-slate-800"
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-success hover:bg-success/5 transition-all text-left text-xs font-semibold text-slate-800"
                   >
                     <div className="flex items-center gap-2">
-                      <FileCheck className="h-4 w-4 text-[#087e6d]" />
+                      <FileCheck className="h-4 w-4 text-success" />
                       <span>Step 3: Record Expert Ground-Truth Annotations</span>
                     </div>
                     <ArrowRight className="h-4 w-4 text-slate-400" />
@@ -601,7 +601,7 @@ export function Model2ReadinessDashboard({
           </div>
 
           {/* Audit Timestamp */}
-          <div className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 font-mono">
+          <div className="text-xs text-slate-400 text-center flex items-center justify-center gap-1.5 font-mono">
             <Clock className="h-3.5 w-3.5" />
             <span>
               Live database audited:{" "}

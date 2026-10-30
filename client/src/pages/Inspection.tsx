@@ -1,40 +1,47 @@
+import React, { useRef, useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
   Clock,
-  Copy,
   ExternalLink,
   Eye,
   FileImage,
   Info,
   Loader2,
   LogIn,
-  Maximize2,
   RefreshCw,
   ScanLine,
-  ShieldAlert,
   Sliders,
   Sparkles,
-  UploadCloud,
-  X,
+  Terminal,
+  Printer,
+  Share2,
 } from "lucide-react";
-import { useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { PageIntro, StatusBadge } from "@/components/solarvision/Primitives";
-import { createInspectionNotification } from "@/components/solarvision/notification-model";
-import { DefectBadge } from "@/components/solarvision/DefectBadge";
-import { DetectionTable } from "@/components/solarvision/DetectionTable";
-import { ConfidenceDisclaimer } from "@/components/solarvision/ConfidenceDisclaimer";
-import { ImageViewerModal } from "@/components/solarvision/ImageViewerModal";
-import { SessionExpiredBanner } from "@/components/solarvision/AuthGuard";
-import { isUnauthorizedError, validateUploadFileSize, BACKEND_TRANSPORT_MAX_MB } from "@/lib/auth-helpers";
-import { useInspectionSettings } from "@/lib/settings";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { openOperatorLoginModal, startLogin } from "@/const";
+import { useAppMode } from "@/contexts/ModeContext";
+import { useInspectionSettings } from "@/lib/settings";
+import { isUnauthorizedError, validateUploadFileSize, BACKEND_TRANSPORT_MAX_MB } from "@/lib/auth-helpers";
+import { openOperatorLoginModal } from "@/const";
+import { createInspectionNotification } from "@/components/solarvision/notification-model";
 import { toast } from "sonner";
+
+// Shared SolarVision Components
+import PageHeader from "@/components/solarvision/PageHeader";
+import StatusBadge from "@/components/solarvision/StatusBadge";
+import ModelBadge from "@/components/solarvision/ModelBadge";
+import NoticeBar from "@/components/solarvision/NoticeBar";
+import Dropzone from "@/components/solarvision/Dropzone";
+import SampleGallery, { M1_SAMPLES } from "@/components/solarvision/SampleGallery";
+import ImageViewer from "@/components/solarvision/ImageViewer";
+import DetectionTable from "@/components/solarvision/DetectionTable";
+import ConfidenceDisclaimer from "@/components/solarvision/ConfidenceDisclaimer";
+import ReportLayout from "@/components/solarvision/ReportLayout";
+import Inspector from "@/components/solarvision/Inspector";
+import AuthPrompt from "@/components/solarvision/AuthPrompt";
+import { ErrorState } from "@/components/solarvision/StateComponents";
 
 interface DetectionResult {
   defect_type: string;
@@ -75,32 +82,36 @@ function fileToBase64(file: File): Promise<string> {
 
 export default function Inspection() {
   const [, setLocation] = useLocation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [settings] = useInspectionSettings();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const { isDev, isProd } = useAppMode();
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [activeThreshold, setActiveThreshold] = useState<number>(settings.confidenceThreshold || 0.25);
   const [result, setResult] = useState<InspectionResult | null>(null);
   const [executionError, setExecutionError] = useState<{ message: string; isAuth: boolean } | null>(null);
-  const [viewMode, setViewMode] = useState<"annotated" | "original">("annotated");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [copiedId, setCopiedId] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [startTimeMs, setStartTimeMs] = useState<number | null>(null);
+  const [roundTripMs, setRoundTripMs] = useState<number | null>(null);
 
   const runMutation = trpc.inspection.run.useMutation();
 
-  const chooseFile = (candidate?: File) => {
-    if (!candidate) return;
-    
-    // Check file type
-    const isImage = candidate.type.startsWith("image/") || /\.(jpe?g|png|webp|tiff?|bmp)$/i.test(candidate.name);
-    if (!isImage) {
-      toast.error("Unsupported file type. Please upload a valid EL/NIR image (.jpg, .png, .webp, .tif).");
-      return;
-    }
+  // Listen to 'I' keyboard shortcut in Dev mode to toggle inspector
+  useEffect(() => {
+    if (!isDev) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "i" || e.key === "I") && !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        setInspectorOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDev]);
 
-    // Check size limit reconciled with backend transport ceiling
+  const handleFileSelect = (candidate: File) => {
     const validation = validateUploadFileSize(candidate, settings.maxUploadMb);
     if (!validation.valid) {
       toast.error(validation.error);
@@ -111,30 +122,23 @@ export default function Inspection() {
     setPreview(URL.createObjectURL(candidate));
     setResult(null);
     setExecutionError(null);
-    setViewMode("annotated");
   };
 
-  const loadSampleImage = async (samplePath: string, sampleName: string) => {
-    try {
-      const response = await fetch(samplePath);
-      if (!response.ok) throw new Error("Sample file not found");
-      const blob = await response.blob();
-      const sampleFile = new File([blob], sampleName, { type: "image/jpeg" });
-      chooseFile(sampleFile);
-      toast.success(`Loaded sample EL solar cell: ${sampleName}`);
-    } catch {
-      toast.error("Failed to load sample image.");
-    }
+  const handleClearFile = () => {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setExecutionError(null);
   };
 
   const handleRunInspection = async (overrideThreshold?: number) => {
     if (!file) {
-      toast.error("Please select an EL/NIR image before starting inspection.");
+      toast.error("Please upload or select an EL/NIR cell image first.");
       return;
     }
 
     if (!user) {
-      toast.info("Operator authentication required to run YOLO26n AI inspection.");
+      toast.info("Operator authorization required to run YOLO26n AI inspection.");
       openOperatorLoginModal();
       return;
     }
@@ -146,17 +150,13 @@ export default function Inspection() {
 
     setResult(null);
     setExecutionError(null);
+    const start = performance.now();
+    setStartTimeMs(start);
 
     try {
       const base64Data = await fileToBase64(file);
-      
-      const payload: {
-        filename: string;
-        mimeType: string;
-        base64Data: string;
-        confidence?: number;
-        imageSize?: number;
-      } = {
+
+      const payload = {
         filename: file.name,
         mimeType: file.type || "image/jpeg",
         base64Data,
@@ -164,14 +164,15 @@ export default function Inspection() {
         imageSize: settings.imageSize,
       };
 
-      const response = await (runMutation.mutateAsync as any)(payload) as InspectionResult;
+      const response = (await (runMutation.mutateAsync as any)(payload)) as InspectionResult;
+      const end = performance.now();
+      setRoundTripMs(end - start);
       setResult(response);
-      setViewMode("annotated");
 
       if (response.detections.length > 0) {
         toast.success(`Inspection complete — ${response.detections.length} defect(s) detected.`);
       } else {
-        toast.info(`Inspection complete — 0 detections above threshold (${confToUse.toFixed(2)}).`);
+        toast.info(`Inspection complete — 0 detections above cutoff (${confToUse.toFixed(2)}).`);
       }
 
       window.dispatchEvent(
@@ -180,7 +181,6 @@ export default function Inspection() {
         })
       );
     } catch (error) {
-      // CRITICAL: NEVER display authorization failure as a successful zero-defect inspection!
       const isAuth = isUnauthorizedError(error);
       const message = isAuth
         ? "Session expired or authentication required. Please sign in to run AI inspections."
@@ -192,578 +192,510 @@ export default function Inspection() {
       setExecutionError({ message, isAuth });
       toast.error(message);
 
-      if (isAuth) {
-        window.dispatchEvent(
-          new CustomEvent("solarvision:notification", {
-            detail: {
-              title: "Authentication Required",
-              message: "Your session has expired. Sign in to run AI inspections.",
-              tone: "warning",
-              href: "/inspection",
-            },
-          })
-        );
-      } else {
-        window.dispatchEvent(
-          new CustomEvent("solarvision:notification", {
-            detail: createInspectionNotification(file.name, 0, message),
-          })
-        );
-      }
+      window.dispatchEvent(
+        new CustomEvent("solarvision:notification", {
+          detail: createInspectionNotification(file.name, 0, message),
+        })
+      );
     }
-  };
-
-  const copyInspectionId = () => {
-    if (!result?.inspectionId) return;
-    navigator.clipboard.writeText(result.inspectionId);
-    setCopiedId(true);
-    toast.success("Inspection ID copied to clipboard");
-    setTimeout(() => setCopiedId(false), 2000);
   };
 
   const resultThreshold = result?.inferenceConfiguration?.confidence_threshold;
   const isStale = Boolean(
     result &&
-    !executionError &&
-    resultThreshold !== undefined &&
-    Math.abs(resultThreshold - activeThreshold) > 0.001
+      !executionError &&
+      resultThreshold !== undefined &&
+      Math.abs(resultThreshold - activeThreshold) > 0.001
   );
   const effectiveThreshold = resultThreshold ?? activeThreshold;
-  const currentDisplayImage =
-    viewMode === "annotated" && (result?.annotatedImageDataUrl || result?.annotatedImageUrl)
-      ? result.annotatedImageDataUrl || result.annotatedImageUrl
-      : preview;
+
+  // Convert detections to viewer boxes
+  const viewerDetections = (result?.detections || []).map((d, i) => ({
+    id: i,
+    class: d.defect_type,
+    label: d.defect_type,
+    confidence: d.confidence,
+    bbox: [d.x1, d.y1, d.x2, d.y2] as [number, number, number, number],
+  }));
+
+  const activeDisplayImage = result?.annotatedImageDataUrl || result?.annotatedImageUrl || preview || "";
+
+  // Export CSV handler
+  const handleExportCsv = () => {
+    if (!result || result.detections.length === 0) {
+      toast.info("No defect records to export.");
+      return;
+    }
+
+    const headers = "Class,Severity,Confidence,X1,Y1,X2,Y2\n";
+    const rows = result.detections
+      .map(d => `${d.defect_type},high,${(d.confidence * 100).toFixed(1)}%,${d.x1},${d.y1},${d.x2},${d.y2}`)
+      .join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `solarvision_inspection_${result.inspectionId.slice(0, 8)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV export downloaded");
+  };
+
+  // If in Prod mode and result is available: render the complete, clean ReportLayout!
+  if (isProd && result && !executionError) {
+    const defectCount = result.detections.length;
+    const maxConfidence =
+      defectCount > 0 ? Math.max(...result.detections.map(d => d.confidence)) : 0;
+
+    return (
+      <div className="space-y-6">
+        <ReportLayout
+          title="Electroluminescence Defect Inspection Report"
+          reportId={result.inspectionId}
+          timestamp={Date.now()}
+          operatorName={user?.name || "Authorized Operator"}
+          modelBadge={<ModelBadge model="M1" />}
+          statusBadge={
+            <StatusBadge tone={defectCount > 0 ? "warning" : "success"}>
+              {defectCount > 0 ? `${defectCount} Defect(s) Flagged` : "Clear / Under Cutoff"}
+            </StatusBadge>
+          }
+          verdictHeadline={
+            defectCount > 0
+              ? `${defectCount} structural defect${defectCount === 1 ? "" : "s"} identified across wafer contact grid`
+              : `No defect patterns detected above sensitivity cutoff (${effectiveThreshold.toFixed(2)})`
+          }
+          verdictTone={defectCount > 0 ? "warning" : "success"}
+          verdictStats={[
+            { label: "Total Defects", value: defectCount },
+            {
+              label: "Peak Confidence",
+              value: defectCount > 0 ? `${(maxConfidence * 100).toFixed(1)}%` : "—",
+            },
+            {
+              label: "Inference Time",
+              value: `${Math.round(result.processingTimeMs)} ms`,
+            },
+          ]}
+          mandatoryNoticeNode={
+            <NoticeBar
+              tone="warning"
+              message="Academic prototype: not factory-certified. Zero detections does not certify a defect-free solar cell."
+              details={
+                <>
+                  <p>
+                    <strong>PVELAD Benchmark:</strong> Evaluated on 792 held-out electroluminescence images.
+                    Bounding boxes reflect statistical pattern similarity above cutoff.
+                  </p>
+                  <p>
+                    Faint micro-cracks or shallow hairline fractures with optical contrast below the detection
+                    threshold ({effectiveThreshold.toFixed(2)}) require high-sensitivity manual review.
+                  </p>
+                </>
+              }
+            />
+          }
+          evidenceNode={
+            <ImageViewer
+              imageUrl={activeDisplayImage}
+              originalImageUrl={preview || undefined}
+              detections={viewerDetections}
+              highlightedIndex={highlightedIndex}
+              onHighlightIndex={setHighlightedIndex}
+              title={file?.name || "Solar Cell Visual Evidence"}
+            />
+          }
+          findingsNode={
+            <DetectionTable
+              detections={result.detections}
+              highlightedIndex={highlightedIndex}
+              onHighlightIndex={setHighlightedIndex}
+            />
+          }
+          onRunAnother={() => {
+            setResult(null);
+            setFile(null);
+            setPreview(null);
+          }}
+          onExportCsv={handleExportCsv}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <PageIntro
-        eyebrow="Computer Vision Pipeline"
-        title="Run a new inspection."
-        description="Upload an electroluminescence (EL) or near-infrared (NIR) solar cell frame to run the academically validated YOLO26n prototype (evaluated on PVELAD benchmark; not factory-production-certified). Results display authentic bounding boxes, confidence scores, and persist to history."
-        action={
-          <Link
-            href="/history"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#F2B941] hover:text-[#0B0909]"
-          >
-            Open history <ArrowRight className="h-4 w-4" />
-          </Link>
+      {/* Page Header */}
+      <PageHeader
+        title="Defect Detection"
+        description="Run real-time YOLO26n computer vision inference on photovoltaic electroluminescence (EL) and near-infrared (NIR) cell images."
+        badge={<ModelBadge model="M1" />}
+        actions={
+          <div className="flex items-center gap-2">
+            {isDev && result && (
+              <button
+                onClick={() => setInspectorOpen(prev => !prev)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs"
+              >
+                <Terminal className="h-3.5 w-3.5 text-brand-text" />
+                <span>Inspector</span>
+                <kbd className="font-mono text-xs bg-surface-subtle px-1 rounded border border-border">
+                  I
+                </kbd>
+              </button>
+            )}
+            <Link
+              href="/history"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-2 hover:bg-surface-subtle hover:text-text transition-colors shadow-xs"
+            >
+              <span>Records</span>
+              <ArrowRight className="h-3.5 w-3.5 text-text-3" />
+            </Link>
+          </div>
         }
       />
 
-      {!isAuthenticated && (
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0B0909] text-[#F2B941]">
-              <LogIn className="h-4 w-4" />
+      {/* Mandatory Invariant Notice */}
+      <NoticeBar
+        tone="info"
+        message="Academic prototype: not factory-production-certified. Bounding boxes represent statistical pattern correlation."
+        details={
+          <div>
+            <p className="font-semibold text-text mb-1">PVELAD Benchmark Calibration</p>
+            <p>
+              YOLO26n single-stage anchor-free model trained on the PVELAD dataset. In accordance with zero-fabrication standards,
+              coordinates are extracted directly from the authentic Python engine checkpoint without synthetic fabrication.
+            </p>
+          </div>
+        }
+      />
+
+      {/* Sign-in prompt if unauthenticated */}
+      {!user && (
+        <AuthPrompt
+          variant="banner"
+          description="Sign in as an authorized operator to execute the YOLO26n pipeline and commit inspection results."
+          actionText="Sign in as Operator"
+        />
+      )}
+
+      {/* Dev Mode Explanation Strip */}
+      {isDev && (
+        <div className="rounded-xl border border-border bg-surface-subtle p-3.5 text-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-semibold text-text uppercase tracking-wider text-xs">
+              How it works (Dev Pipeline)
             </span>
-            <div>
-              <p className="text-xs font-semibold text-amber-950">Operator Preview Mode</p>
-              <p className="text-[11px] text-amber-800">
-                You can load test samples, adjust sensitivity thresholds, and explore image previews. Sign in as an operator to run YOLO26n AI defect detection.
-              </p>
+            <span className="font-mono text-xs text-brand-text">YOLO26n · 640×640</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs text-text-2">
+            <div className="rounded-lg bg-surface p-2 border border-border/60">
+              <span className="font-semibold text-text block">1. Input Frame</span>
+              EL/NIR 8-bit grayscale image transport ceiling {BACKEND_TRANSPORT_MAX_MB}MB.
+            </div>
+            <div className="rounded-lg bg-surface p-2 border border-border/60">
+              <span className="font-semibold text-text block">2. Normalization</span>
+              Letterbox scaling to 640px, contrast histogram balancing.
+            </div>
+            <div className="rounded-lg bg-surface p-2 border border-border/60">
+              <span className="font-semibold text-text block">3. Inference</span>
+              Anchor-free convolutional head computes box priors and class logits.
+            </div>
+            <div className="rounded-lg bg-surface p-2 border border-border/60">
+              <span className="font-semibold text-text block">4. NMS & Persistence</span>
+              IoU cutoff filter, bounding box rendering, database commit.
             </div>
           </div>
-          <Button
-            size="sm"
-            onClick={() => openOperatorLoginModal()}
-            className="h-8 gap-1.5 rounded-lg bg-[#0B0909] px-3.5 text-xs font-semibold text-white hover:bg-slate-800 sm:shrink-0"
-          >
-            <LogIn className="h-3 w-3 text-[#F2B941]" />
-            Sign in as Operator
-          </Button>
         </div>
       )}
 
-      {executionError?.isAuth && (
-        <SessionExpiredBanner onRetry={() => handleRunInspection()} />
-      )}
-
-        <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
-          {/* Left Column: Image Selection & Operator Controls */}
-          <div className="space-y-5">
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-              <div className="mb-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">Input Frame</p>
-                  <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Choose a solar-cell image</h2>
-                </div>
-                <FileImage className="h-5 w-5 text-slate-300" />
-              </div>
-
-              <input
-                ref={inputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/tiff,image/bmp"
-                className="hidden"
-                onChange={event => chooseFile(event.currentTarget.files?.[0])}
-              />
-
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                onDragOver={event => event.preventDefault()}
-                onDrop={event => {
-                  event.preventDefault();
-                  chooseFile(event.dataTransfer.files?.[0]);
-                }}
-                className="group flex min-h-[220px] w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-[#f8fafb] px-6 text-center transition-colors hover:border-[#F2B941] hover:bg-[#effcf9]"
-              >
-                <div className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-white text-[#F2B941] shadow-sm transition-transform group-hover:-translate-y-1">
-                  <UploadCloud className="h-6 w-6" />
-                </div>
-                <p className="text-sm font-semibold text-slate-700">Drop an EL/NIR cell image here</p>
-                <p className="mt-1 text-xs text-slate-400">or click to browse · PNG, JPG, WEBP, TIFF (Max {BACKEND_TRANSPORT_MAX_MB} MB)</p>
-                {file && (
-                  <div className="mt-4 flex items-center gap-2 rounded-full bg-[#FFF3C4] px-3 py-1 text-xs font-medium text-[#087e6d]">
-                    <span className="max-w-[200px] truncate">{file.name}</span>
-                    <span className="text-[10px] opacity-75">
-                      ({(file.size / 1024).toFixed(0)} KB)
-                    </span>
-                  </div>
-                )}
-              </button>
-
-              {/* Quick Test Samples */}
-              <div className="mt-3 rounded-xl border border-slate-200/60 bg-[#FAF9F0] p-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
-                  <Sparkles className="h-3.5 w-3.5 text-[#F2B941]" />
-                  <span>1-Click Test Samples (Authentic EL Solar Cells):</span>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => loadSampleImage("/samples/sample-el-cell-1.jpg", "el-sample-crack-01.jpg")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
-                    title="PVELAD GT: star_crack (1 defect, conf ~0.64)"
-                  >
-                    Sample 1 (Micro-crack)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => loadSampleImage("/samples/sample-el-cell-2.jpg", "el-sample-finger-02.jpg")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
-                    title="PVELAD GT: 3 collinear cracks (formerly mislabeled Finger defect; genuine cracks)"
-                  >
-                    Sample 2 (Segmented crack)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => loadSampleImage("/samples/sample-el-cell-multi.jpg", "el-sample-multi-03.jpg")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-[#F2B941] hover:bg-white hover:text-slate-900 transition-colors shadow-xs"
-                    title="PVELAD GT: 4 defects (2 cracks, 2 finger defects)"
-                  >
-                    Sample 3 (Multi-defect)
-                  </button>
-                </div>
-              </div>
-
-              {file && (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#F4F0D7] px-4 py-2.5">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <FileImage className="h-4 w-4 shrink-0 text-[#F2B941]" />
-                    <span className="truncate text-xs font-medium text-slate-700">{file.name}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFile(null);
-                      setPreview(null);
-                      setResult(null);
-                      setExecutionError(null);
-                      if (inputRef.current) inputRef.current.value = "";
-                    }}
-                    className="rounded-lg p-1 text-slate-400 hover:text-slate-800 transition-colors"
-                    aria-label="Remove image"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Threshold / Sensitivity Settings Selector */}
-              <div className={`mt-5 rounded-xl border p-4 transition-colors ${isStale ? "border-amber-300 bg-amber-50/50" : "border-slate-200/80 bg-[#fcfcfd]"}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="h-4 w-4 text-[#F2B941]" />
-                    <span className="text-xs font-semibold text-slate-700">Inference Sensitivity</span>
-                  </div>
-                  <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
-                    Threshold: {activeThreshold.toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveThreshold(0.25)}
-                    className={`rounded-xl border p-2 text-left text-xs transition-all ${
-                      activeThreshold === 0.25
-                        ? "border-[#F2B941] bg-[#FFF3C4] text-[#0B0909] font-medium shadow-sm"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="font-semibold text-[11px]">Standard (0.25)</div>
-                    <div className="text-[9px] text-slate-500 mt-0.5">Balanced</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveThreshold(0.10)}
-                    className={`rounded-xl border p-2 text-left text-xs transition-all ${
-                      activeThreshold === 0.10
-                        ? "border-[#F2B941] bg-[#FFF3C4] text-[#0B0909] font-medium shadow-sm"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="font-semibold text-[11px]">High (0.10)</div>
-                    <div className="text-[9px] text-slate-500 mt-0.5">Faint cracks</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveThreshold(0.05)}
-                    className={`rounded-xl border p-2 text-left text-xs transition-all ${
-                      activeThreshold === 0.05
-                        ? "border-[#F2B941] bg-[#FFF3C4] text-[#0B0909] font-medium shadow-sm"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="font-semibold text-[11px]">Ultra (0.05)</div>
-                    <div className="text-[9px] text-slate-500 mt-0.5">Deep debug</div>
-                  </button>
-                </div>
-
-                {isStale && (
-                  <div className="mt-3 flex items-center justify-between rounded-lg border border-amber-300 bg-amber-100/70 p-2.5 text-xs text-amber-950">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
-                      <span className="text-[11px] truncate">
-                        Sensitivity changed to <strong>{activeThreshold.toFixed(2)}</strong>. Displayed results reflect <strong>{resultThreshold?.toFixed(2)}</strong>.
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRunInspection()}
-                      disabled={runMutation.isPending}
-                      className="ml-2 shrink-0 rounded bg-[#0B0909] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
-                    >
-                      Re-run Now
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Run Button */}
-              <button
-                disabled={!file || runMutation.isPending}
-                onClick={() => handleRunInspection()}
-                className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 ${
-                  isStale
-                    ? "bg-[#0B0909] text-white ring-2 ring-[#F2B941] shadow-[0_8px_20px_rgba(242,185,65,0.25)] hover:bg-slate-800"
-                    : "bg-[#0B0909] text-white shadow-[0_8px_20px_rgba(7,27,41,0.14)] hover:bg-slate-800"
-                }`}
-              >
-                {runMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
-                    Running YOLO26n Inspection Pipeline…
-                  </>
-                ) : isStale ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 text-[#F2B941]" />
-                    Re-run AI inspection (Threshold {activeThreshold.toFixed(2)})
-                  </>
-                ) : (
-                  <>
-                    <ScanLine className="h-4 w-4 text-[#F2B941]" />
-                    Run AI inspection
-                  </>
-                )}
-              </button>
-
-              {runMutation.isPending && (
-                <div className="mt-3 rounded-lg bg-slate-50 p-3 text-[11px] text-slate-500 flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F2B941] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F2B941]"></span>
-                  </span>
-                  <span>Normalizing image & running Ultralytics YOLO26n anchor-free detection…</span>
-                </div>
-              )}
+      {/* Main Grid: Controls vs Visual Output */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Left Column: Dropzone & Settings (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+                Input Image Frame
+              </span>
+              <FileImage className="h-4 w-4 text-text-3" />
             </div>
 
-            {/* Operational Guidance Card */}
-            <div className="rounded-2xl border border-[#bceee4] bg-[#edfcf9] p-5">
-              <div className="flex gap-3">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#F2B941]" />
-                <div>
-                  <p className="text-xs font-semibold text-[#087e6d]">Authentic Model Inference</p>
-                  <p className="mt-1 text-xs leading-5 text-[#247d70]">
-                    Bounding boxes and labels are returned directly from the Python inference engine (`best.pt`).
-                    No mock or synthetic detections are ever shown.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Visual Evidence & Results */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)] flex flex-col">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">Inspection Result</p>
-                <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Visual Evidence</h2>
-              </div>
-              
-              {result && !executionError && (
-                <div className="flex items-center gap-2">
-                  {isStale ? (
-                    <StatusBadge tone="neutral">
-                      Stale ({result.detections.length} Defect{result.detections.length === 1 ? "" : "s"} @ {resultThreshold?.toFixed(2)}) · Re-run Needed
-                    </StatusBadge>
-                  ) : (
-                    <StatusBadge tone={result.detections.length > 0 ? "warning" : "success"}>
-                      {result.detections.length > 0
-                        ? `${result.detections.length} Defect${result.detections.length === 1 ? "" : "s"} Found`
-                        : "No Detections Above Cutoff"}
-                    </StatusBadge>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Stale Result Warning Banner */}
-            {isStale && !executionError && (
-              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 shadow-xs animate-in fade-in duration-200">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 shrink-0 text-amber-600" />
-                  <span>
-                    <strong>Stale View:</strong> Visual evidence reflects prior run at threshold{" "}
-                    <span className="font-mono font-semibold">{resultThreshold?.toFixed(2)}</span>. Sensitivity changed to{" "}
-                    <span className="font-mono font-semibold">{activeThreshold.toFixed(2)}</span>. Click Re-run to update.
-                  </span>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => handleRunInspection()}
-                  disabled={runMutation.isPending}
-                  className="h-7 shrink-0 gap-1.5 rounded-lg bg-[#0B0909] px-3 text-[11px] font-semibold text-white hover:bg-slate-800"
-                >
-                  <RefreshCw className="h-3 w-3 text-[#F2B941]" />
-                  Re-run at {activeThreshold.toFixed(2)}
-                </Button>
-              </div>
-            )}
-
-            {/* Error State: Critical Guardrail so backend authorization error is NEVER shown as zero-defect result */}
-            {executionError ? (
-              <div className="flex flex-1 min-h-[380px] flex-col items-center justify-center rounded-2xl border border-rose-200 bg-rose-50/50 p-8 text-center">
-                <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-rose-100 text-rose-600">
-                  <ShieldAlert className="h-7 w-7" />
-                </div>
-                <h3 className="text-base font-semibold text-rose-950">
-                  {executionError.isAuth ? "Authorization Required" : "Inspection Execution Failed"}
-                </h3>
-                <p className="mt-2 max-w-md text-xs leading-5 text-rose-700">
-                  {executionError.message}
-                </p>
-                <div className="mt-6 flex items-center gap-3">
-                  {executionError.isAuth ? (
-                    <Button
-                      onClick={() => openOperatorLoginModal()}
-                      className="gap-2 rounded-xl bg-[#0B0909] px-5 text-xs font-semibold text-white hover:bg-slate-800"
-                    >
-                      <LogIn className="h-4 w-4 text-[#F2B941]" />
-                      Sign In to Run Inspections
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => handleRunInspection()}
-                      className="gap-2 rounded-xl bg-[#0B0909] px-5 text-xs font-semibold text-white hover:bg-slate-800"
-                    >
-                      <RefreshCw className="h-4 w-4 text-[#F2B941]" />
-                      Retry Inspection
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : currentDisplayImage ? (
-              <div className="relative overflow-hidden rounded-2xl bg-[#0B0909] flex flex-col items-center justify-center min-h-[380px]">
-                {/* Image View Controls Toolbar */}
-                <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between">
-                  {result && (result.annotatedImageDataUrl || result.annotatedImageUrl) && preview && (
-                    <div className="flex items-center rounded-xl bg-black/70 p-1 backdrop-blur-sm">
-                      <button
-                        onClick={() => setViewMode("annotated")}
-                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                          viewMode === "annotated"
-                            ? "bg-[#F2B941] text-[#0B0909]"
-                            : "text-slate-300 hover:text-white"
-                        }`}
-                      >
-                        Annotated YOLO
-                      </button>
-                      <button
-                        onClick={() => setViewMode("original")}
-                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                          viewMode === "original"
-                            ? "bg-[#F2B941] text-[#0B0909]"
-                            : "text-slate-300 hover:text-white"
-                        }`}
-                      >
-                        Raw Input
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="ml-auto">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setIsModalOpen(true)}
-                      className="h-8 gap-1.5 rounded-xl bg-black/70 px-2.5 text-xs text-slate-200 backdrop-blur-sm hover:bg-black/90 hover:text-white"
-                    >
-                      <Maximize2 className="h-3.5 w-3.5 text-[#F2B941]" />
-                      Zoom & Inspect
-                    </Button>
-                  </div>
-                </div>
-
-                <img
-                  src={currentDisplayImage}
-                  alt={result ? "Annotated solar-cell inspection" : "Selected solar-cell input"}
-                  className="max-h-[500px] w-full object-contain p-2"
-                />
-              </div>
-            ) : (
-              <div className="flex flex-1 min-h-[380px] flex-col items-center justify-center rounded-2xl bg-[#F4F0D7] text-center p-6">
-                <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-white text-slate-300">
-                  <ScanLine className="h-6 w-6" />
-                </div>
-                <p className="text-sm font-semibold text-slate-600">Your annotated image will appear here</p>
-                <p className="mt-1 max-w-xs text-xs leading-5 text-slate-400">
-                  Select an EL/NIR cell image and run the AI inspection to view real model bounding boxes.
-                </p>
-              </div>
-            )}
-
-            {/* Result Metrics Strip */}
-            {result && !executionError && (
-              <div className="mt-4 space-y-4">
-                <div className="grid gap-3 sm:grid-cols-4">
-                  <div className="rounded-xl bg-[#F4F0D7] p-3.5">
-                    <p className="text-[11px] text-slate-500 font-medium">Detections</p>
-                    <p className="mt-1 text-xl font-semibold text-slate-900">{result.detections.length}</p>
-                  </div>
-                  <div className="rounded-xl bg-[#F4F0D7] p-3.5">
-                    <p className="text-[11px] text-slate-500 font-medium">Inference Latency</p>
-                    <p className="mt-1 font-mono text-xl font-semibold text-slate-900">
-                      {Math.round(result.processingTimeMs)}{" "}
-                      <span className="text-xs font-normal text-slate-500">ms</span>
-                    </p>
-                  </div>
-                  <div className={`rounded-xl p-3.5 transition-colors ${isStale ? "border border-amber-300 bg-amber-50/70" : "bg-[#F4F0D7]"}`}>
-                    <p className="text-[11px] text-slate-500 font-medium">Confidence Cutoff</p>
-                    <p className="mt-1 font-mono text-xl font-semibold text-slate-900">
-                      {resultThreshold?.toFixed(2) ?? effectiveThreshold.toFixed(2)}
-                    </p>
-                    {isStale && (
-                      <p className="mt-1 text-[10px] font-medium text-amber-800 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3 text-amber-600" />
-                        Pending re-run at {activeThreshold.toFixed(2)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="rounded-xl bg-[#F4F0D7] p-3.5">
-                    <p className="text-[11px] text-slate-500 font-medium">Storage Sync</p>
-                    <p className="mt-1 truncate text-xs font-semibold text-slate-700" title={result.persistence}>
-                      {result.persistence.replaceAll(",", " · ")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Action Buttons: Open Stored Inspection & Copy ID */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={copyInspectionId}
-                      className="h-9 gap-1.5 text-xs text-slate-600 hover:text-slate-900"
-                    >
-                      <Copy className="h-3.5 w-3.5 text-[#F2B941]" />
-                      {copiedId ? "Copied ID!" : `ID: ${result.inspectionId.slice(0, 8)}…`}
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => setLocation(`/inspection/${result.inspectionId}`)}
-                      className="h-9 gap-1.5 rounded-xl bg-[#0B0909] px-4 text-xs font-semibold text-white shadow-sm hover:bg-slate-800"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5 text-[#F2B941]" />
-                      Open Stored Inspection Record
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Detections & Confidence Disclaimer Section */}
-        {result && !executionError && (
-          <div className="mt-6 space-y-5">
-            <ConfidenceDisclaimer
-              threshold={effectiveThreshold}
-              detectionsCount={result.detections.length}
-              onRetryWithHighSensitivity={() => handleRunInspection(0.10)}
+            {/* Unified Dropzone */}
+            <Dropzone
+              onFileSelect={handleFileSelect}
+              selectedFile={file}
+              onClearFile={handleClearFile}
+              maxSizeBytes={BACKEND_TRANSPORT_MAX_MB * 1024 * 1024}
+              title="Drop solar-cell EL/NIR image here"
+              subtitle="Or click to browse machine files. Supports clipboard paste (Ctrl+V)."
             />
 
-            {result.detections.length > 0 && (
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)]">
-                <div className="mb-5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#FFF3C4] text-[#0B0909]">
-                      <AlertTriangle className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-base font-semibold">Detected Defects ({result.detections.length})</h2>
-                        {isStale && (
-                          <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
-                            Stale (Prior Run: Conf ≥ {resultThreshold?.toFixed(2)})
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-400">
-                        Real YOLO26n coordinates, class labels, and model confidence scores
-                      </p>
-                    </div>
-                  </div>
+            {/* Dev Mode Benchmark Samples Gallery */}
+            {isDev && (
+              <SampleGallery
+                samples={M1_SAMPLES}
+                onSelectSample={handleFileSelect}
+                selectedSampleId={file ? undefined : null}
+              />
+            )}
 
-                  <span className="text-xs text-slate-500 font-mono">
-                    Engine: YOLO26n · Conf ≥ {effectiveThreshold.toFixed(2)}
-                    {isStale && ` (target: ${activeThreshold.toFixed(2)})`}
+            {/* Sensitivity Threshold Ladder (Dev always, Prod collapsed) */}
+            <div
+              className={`rounded-xl border p-3.5 space-y-2.5 transition-colors ${
+                isStale ? "border-warning/50 bg-warning-tint/30" : "border-border bg-surface-subtle"
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-text flex items-center gap-1.5">
+                  <Sliders className="h-3.5 w-3.5 text-text-3" />
+                  Sensitivity Threshold
+                </span>
+                <span className="font-mono font-semibold text-text bg-surface px-2 py-0.5 rounded border border-border">
+                  Cutoff: {activeThreshold.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                {[
+                  { label: "Standard", value: 0.25, note: "Balanced" },
+                  { label: "High", value: 0.1, note: "Faint cracks" },
+                  { label: "Ultra", value: 0.05, note: "Deep search" },
+                ].map(preset => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => setActiveThreshold(preset.value)}
+                    className={`rounded-lg border p-2 text-left transition-all ${
+                      activeThreshold === preset.value
+                        ? "border-brand bg-brand-tint text-text font-semibold shadow-xs"
+                        : "border-border bg-surface text-text-2 hover:bg-surface-subtle"
+                    }`}
+                  >
+                    <div className="font-mono font-semibold text-xs">
+                      {preset.label} ({preset.value.toFixed(2)})
+                    </div>
+                    <div className="text-xs text-text-3">{preset.note}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Stale sensitivity banner */}
+              {isStale && (
+                <div className="flex items-center justify-between gap-2 rounded-lg bg-warning-tint p-2 text-xs text-text border border-warning/30">
+                  <span className="text-xs truncate">
+                    Threshold updated to <strong>{activeThreshold.toFixed(2)}</strong>.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRunInspection()}
+                    disabled={runMutation.isPending}
+                    className="shrink-0 rounded bg-ink px-2 py-1 text-xs font-semibold text-white hover:bg-ink/90 transition-colors"
+                  >
+                    Re-run
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Run Inference Action Button */}
+            <button
+              disabled={!file || runMutation.isPending}
+              onClick={() => handleRunInspection()}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-semibold text-white transition-all shadow-xs disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.99] ${
+                isStale
+                  ? "bg-ink ring-2 ring-brand hover:bg-ink/90"
+                  : "bg-ink hover:bg-ink/90"
+              }`}
+            >
+              {runMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-brand" />
+                  <span>Executing YOLO26n AI Inference…</span>
+                </>
+              ) : isStale ? (
+                <>
+                  <RefreshCw className="h-4 w-4 text-brand" />
+                  <span>Re-run at Sensitivity {activeThreshold.toFixed(2)}</span>
+                </>
+              ) : (
+                <>
+                  <ScanLine className="h-4 w-4 text-brand" />
+                  <span>Run AI Defect Inspection</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: Visual Evidence & Findings (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xs flex flex-col">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-text-3">
+                  Visual Evidence & Diagnostic Output
+                </span>
+                <h3 className="text-sm font-semibold text-text">
+                  {file ? file.name : "Awaiting Image Input"}
+                </h3>
+              </div>
+
+              {result && !executionError && (
+                <StatusBadge tone={result.detections.length > 0 ? "warning" : "success"}>
+                  {result.detections.length > 0
+                    ? `${result.detections.length} Defect(s) Identified`
+                    : "Clear / Under Cutoff"}
+                </StatusBadge>
+              )}
+            </div>
+
+            {/* Execution Error state */}
+            {executionError ? (
+              <ErrorState
+                title={executionError.isAuth ? "Authorization Required" : "Pipeline Execution Failed"}
+                message={executionError.message}
+                onRetry={() => handleRunInspection()}
+              />
+            ) : preview ? (
+              <ImageViewer
+                imageUrl={activeDisplayImage}
+                originalImageUrl={preview || undefined}
+                detections={viewerDetections}
+                highlightedIndex={highlightedIndex}
+                onHighlightIndex={setHighlightedIndex}
+                title={file?.name || "Solar Cell Visual Evidence"}
+              />
+            ) : (
+              <div className="flex flex-1 min-h-[360px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-subtle p-8 text-center">
+                <div className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-surface text-text-3 border border-border">
+                  <ScanLine className="h-6 w-6 text-text-2" />
+                </div>
+                <h4 className="text-xs sm:text-sm font-semibold text-text">
+                  Inspection Canvas Idle
+                </h4>
+                <p className="mt-1 max-w-xs text-xs text-text-3 leading-relaxed">
+                  Select an EL/NIR cell frame to view authentic bounding boxes, confidence overlays, and classification metrics.
+                </p>
+              </div>
+            )}
+
+            {/* Result KPI Bar */}
+            {result && !executionError && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <span className="text-xs text-text-3 block">Detections</span>
+                  <span className="font-mono text-lg font-bold text-text tabular-nums">
+                    {result.detections.length}
                   </span>
                 </div>
-
-                <DetectionTable detections={result.detections} />
+                <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <span className="text-xs text-text-3 block">Latency</span>
+                  <span className="font-mono text-lg font-bold text-text tabular-nums">
+                    {Math.round(result.processingTimeMs)} ms
+                  </span>
+                </div>
+                <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <span className="text-xs text-text-3 block">Cutoff</span>
+                  <span className="font-mono text-lg font-bold text-text tabular-nums">
+                    {effectiveThreshold.toFixed(2)}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <span className="text-xs text-text-3 block">Storage</span>
+                  <span className="font-mono text-xs font-semibold text-success truncate block">
+                    {result.persistence.split(",")[0] || "SQLite"}
+                  </span>
+                </div>
               </div>
             )}
           </div>
-        )}
 
-        {/* Zoom / Fullscreen Modal */}
-        {file && (
-          <ImageViewerModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            originalUrl={preview}
-            annotatedUrl={result?.annotatedImageDataUrl || result?.annotatedImageUrl}
-            filename={file.name}
-            detectionsCount={result?.detections.length ?? 0}
-          />
-        )}
+          {/* Detections Detail Table & Confidence Disclaimer */}
+          {result && !executionError && (
+            <div className="space-y-4">
+              <ConfidenceDisclaimer
+                threshold={effectiveThreshold}
+                detectionsCount={result.detections.length}
+                onRetryWithHighSensitivity={() => handleRunInspection(0.1)}
+              />
+
+              {result.detections.length > 0 && (
+                <div className="rounded-2xl border border-border bg-surface p-5 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-semibold text-text">
+                        Detected Defect Findings ({result.detections.length})
+                      </h4>
+                      <p className="text-xs text-text-3">
+                        Hover over a row to highlight bounding box coordinates on the canvas.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleExportCsv}
+                      className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-text-2 hover:bg-surface-subtle transition-colors"
+                    >
+                      Export CSV
+                    </button>
+                  </div>
+
+                  <DetectionTable
+                    detections={result.detections}
+                    highlightedIndex={highlightedIndex}
+                    onHighlightIndex={setHighlightedIndex}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Dev Mode Inspector Drawer */}
+      {isDev && (
+        <Inspector
+          open={inspectorOpen}
+          onClose={() => setInspectorOpen(false)}
+          data={{
+            resultSummary: result
+              ? {
+                  inspectionId: result.inspectionId,
+                  defectCount: result.detections.length,
+                  processingTimeMs: result.processingTimeMs,
+                  persistence: result.persistence,
+                }
+              : undefined,
+            requestInfo: file
+              ? {
+                  filename: file.name,
+                  mimeType: file.type,
+                  sizeBytes: file.size,
+                  activeThreshold,
+                  imageSize: settings.imageSize,
+                }
+              : undefined,
+            rawResponse: result,
+            modelInfo: {
+              model: "YOLO26n Single-Stage Anchor-Free",
+              checkpoint: "backend/models/best.pt",
+              trainingDataset: "PVELAD (9 defect classes)",
+              benchmarkEvaluation: "Held-out test set 792 images",
+            },
+            timingMs: {
+              inference: result?.processingTimeMs,
+              roundTrip: roundTripMs ?? undefined,
+            },
+            storageInfo: {
+              target: result?.persistence,
+              recordId: result?.inspectionId,
+              persisted: Boolean(result?.inspectionId),
+            },
+            errorInfo: executionError,
+          }}
+        />
+      )}
+    </div>
   );
 }

@@ -72,7 +72,7 @@ export function SelectedInspectionPanel({
       {/* Header with ID and Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div className="min-w-0">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Active Inspection Record
           </span>
           <div className="flex items-center gap-2 mt-0.5">
@@ -87,7 +87,7 @@ export function SelectedInspectionPanel({
               <Copy className="h-3.5 w-3.5" />
             </button>
             {copied && (
-              <span className="text-[10px] text-[#087e6d] font-semibold">Copied!</span>
+              <span className="text-xs text-success font-semibold">Copied!</span>
             )}
           </div>
         </div>
@@ -117,7 +117,7 @@ export function SelectedInspectionPanel({
           <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs">
             <button
               onClick={() => setViewMode("annotated")}
-              className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 viewMode === "annotated"
                   ? "bg-white text-slate-900 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -127,7 +127,7 @@ export function SelectedInspectionPanel({
             </button>
             <button
               onClick={() => setViewMode("original")}
-              className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 viewMode === "original"
                   ? "bg-white text-slate-900 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -170,16 +170,16 @@ export function SelectedInspectionPanel({
           <span className="text-xs font-semibold text-slate-700">
             Detected Defect Classes (Model 1)
           </span>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
             {inspection.detectionsCount} Anomali{inspection.detectionsCount === 1 ? "es" : "es"}
           </span>
         </div>
 
         {inspection.detections.length === 0 ? (
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 text-center">
-            <CheckCircle2 className="mx-auto h-5 w-5 text-[#087e6d] mb-1" />
+            <CheckCircle2 className="mx-auto h-5 w-5 text-success mb-1" />
             <p className="text-xs font-semibold text-slate-700">Zero Surface Defects Detected</p>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Solar cell is nominal. Root cause analysis is only required when anomalies are present.
             </p>
           </div>
@@ -203,7 +203,7 @@ export function SelectedInspectionPanel({
                       <p className="truncate text-xs font-bold text-slate-900">
                         {meta.label}
                       </p>
-                      <p className="text-[10px] text-slate-500 capitalize">
+                      <p className="text-xs text-slate-500 capitalize">
                         {meta.category} • BBox: [{Math.round(det.x1)}, {Math.round(det.y1)}] to [{Math.round(det.x2)}, {Math.round(det.y2)}]
                       </p>
                     </div>
@@ -211,11 +211,11 @@ export function SelectedInspectionPanel({
 
                   <div className="flex items-center gap-2 shrink-0">
                     <span
-                      className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold ${meta.badgeBg} ${meta.badgeBorder} ${meta.badgeText}`}
+                      className={`rounded-md border px-1.5 py-0.5 text-xs font-bold ${meta.badgeBg} ${meta.badgeBorder} ${meta.badgeText}`}
                     >
                       {confPct}% conf
                     </span>
-                    <span className="rounded bg-slate-200 px-1 py-0.5 text-[9px] uppercase font-bold text-slate-700">
+                    <span className="rounded bg-slate-200 px-1 py-0.5 text-xs uppercase font-bold text-slate-700">
                       {meta.severity}
                     </span>
                   </div>

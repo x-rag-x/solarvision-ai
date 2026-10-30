@@ -185,11 +185,11 @@ export function InspectionBatchLinker({
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
       {/* Header */}
       <div className="border-b border-slate-100 pb-4">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Traceability & Provenance
         </span>
         <h2 className="text-lg font-black tracking-tight text-slate-900 sm:text-xl flex items-center gap-2">
-          <LinkIcon className="h-5 w-5 text-[#087e6d]" />
+          <LinkIcon className="h-5 w-5 text-success" />
           Inspection-to-Batch Lineage Association
         </h2>
         <p className="mt-0.5 text-xs text-slate-600 max-w-2xl">
@@ -208,7 +208,7 @@ export function InspectionBatchLinker({
             <select
               value={inspectionId}
               onChange={(e) => setInspectionId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#F2B941]"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">— Choose stored inspection from line ({historyList.length} in DB) —</option>
               {isHistoryLoading && <option disabled>Loading history...</option>}
@@ -242,7 +242,7 @@ export function InspectionBatchLinker({
               ) : isInspectionValid ? (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#087e6d] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                     <div>
                       <span className="font-semibold text-emerald-950">
                         {activeInspection?.sourceFilename || "Inspection Record"}
@@ -252,7 +252,7 @@ export function InspectionBatchLinker({
                       </span>
                     </div>
                   </div>
-                  <span className="font-mono text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
                     Verified in DB
                   </span>
                 </div>
@@ -274,11 +274,11 @@ export function InspectionBatchLinker({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5 text-[#F2B941]" />
+                <Layers className="h-3.5 w-3.5 text-primary" />
                 2. Manufacturing Batch / Lot Number *
               </label>
               {batchesData && batchesData.length > 0 && (
-                <span className="text-[10px] text-[#087e6d] font-semibold">
+                <span className="text-xs text-success font-semibold">
                   {batchesData.length} batches registered
                 </span>
               )}
@@ -288,7 +288,7 @@ export function InspectionBatchLinker({
               <select
                 value={batchId}
                 onChange={(e) => setBatchId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#087e6d]"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-success"
               >
                 <option value="">— Select from registered batches ({batchesData.length}) —</option>
                 {batchesData.map((b: any) => (
@@ -308,7 +308,7 @@ export function InspectionBatchLinker({
               />
             )}
 
-            <div className="flex items-center justify-between text-[10px] text-slate-400">
+            <div className="flex items-center justify-between text-xs text-slate-400">
               <span>Corresponds to batch_number in manufacturing_batches</span>
               {(!batchesData || batchesData.length === 0) && (
                 <span className="text-amber-600 font-medium">0 batches in DB (manual entry active)</span>
@@ -324,7 +324,7 @@ export function InspectionBatchLinker({
                 3. Machine Station / Equipment Code *
               </label>
               {machinesData && machinesData.length > 0 && (
-                <span className="text-[10px] text-[#087e6d] font-semibold">
+                <span className="text-xs text-success font-semibold">
                   {machinesData.length} machines registered
                 </span>
               )}
@@ -334,7 +334,7 @@ export function InspectionBatchLinker({
               <select
                 value={machineId}
                 onChange={(e) => setMachineId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#087e6d]"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-success"
               >
                 <option value="">— Select from registered machines ({machinesData.length}) —</option>
                 {machinesData.map((m: any) => (
@@ -354,7 +354,7 @@ export function InspectionBatchLinker({
               />
             )}
 
-            <div className="flex items-center justify-between text-[10px] text-slate-400">
+            <div className="flex items-center justify-between text-xs text-slate-400">
               <span>Corresponds to machine_code in manufacturing_machines</span>
               {(!machinesData || machinesData.length === 0) && (
                 <span className="text-amber-600 font-medium">0 machines in DB (manual entry active)</span>
@@ -417,7 +417,7 @@ export function InspectionBatchLinker({
           >
             <div className="flex items-start gap-2">
               {statusMessage.type === "success" ? (
-                <CheckCircle2 className="h-4 w-4 text-[#087e6d] shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
               ) : statusMessage.type === "warning" ? (
                 <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
               ) : (
@@ -426,7 +426,7 @@ export function InspectionBatchLinker({
               <div className="space-y-1">
                 <span className="font-semibold block">{statusMessage.text}</span>
                 {statusMessage.details && (
-                  <p className="text-[11px] opacity-90 leading-relaxed font-mono">
+                  <p className="text-xs opacity-90 leading-relaxed font-mono">
                     {statusMessage.details}
                   </p>
                 )}
@@ -455,7 +455,7 @@ export function InspectionBatchLinker({
           <Button
             type="submit"
             disabled={linkMutation.isPending || !isInspectionValid || !batchId || !machineId}
-            className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs font-semibold h-9 px-4"
+            className="bg-primary text-white hover:bg-slate-800 text-xs font-semibold h-9 px-4"
           >
             {linkMutation.isPending ? (
               <>
@@ -464,7 +464,7 @@ export function InspectionBatchLinker({
               </>
             ) : (
               <>
-                <LinkIcon className="mr-1.5 h-3.5 w-3.5 text-[#F2B941]" />
+                <LinkIcon className="mr-1.5 h-3.5 w-3.5 text-primary" />
                 Associate Lineage Link
               </>
             )}

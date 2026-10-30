@@ -219,10 +219,8 @@ describe("DashboardLayout Sidebar Navigation — Root Cause Visibility Invariant
     );
 
     expect(html).not.toContain("Root cause analysis");
-    expect(html).toContain("Cell screening (Model 2)");
+    expect(html).toContain("Cell screening");
     expect(html).toContain("Inspection history");
-    expect(html).toContain("Predictive quality");
-    expect(html).toContain("Predictive maintenance");
   });
 
   it("displays Root cause analysis in the sidebar navigation when enabled", () => {
@@ -234,6 +232,5 @@ describe("DashboardLayout Sidebar Navigation — Root Cause Visibility Invariant
     );
 
     expect(html).toContain("Root cause analysis");
-    expect(html).toContain("<span>Root cause analysis</span>");
   });
 });

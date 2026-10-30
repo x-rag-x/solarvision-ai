@@ -1,42 +1,196 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 :root {
-  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  color: #0B0909;
-  background: #EBE8D2;
+  /* SolarVision Calm Precision Design Tokens */
+  --canvas: #F7F6F2;
+  --surface: #FFFFFF;
+  --surface-subtle: #F1F0EB;
+  --border: #E3E1DA;
+  --border-strong: #8C887E;
+  --text: #16130F;
+  --text-2: #46433D;
+  --text-3: #6A665E;
+  --ink: #16130F;
+  --brand: #F2B941;
+  --brand-tint: #FFF4D6;
+  --brand-text: #8A5A00;
+  --focus: #B07400;
+  --success: #1B6B43;
+  --success-tint: #E7F4EC;
+  --warning: #8A5A00;
+  --warning-tint: #FFF4D6;
+  --danger: #B42318;
+  --danger-tint: #FDECEA;
+  --info: #1E4FBF;
+  --info-tint: #E8EEFC;
+
+  /* shadcn UI Token Compatibility */
+  --background: #F7F6F2;
+  --foreground: #16130F;
+  --card: #FFFFFF;
+  --card-foreground: #16130F;
+  --popover: #FFFFFF;
+  --popover-foreground: #16130F;
+  --primary: #16130F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F0EB;
+  --secondary-foreground: #16130F;
+  --muted: #F1F0EB;
+  --muted-foreground: #6A665E;
+  --accent: #F1F0EB;
+  --accent-foreground: #16130F;
+  --destructive: #B42318;
+  --destructive-foreground: #FFFFFF;
+  --input: #E3E1DA;
+  --ring: #B07400;
+  --radius: 0.75rem;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #16130F;
+  background-color: #F7F6F2;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --radius: 0.8rem;
-  --background: #EBE8D2;
-  --foreground: #0B0909;
-  --card: #ffffff;
-  --card-foreground: #0B0909;
-  --popover: #ffffff;
-  --popover-foreground: #0B0909;
-  --primary: #0B0909;
-  --primary-foreground: #ffffff;
-  --secondary: #F2B941;
-  --secondary-foreground: #0B0909;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #e2e8f0;
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #F2B941;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-* { box-sizing: border-box; }
-html { background: #EBE8D2; }
-body { margin: 0; min-width: 320px; background: #EBE8D2; }
-button, input { font: inherit; }
-button { cursor: pointer; }
-::selection { background: #F2B941; color: #0B0909; }
-.font-mono, code { font-family: 'DM Mono', ui-monospace, monospace; }
-@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
-.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+@theme inline {
+  --font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", "Segoe UI Mono", Menlo, Consolas, monospace;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-ink: var(--ink);
+  --color-brand: var(--brand);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-text: var(--brand-text);
+  --color-focus: var(--focus);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
+
+  /* shadcn compat */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--canvas);
+  color: var(--text);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background-color: var(--canvas);
+  color: var(--text);
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--brand);
+  color: var(--ink);
+}
+
+.font-mono, code, kbd {
+  font-family: "JetBrains Mono", "DM Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print Stylesheet for Report Mode (A4, clean evidence & tables) */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #16130F !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  header, nav, aside, [role="navigation"] {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  .print-break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+}
