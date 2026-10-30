@@ -6,6 +6,7 @@ import { useAppMode } from "@/contexts/ModeContext";
 import { isUnauthorizedError } from "@/lib/auth-helpers";
 import { ArrowLeft, Compass, Copy, Download, Share2, Terminal } from "lucide-react";
 import { toast } from "sonner";
+import { formatInspectionDate } from "@/lib/date";
 
 // Shared SolarVision UI Components
 import PageHeader from "@/components/solarvision/PageHeader";
@@ -91,24 +92,41 @@ export default function InspectionDetail() {
           (() => {
             const inspection = data.inspection as any;
             const detections = (data.detections || []) as any[];
-            const defectCount = detections.length;
+            const isFailed = inspection.status === "failed";
+            const defectCount = isFailed ? 0 : detections.length;
             const maxConfidence =
               defectCount > 0 ? Math.max(...detections.map(d => Number(d.confidence || 0))) : 0;
+            const executionTime = Math.round(
+              Number(inspection.processingTimeMs || inspection.executionTimeMs || 0)
+            );
 
-            const viewerDetections = detections.map((d, i) => ({
-              id: i,
-              class: d.defect_type || d.defectType || "defect",
-              label: d.defect_type || d.defectType || "defect",
-              confidence: Number(d.confidence || 0),
-              bbox: [Number(d.x1), Number(d.y1), Number(d.x2), Number(d.y2)] as [number, number, number, number],
-            }));
+            const failureReason = isFailed
+              ? inspection.persistenceStatus?.startsWith("failed_inference:")
+                ? inspection.persistenceStatus.replace(/^failed_inference:/, "")
+                : inspection.persistenceStatus || "Inference pipeline execution failed."
+              : null;
+
+            const viewerDetections = isFailed
+              ? []
+              : detections.map((d, i) => ({
+                  id: i,
+                  class: d.defect_type || d.defectType || "defect",
+                  label: d.defect_type || d.defectType || "defect",
+                  confidence: Number(d.confidence || 0),
+                  bbox: [Number(d.x1), Number(d.y1), Number(d.x2), Number(d.y2)] as [
+                    number,
+                    number,
+                    number,
+                    number,
+                  ],
+                }));
 
             const cleanDetailImage = inspection.inputImageUrl || "";
             const backendAnnotatedDetailImage = inspection.annotatedImageUrl || null;
             const isDetailBackendOnly = !cleanDetailImage && Boolean(backendAnnotatedDetailImage);
 
             const handleExportCsv = () => {
-              if (detections.length === 0) {
+              if (isFailed || detections.length === 0) {
                 toast.info("No detections to export.");
                 return;
               }
@@ -123,7 +141,7 @@ export default function InspectionDetail() {
               const url = URL.createObjectURL(blob);
               const link = document.createElement("a");
               link.setAttribute("href", url);
-              link.setAttribute("download", `solarvision_record_${inspection.inspectionId.slice(0, 8)}.csv`);
+              link.setAttribute("download", `solarvision_record_${(inspection.inspectionId || inspectionId).slice(0, 8)}.csv`);
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
@@ -134,43 +152,79 @@ export default function InspectionDetail() {
               <div className="space-y-6">
                 <ReportLayout
                   title={`Inspection Record: ${inspection.sourceFilename || "EL Cell Image"}`}
-                  reportId={inspection.inspectionId}
+                  reportId={inspection.inspectionId || inspectionId}
                   timestamp={inspection.createdAt}
-                  operatorName={user?.name || "Authorized Operator"}
+                  operatorName={user?.name || inspection.operatorId || "Authorized Operator"}
                   modelBadge={<ModelBadge model="M1" />}
                   statusBadge={
-                    <StatusBadge tone={defectCount > 0 ? "warning" : "success"}>
-                      {defectCount > 0 ? `${defectCount} Defect(s) Recorded` : "Clear / Zero Detections"}
-                    </StatusBadge>
+                    isFailed ? (
+                      <StatusBadge tone="danger">Inference Failed</StatusBadge>
+                    ) : (
+                      <StatusBadge tone={defectCount > 0 ? "warning" : "success"}>
+                        {defectCount > 0
+                          ? `${defectCount} Defect${defectCount === 1 ? "" : "s"} Recorded`
+                          : "Clear / Zero Detections"}
+                      </StatusBadge>
+                    )
                   }
                   verdictHeadline={
-                    defectCount > 0
+                    isFailed
+                      ? "Inference execution failed without defect classification"
+                      : defectCount > 0
                       ? `${defectCount} structural defect${defectCount === 1 ? "" : "s"} persisted in factory record`
                       : "Zero defect patterns detected above model cutoff"
                   }
-                  verdictTone={defectCount > 0 ? "warning" : "success"}
-                  verdictStats={[
-                    { label: "Detected Defects", value: defectCount },
-                    {
-                      label: "Max Confidence",
-                      value: defectCount > 0 ? `${(maxConfidence * 100).toFixed(1)}%` : "—",
-                    },
-                    {
-                      label: "Engine Execution",
-                      value: `${Math.round(Number(inspection.executionTimeMs || 0))} ms`,
-                    },
-                  ]}
+                  verdictTone={isFailed ? "danger" : defectCount > 0 ? "warning" : "success"}
+                  verdictStats={
+                    isFailed
+                      ? [
+                          { label: "Inspection Status", value: "Failed" },
+                          { label: "Defects Logged", value: "0 (Incomplete)" },
+                          {
+                            label: "Engine Execution",
+                            value: `${executionTime} ms`,
+                          },
+                        ]
+                      : [
+                          { label: "Detected Defects", value: defectCount },
+                          {
+                            label: "Max Confidence",
+                            value: defectCount > 0 ? `${(maxConfidence * 100).toFixed(1)}%` : "—",
+                          },
+                          {
+                            label: "Engine Execution",
+                            value: `${executionTime} ms`,
+                          },
+                        ]
+                  }
                   mandatoryNoticeNode={
-                    <NoticeBar
-                      tone="warning"
-                      message="Academic prototype: not factory-certified. Zero detections does not certify a defect-free solar cell."
-                      details={
-                        <p>
-                          Persisted record evaluated with YOLO26n weights on PVELAD benchmark.
-                          Results conform to zero-fabrication standards and are read directly from persistent storage.
-                        </p>
-                      }
-                    />
+                    isFailed ? (
+                      <NoticeBar
+                        tone="danger"
+                        message="Inspection failed during inference execution. No defect detections or quality certifications were recorded."
+                        details={
+                          <p>
+                            The automated defect detection pipeline encountered a processing error and could not complete inference.
+                            {failureReason && (
+                              <span className="block mt-1 font-mono text-xs opacity-90">
+                                Failure Detail: {failureReason}
+                              </span>
+                            )}
+                          </p>
+                        }
+                      />
+                    ) : (
+                      <NoticeBar
+                        tone="warning"
+                        message="Academic prototype: not factory-certified. Zero detections does not certify a defect-free solar cell."
+                        details={
+                          <p>
+                            Persisted record evaluated with YOLO26n weights on PVELAD benchmark.
+                            Results conform to zero-fabrication standards and are read directly from persistent storage.
+                          </p>
+                        }
+                      />
+                    )
                   }
                   evidenceNode={
                     <ImageViewer
@@ -186,11 +240,18 @@ export default function InspectionDetail() {
                     />
                   }
                   findingsNode={
-                    <DetectionTable
-                      detections={detections}
-                      highlightedIndex={highlightedIndex}
-                      onHighlightIndex={setHighlightedIndex}
-                    />
+                    isFailed ? (
+                      <div className="rounded-xl border border-border bg-surface-subtle p-6 text-center text-xs text-text-3">
+                        Inference execution failed — no defect findings were recorded.
+                      </div>
+                    ) : (
+                      <DetectionTable
+                        detections={detections}
+                        emptyMessage="Zero defect patterns detected above model cutoff."
+                        highlightedIndex={highlightedIndex}
+                        onHighlightIndex={setHighlightedIndex}
+                      />
+                    )
                   }
                   actionsNode={
                     <>
@@ -203,7 +264,7 @@ export default function InspectionDetail() {
                           <span>Inspector</span>
                         </button>
                       )}
-                      {enableRootCause && (
+                      {enableRootCause && !isFailed && (
                         <Link
                           href={`/root-cause/${inspection.inspectionId}`}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-brand/40 bg-brand-tint px-3 py-1.5 text-xs font-semibold text-brand-text hover:bg-brand/20 transition-colors shadow-xs"
@@ -226,9 +287,10 @@ export default function InspectionDetail() {
                       resultSummary: {
                         inspectionId: inspection.inspectionId,
                         sourceFilename: inspection.sourceFilename,
+                        status: inspection.status,
                         defectCount,
                         modelName: inspection.modelName,
-                        createdAt: inspection.createdAt,
+                        createdAt: formatInspectionDate(inspection.createdAt),
                       },
                       rawResponse: data,
                       modelInfo: {
@@ -241,6 +303,7 @@ export default function InspectionDetail() {
                         recordId: inspection.inspectionId,
                         persisted: true,
                       },
+                      errorInfo: failureReason ? { reason: failureReason } : undefined,
                     }}
                   />
                 )}

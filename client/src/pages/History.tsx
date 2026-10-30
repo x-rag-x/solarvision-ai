@@ -25,6 +25,7 @@ import StatCard from "@/components/solarvision/StatCard";
 import StatusBadge from "@/components/solarvision/StatusBadge";
 import AuthGuard from "@/components/solarvision/AuthGuard";
 import { EmptyState, ErrorState, Skeleton } from "@/components/solarvision/StateComponents";
+import { formatInspectionDate, isValidDateInput } from "@/lib/date";
 
 export default function History() {
   const [, setLocation] = useLocation();
@@ -75,8 +76,10 @@ export default function History() {
     const headers = "InspectionId,Filename,Status,DefectsCount,LatencyMs,Persistence,Timestamp\n";
     const csvRows = filteredRows
       .map(
-        r =>
-          `"${r.inspectionId}","${r.sourceFilename}","${r.status}",${r.detectionsCount},${Math.round(r.processingTimeMs)},"${r.persistenceStatus}","${new Date(r.createdAt).toISOString()}"`
+        r => {
+          const iso = isValidDateInput(r.createdAt) ? new Date(r.createdAt).toISOString() : "";
+          return `"${r.inspectionId}","${r.sourceFilename}","${r.status}",${r.detectionsCount},${Math.round(r.processingTimeMs)},"${r.persistenceStatus}","${iso}"`;
+        }
       )
       .join("\n");
 
@@ -284,10 +287,7 @@ export default function History() {
                           </td>
                         )}
                         <td className="py-3 px-3 text-text-3 font-mono text-xs">
-                          {new Date(item.createdAt).toLocaleString(undefined, {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
+                          {formatInspectionDate(item.createdAt)}
                         </td>
                         <td className="py-3 px-4 text-right">
                           <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-text-2 group-hover:border-sapphire group-hover:text-sapphire transition-colors">

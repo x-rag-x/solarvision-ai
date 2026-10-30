@@ -2,17 +2,18 @@ import React from "react";
 import { Printer, Download, Share2, RotateCcw, ArrowLeft, Copy, Check, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import { formatInspectionDate } from "@/lib/date";
 
 interface ReportLayoutProps {
   title: string;
   reportId: string;
-  timestamp: string | number;
+  timestamp: Date | string | number | null | undefined;
   operatorName?: string;
   modelBadge: React.ReactNode;
   statusBadge: React.ReactNode;
   verdictHeadline: string;
   verdictTone?: "success" | "warning" | "danger" | "neutral";
-  verdictStats?: Array<{ label: string; value: string | number; unit?: string }>;
+  verdictStats?: Array<{ label: string; value: React.ReactNode; unit?: string }>;
   evidenceNode: React.ReactNode;
   findingsNode: React.ReactNode;
   mandatoryNoticeNode: React.ReactNode;
@@ -23,8 +24,8 @@ interface ReportLayoutProps {
 }
 
 export function ReportLayout({
-  title,
-  reportId,
+  title = "Inspection Report",
+  reportId = "—",
   timestamp,
   operatorName = "Authorized Operator",
   modelBadge,
@@ -42,12 +43,10 @@ export function ReportLayout({
 }: ReportLayoutProps) {
   const [copied, setCopied] = React.useState(false);
 
-  const formattedDate = typeof timestamp === "number"
-    ? new Date(timestamp).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "medium",
-      })
-    : timestamp;
+  const reportTitle = title || "Inspection Report";
+  const displayReportId = reportId || "—";
+  const displayOperator = operatorName || "Authorized Operator";
+  const formattedDate = formatInspectionDate(timestamp);
 
   const handlePrint = () => {
     window.print();
@@ -135,7 +134,7 @@ export function ReportLayout({
                 <span className="font-mono text-xs text-text-3">ISO-Traceable Evidence</span>
               </div>
               <h1 className="text-2xl font-bold tracking-tight text-text">
-                {title}
+                {reportTitle}
               </h1>
             </div>
 
@@ -152,11 +151,11 @@ export function ReportLayout({
             </div>
             <div>
               <span>Operator: </span>
-              <span className="font-medium text-text">{operatorName}</span>
+              <span className="font-medium text-text">{displayOperator}</span>
             </div>
             <div className="flex items-center gap-1">
               <span>ID: </span>
-              <span className="font-mono font-medium text-text">{reportId}</span>
+              <span className="font-mono font-medium text-text">{displayReportId}</span>
             </div>
           </div>
         </header>
@@ -177,15 +176,23 @@ export function ReportLayout({
 
           {verdictStats.length > 0 && (
             <div className="flex flex-wrap items-center gap-6 sm:border-l sm:border-border sm:pl-6 shrink-0">
-              {verdictStats.map((stat, idx) => (
-                <div key={idx} className="space-y-0.5">
-                  <span className="text-xs text-text-3 block">{stat.label}</span>
-                  <span className="font-mono text-xl font-bold text-text tabular-nums">
-                    {stat.value}
-                    {stat.unit && <span className="text-xs font-normal text-text-3 ml-1">{stat.unit}</span>}
-                  </span>
-                </div>
-              ))}
+              {verdictStats.map((stat, idx) => {
+                const displayVal =
+                  stat.value instanceof Date
+                    ? formatInspectionDate(stat.value)
+                    : stat.value === null || stat.value === undefined
+                    ? "—"
+                    : stat.value;
+                return (
+                  <div key={idx} className="space-y-0.5">
+                    <span className="text-xs text-text-3 block">{stat.label}</span>
+                    <span className="font-mono text-xl font-bold text-text tabular-nums">
+                      {displayVal}
+                      {stat.unit && <span className="text-xs font-normal text-text-3 ml-1">{stat.unit}</span>}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
@@ -218,7 +225,7 @@ export function ReportLayout({
         <footer className="hidden print:block pt-6 mt-8 border-t border-border text-xs font-mono text-text-3">
           <div className="flex justify-between items-center">
             <span>SolarVision AI — Automated Quality Intelligence Platform</span>
-            <span>Document Checksum: {reportId.slice(0, 16)}</span>
+            <span>Document Checksum: {displayReportId ? displayReportId.slice(0, 16) : "—"}</span>
           </div>
         </footer>
       </article>

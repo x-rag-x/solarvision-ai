@@ -306,88 +306,98 @@ export function ImageViewer({
 
       {/* Canvas Area */}
       <div className="relative flex-1 min-h-[360px] max-h-[640px] flex items-center justify-center overflow-auto p-4 bg-zinc-950">
-        <div
-          className="relative inline-block transition-transform duration-100 ease-out max-w-full"
-          style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}
-        >
-          <img
-            ref={imgRef}
-            src={activeSrc}
-            onLoad={handleImageLoad}
-            alt={title}
-            className="block max-h-[580px] w-auto object-contain rounded border border-white/10 shadow-2xl pointer-events-none"
-          />
+        {!activeSrc ? (
+          <div className="flex flex-col items-center justify-center p-8 text-center text-white/60">
+            <Eye className="h-10 w-10 text-white/30 mb-2" />
+            <p className="text-sm font-semibold text-white/80">Visual Evidence Unavailable</p>
+            <p className="text-xs text-white/50 max-w-xs mt-1">
+              No image frame is preserved in local storage for this inspection record.
+            </p>
+          </div>
+        ) : (
+          <div
+            className="relative inline-block transition-transform duration-100 ease-out max-w-full"
+            style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}
+          >
+            <img
+              ref={imgRef}
+              src={activeSrc}
+              onLoad={handleImageLoad}
+              alt={title}
+              className="block max-h-[580px] w-auto object-contain rounded border border-white/10 shadow-2xl pointer-events-none"
+            />
 
-          {/* Authoritative Defect Bounding Boxes Overlay */}
-          {shouldRenderOverlays && (
-            <div className="absolute inset-0 pointer-events-auto">
-              {/* Ground Truth Layer (Disabled by default, optional comparison) */}
-              {visibleGroundTruth.map((gt, idx) => {
-                const boxStyle = getBoxStyle({ ...gt, isGroundTruth: true }, false);
-                if (!boxStyle) return null;
-                return (
-                  <div
-                    key={`gt-${idx}`}
-                    style={boxStyle}
-                    className="absolute border-2 border-dashed border-cyan-400 z-5 pointer-events-none"
-                  >
-                    <span
-                      className={`absolute px-1.5 py-0.5 text-[10px] font-bold text-cyan-200 bg-cyan-950/80 border border-cyan-400/40 rounded shadow-sm whitespace-nowrap leading-none select-none ${
-                        boxStyle.isNearTop ? "bottom-1 left-1" : "-bottom-5 left-0"
+            {/* Authoritative Defect Bounding Boxes Overlay */}
+            {shouldRenderOverlays && (
+              <div className="absolute inset-0 pointer-events-auto">
+                {/* Ground Truth Layer (Disabled by default, optional comparison) */}
+                {visibleGroundTruth.map((gt, idx) => {
+                  const boxStyle = getBoxStyle({ ...gt, isGroundTruth: true }, false);
+                  if (!boxStyle) return null;
+                  return (
+                    <div
+                      key={`gt-${idx}`}
+                      style={boxStyle}
+                      className="absolute border-2 border-dashed border-cyan-400 z-5 pointer-events-none"
+                    >
+                      <span
+                        className={`absolute px-1.5 py-0.5 text-[10px] font-bold text-cyan-200 bg-cyan-950/80 border border-cyan-400/40 rounded shadow-sm whitespace-nowrap leading-none select-none ${
+                          boxStyle.isNearTop ? "bottom-1 left-1" : "-bottom-5 left-0"
+                        }`}
+                      >
+                        GT: {gt.label || gt.class}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {/* Exact YOLO Predictions Layer (Authoritative single overlay) */}
+                {visibleDetections.map((det, idx) => {
+                  const hasAnyHighlight = highlightedIndex !== null;
+                  const isHighlighted = highlightedIndex === idx;
+                  const boxStyle = getBoxStyle(det, isHighlighted);
+                  if (!boxStyle) return null;
+
+                  const defectClass = DEFECT_CLASSES[det.class] || {
+                    label: det.class,
+                    color: "#F2B941",
+                  };
+
+                  return (
+                    <div
+                      key={`pred-${idx}`}
+                      style={boxStyle}
+                      onMouseEnter={() => onHighlightIndex?.(idx)}
+                      onMouseLeave={() => onHighlightIndex?.(null)}
+                      onClick={() => onHighlightIndex?.(isHighlighted ? null : idx)}
+                      className={`absolute transition-all duration-150 cursor-pointer ${
+                        isHighlighted
+                          ? "border-[3px] border-amber-300 ring-4 ring-amber-400 ring-offset-2 ring-offset-black/90 shadow-[0_0_24px_rgba(251,191,36,0.9)] z-40 scale-[1.02] opacity-100"
+                          : hasAnyHighlight
+                          ? "border-2 z-10 opacity-35 hover:opacity-100 hover:border-white hover:z-20"
+                          : "border-2 z-10 hover:border-white hover:z-20 opacity-100"
                       }`}
                     >
-                      GT: {gt.label || gt.class}
-                    </span>
-                  </div>
-                );
-              })}
-
-              {/* Exact YOLO Predictions Layer (Authoritative single overlay) */}
-              {visibleDetections.map((det, idx) => {
-                const hasAnyHighlight = highlightedIndex !== null;
-                const isHighlighted = highlightedIndex === idx;
-                const boxStyle = getBoxStyle(det, isHighlighted);
-                if (!boxStyle) return null;
-
-                const defectClass = DEFECT_CLASSES[det.class] || {
-                  label: det.class,
-                  color: "#F2B941",
-                };
-
-                return (
-                  <div
-                    key={`pred-${idx}`}
-                    style={boxStyle}
-                    onMouseEnter={() => onHighlightIndex?.(idx)}
-                    onMouseLeave={() => onHighlightIndex?.(null)}
-                    onClick={() => onHighlightIndex?.(isHighlighted ? null : idx)}
-                    className={`absolute transition-all duration-150 cursor-pointer ${
-                      isHighlighted
-                        ? "border-[3px] border-amber-300 ring-4 ring-amber-400 ring-offset-2 ring-offset-black/90 shadow-[0_0_24px_rgba(251,191,36,0.9)] z-40 scale-[1.02] opacity-100"
-                        : hasAnyHighlight
-                        ? "border-2 z-10 opacity-35 hover:opacity-100 hover:border-white hover:z-20"
-                        : "border-2 z-10 hover:border-white hover:z-20 opacity-100"
-                    }`}
-                  >
-                    <span
-                      style={{ backgroundColor: isHighlighted ? "#D97706" : defectClass.color }}
-                      className={`absolute px-2 py-0.5 text-[11px] font-bold text-white rounded shadow-md whitespace-nowrap leading-none select-none pointer-events-none transition-transform flex items-center gap-1.5 ${
-                        isHighlighted ? "scale-110 ring-2 ring-amber-300 shadow-xl z-50 font-extrabold" : ""
-                      } ${
-                        boxStyle.isNearTop ? "top-1 left-1" : "-top-5 left-0"
-                      }`}
-                    >
-                      {isHighlighted && (
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-white animate-ping shrink-0" />
-                      )}
-                      <span>{defectClass.label} · {Math.round(det.confidence * 100)}%</span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                      <span
+                        style={{ backgroundColor: isHighlighted ? "#D97706" : defectClass.color }}
+                        className={`absolute px-2 py-0.5 text-[11px] font-bold text-white rounded shadow-md whitespace-nowrap leading-none select-none pointer-events-none transition-transform flex items-center gap-1.5 ${
+                          isHighlighted ? "scale-110 ring-2 ring-amber-300 shadow-xl z-50 font-extrabold" : ""
+                        } ${
+                          boxStyle.isNearTop ? "top-1 left-1" : "-top-5 left-0"
+                        }`}
+                      >
+                        {isHighlighted && (
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-white animate-ping shrink-0" />
+                        )}
+                        <span>{defectClass.label} · {Math.round(det.confidence * 100)}%</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Bottom Legend */}

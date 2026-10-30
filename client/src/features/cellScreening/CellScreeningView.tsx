@@ -36,7 +36,7 @@ import Inspector from "@/components/solarvision/Inspector";
 import AuthPrompt from "@/components/solarvision/AuthPrompt";
 import { EmptyState, ErrorState, Skeleton } from "@/components/solarvision/StateComponents";
 
-interface ScreeningResult {
+export interface ScreeningResult {
   screeningId: string;
   imageUrl: string;
   sourceFilename: string;
@@ -56,13 +56,23 @@ interface ScreeningResult {
   createdAt: string;
 }
 
-export function CellScreeningView() {
+export interface CellScreeningViewProps {
+  initialResult?: ScreeningResult | null;
+  initialFile?: File | null;
+  initialPreview?: string | null;
+}
+
+export function CellScreeningView({
+  initialResult = null,
+  initialFile = null,
+  initialPreview = null,
+}: CellScreeningViewProps = {}) {
   const { user, isAuthenticated } = useAuth();
   const { isDev, isProd } = useAppMode();
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [result, setResult] = useState<ScreeningResult | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialPreview);
+  const [result, setResult] = useState<ScreeningResult | null>(initialResult);
   const [inspectorOpen, setInspectorOpen] = useState(false);
 
   const statusQuery = trpc.model2Elpv.status.useQuery();
@@ -75,7 +85,7 @@ export function CellScreeningView() {
     onSuccess: (data: any) => {
       setResult(data);
       historyQuery.refetch();
-      toast.success("Cell screening completed — Operator review required.");
+      toast.success("Cell screening completed — Operator verification required.");
     },
     onError: (err: any) => {
       toast.error("Screening inference failed", {
@@ -126,11 +136,19 @@ export function CellScreeningView() {
   };
 
   const benchmark = statusQuery.data?.benchmark;
+  const configuredThreshold =
+    result?.rawThreshold ??
+    statusQuery.data?.threshold ??
+    0.55;
+  const thresholdPct =
+    result?.thresholdPct ??
+    Math.round(configuredThreshold * 100);
+  const isDefective = result
+    ? (result.rawDefectiveScore >= configuredThreshold || result.predictedClass === "defective")
+    : false;
 
   // Prod Mode: Printable Inspection Report Layout
   if (isProd && result) {
-    const isDefective = result.predictedClass === "defective";
-
     return (
       <div className="space-y-6">
         <PageHeader
@@ -154,9 +172,10 @@ export function CellScreeningView() {
 
         <NoticeBar
           tone="warning"
-          message="Operational Warning: Screening-only output. Every cell requires secondary human operator confirmation."
+          message="Operator Verification Required: Human verification is required before a quality decision, regardless of the AI prediction."
           details={
             <p>
+              Research screening result only. Human review is required before a final quality decision.
               Under zero-fabrication standards, Model 2 (EfficientNet-B0) operates as an anomaly triage filter.
               It does not generate automated factory reject signals.
             </p>
@@ -171,32 +190,35 @@ export function CellScreeningView() {
           modelBadge={<ModelBadge model="M2" readiness="Screening Only" />}
           statusBadge={
             <StatusBadge tone={isDefective ? "warning" : "success"}>
-              {isDefective ? "Defective Likelihood Flagged" : "Healthy Cell Nominal"}
+              {isDefective ? "Predicted Defective" : "Predicted Healthy"}
             </StatusBadge>
           }
           verdictHeadline={
             isDefective
-              ? `Defective cell pattern flagged above 0.55 cutoff (Anomaly score: ${result.defectiveScorePct}%)`
-              : `Cell classified healthy within nominal tolerance (Anomaly score: ${result.defectiveScorePct}%)`
+              ? "Predicted Defective — Verification Required"
+              : "Predicted Healthy — Verification Required"
           }
           verdictTone={isDefective ? "warning" : "success"}
           verdictStats={[
             { label: "Screening ID", value: result.screeningId.slice(0, 10) },
-            { label: "Anomaly Score", value: `${result.defectiveScorePct}%` },
-            { label: "Cutoff", value: "55.0%" },
-            { label: "Review Status", value: "Mandatory Review" },
+            { label: "Prediction", value: isDefective ? "Predicted Defective" : "Predicted Healthy" },
+            { label: "Defectiveness Score", value: `${result.defectiveScorePct}%` },
+            { label: "Decision Threshold", value: `${thresholdPct}%` },
+            { label: "Operator Verification", value: "Required" },
           ]}
           mandatoryNoticeNode={
-            <NoticeBar
-              tone="warning"
-              message="Operational Warning: Screening-only output. Every cell requires secondary human operator confirmation."
-              details={
-                <p>
-                  Under zero-fabrication standards, Model 2 (EfficientNet-B0) operates as an anomaly triage filter.
-                  It does not generate automated factory reject signals.
-                </p>
-              }
-            />
+            <div className="rounded-xl border border-warning/30 bg-warning-tint/30 p-4 text-xs text-text space-y-1.5">
+              <div className="flex items-center gap-2 font-semibold text-warning">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>Operator Verification Required</span>
+              </div>
+              <p className="text-text-2 pl-6">
+                Human verification is required before a quality decision, regardless of the AI prediction.
+              </p>
+              <p className="text-text-3 pl-6 text-[11px] italic">
+                Research screening result only. Human review is required before a final quality decision.
+              </p>
+            </div>
           }
           evidenceNode={
             <div className="space-y-3">
@@ -213,38 +235,73 @@ export function CellScreeningView() {
             </div>
           }
           findingsNode={
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-text">Screening Gauge</span>
-                <span className="font-mono text-text-3">Cutoff: 55.0%</span>
+            <div className="space-y-4">
+              <div className="rounded-xl border border-border bg-[#F0F1F9]/50 p-4 space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-text">Defectiveness Score</span>
+                  <span className="font-mono text-text-3">Decision Threshold: {thresholdPct}%</span>
+                </div>
+
+                {/* Progress gauge */}
+                <div className="space-y-1.5">
+                  <div className="relative h-4 w-full rounded-full bg-border overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 rounded-full ${
+                        isDefective ? "bg-[#B45309]" : "bg-[#166534]"
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(0, result.defectiveScorePct))}%` }}
+                    />
+                    {/* Threshold marker line */}
+                    <div
+                      className="absolute top-0 bottom-0 w-0.5 bg-[#2F3A58] z-10"
+                      style={{ left: `${thresholdPct}%` }}
+                      title={`Decision Threshold: ${thresholdPct}%`}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs font-mono text-text-3">
+                    <span className="text-[#166534] font-medium">{`Predicted Healthy (< ${thresholdPct}%)`}</span>
+                    <span className="font-semibold text-text">{`Threshold (${thresholdPct}%)`}</span>
+                    <span className="text-[#B45309] font-medium">{`Predicted Defective (≥ ${thresholdPct}%)`}</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-text-3 italic pt-1 border-t border-border/50">
+                  This score is a model-estimated defectiveness probability based on single-cell EL patterns, not a certified quality measurement.
+                </p>
               </div>
 
-              {/* Progress gauge */}
-              <div className="space-y-1.5">
-                <div className="relative h-4 w-full rounded-full bg-border overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-500 ${
-                      isDefective ? "bg-warning" : "bg-success"
-                    }`}
-                    style={{ width: `${Math.min(100, Math.max(0, result.defectiveScorePct))}%` }}
-                  />
-                  {/* Threshold marker line */}
-                  <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-sapphire z-10"
-                    style={{ left: "55%" }}
-                    title="Threshold: 55%"
-                  />
+              {/* Contextual Operator Directive */}
+              <div
+                className={`rounded-xl border p-4 space-y-1.5 ${
+                  isDefective
+                    ? "bg-[#FEF3C7]/60 border-[#FCD34D] text-[#2F3A58]"
+                    : "bg-[#DCFCE7]/60 border-[#86EFAC] text-[#2F3A58]"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {isDefective ? (
+                    <AlertTriangle className="h-4 w-4 text-[#B45309] shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 text-[#166534] shrink-0" />
+                  )}
+                  <h4 className="text-xs font-bold text-[#2F3A58]">
+                    {isDefective
+                      ? "Predicted Defective — Verification Required"
+                      : "Predicted Healthy — Verification Required"}
+                  </h4>
                 </div>
-                <div className="flex justify-between text-xs font-mono text-text-3">
-                  <span>0% (Healthy)</span>
-                  <span className="font-semibold text-text">Threshold (55%)</span>
-                  <span>100% (Defective)</span>
-                </div>
+                <p className="text-xs text-[#59647D] pl-6 leading-relaxed">
+                  {isDefective
+                    ? "The model estimates a higher likelihood of defects. An operator must inspect the cell and confirm the findings before making a quality decision."
+                    : "The model estimates a low likelihood of defects. An operator must verify the cell before approving its quality."}
+                </p>
               </div>
 
               <div className="text-xs text-text-2 space-y-1 pt-1">
-                <p><strong>Operational Summary:</strong> {result.summary}</p>
                 <p><strong>Input Scope:</strong> Complete single-cell EL image.</p>
+                <p className="text-text-3 italic">
+                  Research screening result only. Human review is required before a final quality decision.
+                </p>
               </div>
             </div>
           }
@@ -284,11 +341,12 @@ export function CellScreeningView() {
       {/* Mandatory Invariant Notice */}
       <NoticeBar
         tone="warning"
-        message="Mandatory operator review required on every prediction. No automatic PASS/REJECT decision."
+        message="Operator Verification Required: Human verification is required before a quality decision, regardless of the AI prediction."
         details={
           <p>
-            Trained on academic ELPV dataset (2,624 images, threshold 0.55). This model operates on cropped single cells
-            and is designed for operational screening and anomaly prioritization, not autonomous cell rejection.
+            Research screening result only. Human review is required before a final quality decision.
+            Trained on academic ELPV dataset (2,624 images, threshold {configuredThreshold.toFixed(2)}). This model operates on cropped single cells
+            and is designed for operational screening and defect prioritization, not autonomous cell rejection.
           </p>
         }
       />
@@ -354,7 +412,7 @@ export function CellScreeningView() {
               {predictMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin text-white" />
-                  <span>Evaluating Cell Anomaly Likelihood…</span>
+                  <span>Evaluating Cell Defectiveness Likelihood…</span>
                 </>
               ) : (
                 <>
@@ -407,8 +465,8 @@ export function CellScreeningView() {
               </div>
 
               {result && (
-                <StatusBadge tone={result.predictedClass === "defective" ? "warning" : "success"}>
-                  {result.predictedClass === "defective" ? "Defective Predicted" : "Healthy Predicted"}
+                <StatusBadge tone={isDefective ? "warning" : "success"}>
+                  {isDefective ? "Predicted Defective" : "Predicted Healthy"}
                 </StatusBadge>
               )}
             </div>
@@ -434,55 +492,182 @@ export function CellScreeningView() {
               </div>
             )}
 
-            {/* Result Findings Strip */}
+            {/* Cell Screening Result Panel */}
             {result && (
               <div className="space-y-4 pt-2">
-                <div className="rounded-xl border border-border bg-surface-subtle p-4 space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-text">Anomaly Probability Gauge</span>
-                    <span className="font-mono text-text-3">Cutoff: 55.0%</span>
+                <div className="rounded-2xl border border-border bg-[#FFFFFF] p-5 space-y-5 shadow-xs">
+                  {/* Panel Header */}
+                  <div className="flex items-center justify-between border-b border-border/80 pb-3">
+                    <div className="flex items-center gap-2">
+                      {isDefective ? (
+                        <ShieldAlert className="h-5 w-5 text-warning" />
+                      ) : (
+                        <ShieldCheck className="h-5 w-5 text-success" />
+                      )}
+                      <h4 className="text-sm font-bold text-[#2F3A58]">Cell Screening Result</h4>
+                    </div>
+                    <StatusBadge tone={isDefective ? "warning" : "success"}>
+                      {isDefective ? "Predicted Defective" : "Predicted Healthy"}
+                    </StatusBadge>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="relative h-3 w-full rounded-full bg-border overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          result.predictedClass === "defective" ? "bg-warning" : "bg-success"
-                        }`}
-                        style={{ width: `${Math.min(100, Math.max(0, result.defectiveScorePct))}%` }}
-                      />
-                      <div
-                        className="absolute top-0 bottom-0 w-0.5 bg-sapphire z-10"
-                        style={{ left: "55%" }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs font-mono text-text-3">
-                      <span>0%</span>
-                      <span className="font-semibold text-text">55%</span>
-                      <span>100%</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-border/60 text-xs">
-                    <div>
-                      <span className="text-text-3 block text-xs">Verdict</span>
-                      <span className="font-semibold text-text capitalize">{result.predictedClass}</span>
-                    </div>
-                    <div>
-                      <span className="text-text-3 block text-xs">Anomaly Score</span>
-                      <span className="font-mono font-semibold text-sapphire">
-                        {isDev ? `${result.rawDefectiveScore.toFixed(4)} (${result.defectiveScorePct}%)` : `${result.defectiveScorePct}%`}
+                  {/* Primary Result Hierarchy Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Prediction */}
+                    <div className="rounded-xl border border-border/70 bg-[#F0F1F9]/40 p-3.5 space-y-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#59647D] block">
+                        Prediction
                       </span>
+                      <div className="flex items-center gap-1.5 pt-0.5">
+                        {isDefective ? (
+                          <>
+                            <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
+                            <span className="font-bold text-sm text-warning">Predicted Defective</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                            <span className="font-bold text-sm text-success">Predicted Healthy</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-text-3 block text-xs">Review Required</span>
-                      <span className="font-semibold text-warning">Mandatory</span>
+
+                    {/* Defectiveness Score */}
+                    <div className="rounded-xl border border-border/70 bg-[#F0F1F9]/40 p-3.5 space-y-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#59647D] block">
+                        Defectiveness Score
+                      </span>
+                      <div className="flex items-baseline gap-2 pt-0.5">
+                        <span className="text-xl font-bold font-mono text-[#2F3A58]">
+                          {result.defectiveScorePct}%
+                        </span>
+                        {isDev && (
+                          <span className="text-[11px] font-mono text-[#59647D]">
+                            (raw: {result.rawDefectiveScore.toFixed(4)})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Decision Threshold */}
+                    <div className="rounded-xl border border-border/70 bg-[#F0F1F9]/40 p-3.5 space-y-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#59647D] block">
+                        Decision Threshold
+                      </span>
+                      <div className="flex items-baseline gap-1.5 pt-0.5">
+                        <span className="text-base font-bold font-mono text-[#2F3A58]">
+                          {thresholdPct}%
+                        </span>
+                        <span className="text-xs text-[#59647D]">
+                          (cutoff τ = {configuredThreshold.toFixed(2)})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Operator Verification */}
+                    <div className="rounded-xl border border-border/70 bg-[#F0F1F9]/40 p-3.5 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#59647D] block">
+                          Operator Verification
+                        </span>
+                        <span className="inline-flex items-center rounded-md bg-[#F2DBD7] px-2 py-0.5 text-xs font-semibold text-[#965660] border border-[#965660]/20">
+                          Required
+                        </span>
+                      </div>
+                      <p className="text-[11px] leading-snug text-[#59647D] pt-0.5">
+                        Human verification is required before a quality decision, regardless of the AI prediction.
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-xs text-text-2 bg-warning-tint/30 border border-warning/20 p-3 rounded-xl">
-                  <strong>Operator Directive:</strong> {result.summary}
+                  {/* Improved Probability Gauge */}
+                  <div className="rounded-xl border border-border bg-[#F0F1F9]/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-semibold text-[#2F3A58]">Defectiveness Score</span>
+                        <p className="text-[11px] text-[#59647D]">
+                          Model-estimated defect likelihood compared against 55% decision threshold
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold font-mono text-[#2F3A58]">
+                          {result.defectiveScorePct}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Visual Track */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="relative h-4 w-full rounded-full bg-[#D9DDEB] overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 rounded-full ${
+                            isDefective ? "bg-[#B45309]" : "bg-[#166534]"
+                          }`}
+                          style={{ width: `${Math.min(100, Math.max(0, result.defectiveScorePct))}%` }}
+                        />
+                        {/* 55% Decision Threshold Marker Line */}
+                        <div
+                          className="absolute top-0 bottom-0 w-0.5 bg-[#2F3A58] z-10"
+                          style={{ left: `${thresholdPct}%` }}
+                          title={`Decision Threshold: ${thresholdPct}%`}
+                        />
+                      </div>
+
+                      {/* Region and Threshold Labels */}
+                      <div className="flex items-center justify-between text-xs font-medium pt-0.5">
+                        <div className="flex items-center gap-1.5 text-[#166534]">
+                          <span className="h-2 w-2 rounded-full bg-[#166534]" />
+                          <span>{`Predicted Healthy (< ${thresholdPct}%)`}</span>
+                        </div>
+                        <div className="font-mono text-[11px] font-semibold text-[#2F3A58] bg-[#FFFFFF] px-2 py-0.5 rounded border border-border shadow-2xs">
+                          {`Threshold: ${thresholdPct}%`}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[#B45309]">
+                          <span className="h-2 w-2 rounded-full bg-[#B45309]" />
+                          <span>{`Predicted Defective (≥ ${thresholdPct}%)`}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Disclaimer Note */}
+                    <p className="text-[11px] text-[#59647D] italic pt-1 border-t border-border/50">
+                      This score is a model-estimated defectiveness probability, not a certified quality measurement.
+                    </p>
+                  </div>
+
+                  {/* Contextual Operator Directive */}
+                  <div
+                    className={`rounded-xl border p-4 space-y-1.5 transition-colors ${
+                      isDefective
+                        ? "bg-[#FEF3C7]/60 border-[#FCD34D] text-[#2F3A58]"
+                        : "bg-[#DCFCE7]/60 border-[#86EFAC] text-[#2F3A58]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isDefective ? (
+                        <AlertTriangle className="h-4 w-4 text-[#B45309] shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-[#166534] shrink-0" />
+                      )}
+                      <h4 className="text-xs font-bold text-[#2F3A58]">
+                        {isDefective
+                          ? "Predicted Defective — Verification Required"
+                          : "Predicted Healthy — Verification Required"}
+                      </h4>
+                    </div>
+                    <p className="text-xs text-[#59647D] pl-6 leading-relaxed">
+                      {isDefective
+                        ? "The model estimates a higher likelihood of defects. An operator must inspect the cell and confirm the findings before making a quality decision."
+                        : "The model estimates a low likelihood of defects. An operator must verify the cell before approving its quality."}
+                    </p>
+                  </div>
+
+                  {/* Bottom Mandatory Human Review Disclaimer */}
+                  <div className="flex items-center justify-center gap-1.5 text-center text-xs text-[#59647D] pt-1 border-t border-border/60">
+                    <Info className="h-3.5 w-3.5 text-[#965660] shrink-0" />
+                    <span>Research screening result only. Human review is required before a final quality decision.</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -509,8 +694,15 @@ export function CellScreeningView() {
                       : null;
                   const scoreFormatted =
                     scorePct != null ? `${Number(scorePct).toFixed(2)}%` : "—";
-                  const isDefective = item.predictedClass === "defective";
-                  const statusLabel = isDefective ? "Defective" : "Healthy";
+                  const itemThreshold =
+                    item.metadata?.thresholdPct != null
+                      ? item.metadata.thresholdPct
+                      : typeof item.threshold === "number"
+                      ? Math.round(item.threshold * 100)
+                      : 55;
+                  const isDefectiveItem =
+                    item.predictedClass === "defective" || (scorePct != null && scorePct >= itemThreshold);
+                  const statusLabel = isDefectiveItem ? "Predicted Defective" : "Predicted Healthy";
                   const filename =
                     item.sourceFilename ||
                     item.filename ||
@@ -522,14 +714,19 @@ export function CellScreeningView() {
                         <p className="font-medium text-text truncate" title={filename}>
                           {filename}
                         </p>
-                        <p className="font-mono text-xs text-text-3">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-mono text-xs text-text-3">
+                            {new Date(item.createdAt).toLocaleString()}
+                          </span>
+                          <span className="text-[10px] text-[#965660] font-medium bg-[#F2DBD7]/70 px-1.5 py-0.2 rounded border border-[#965660]/20">
+                            Verification Required
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <StatusBadge tone={isDefective ? "warning" : "success"}>
-                          <span className="font-medium capitalize">
-                            {statusLabel} ({scoreFormatted})
+                        <StatusBadge tone={isDefectiveItem ? "warning" : "success"}>
+                          <span className="font-medium">
+                            {`${statusLabel} (${scoreFormatted})`}
                           </span>
                         </StatusBadge>
                       </div>
@@ -551,10 +748,12 @@ export function CellScreeningView() {
             resultSummary: result
               ? {
                   screeningId: result.screeningId,
+                  prediction: isDefective ? "Predicted Defective" : "Predicted Healthy",
                   predictedClass: result.predictedClass,
-                  defectiveScorePct: result.defectiveScorePct,
+                  defectivenessScorePct: `${result.defectiveScorePct}%`,
                   rawDefectiveScore: result.rawDefectiveScore,
-                  threshold: result.thresholdPct,
+                  decisionThreshold: `${thresholdPct}%`,
+                  operatorVerification: "Required",
                   decision: result.decision,
                 }
               : undefined,
@@ -569,7 +768,7 @@ export function CellScreeningView() {
             modelInfo: {
               model: "EfficientNet-B0 Binary Defect Classifier",
               dataset: "ELPV (2,624 single cell images)",
-              cutoff: "τ = 0.55",
+              cutoff: `τ = ${configuredThreshold.toFixed(2)} (${thresholdPct}%)`,
             },
             storageInfo: {
               target: "SQLite (model2_screening_history)",

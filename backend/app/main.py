@@ -53,33 +53,32 @@ class DiagnosticLogHandler(logging.Handler):
         super().__init__()
         self.capacity = capacity
         self.buffer = deque(maxlen=capacity)
-        self.lock = threading.Lock()
         self.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s"))
 
     def emit(self, record: logging.LogRecord):
         try:
             formatted = self.format(record)
             msg = record.getMessage() if hasattr(record, "getMessage") else str(record.msg)
-            with self.lock:
-                self.buffer.append({
-                    "raw": formatted,
-                    "asctime": getattr(record, "asctime", None) or time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "levelname": record.levelname,
-                    "name": record.name,
-                    "message": msg,
-                })
+            # Note: logging.Handler.handle() already acquires self.lock (threading.RLock)
+            self.buffer.append({
+                "raw": formatted,
+                "asctime": getattr(record, "asctime", None) or time.strftime("%Y-%m-%d %H:%M:%S"),
+                "levelname": record.levelname,
+                "name": record.name,
+                "message": msg,
+            })
         except Exception:
             self.handleError(record)
 
     def get_logs(self, limit: int = 250) -> list[dict[str, Any]]:
-        with self.lock:
+        self.acquire()
+        try:
             return list(self.buffer)[-limit:]
+        finally:
+            self.release()
 
 fastapi_log_handler = DiagnosticLogHandler(capacity=500)
 logging.getLogger().addHandler(fastapi_log_handler)
-logging.getLogger("uvicorn").addHandler(fastapi_log_handler)
-logging.getLogger("uvicorn.access").addHandler(fastapi_log_handler)
-logging.getLogger("solarvision.api").addHandler(fastapi_log_handler)
 logging.captureWarnings(True)
 
 

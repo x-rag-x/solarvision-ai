@@ -61,6 +61,7 @@ RUN chmod +x /app/scripts/staging-entrypoint.sh
 
 # 6. Configure Runtime Environment Defaults
 ENV NODE_ENV=production \
+    PYTHONUNBUFFERED=1 \
     PYTHON_EXECUTABLE=/opt/venv/bin/python \
     PORT=3000 \
     FASTAPI_READINESS_TIMEOUT_SECS=120 \

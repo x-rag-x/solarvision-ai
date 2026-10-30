@@ -5,10 +5,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { formatInspectionDate } from "@/lib/date";
 
 interface StatCardProps {
   label: string;
-  value: string | number | null | undefined;
+  value: React.ReactNode;
   unit?: string;
   caption?: string;
   source?: string;
@@ -61,7 +62,7 @@ export function StatCard({
             </Tooltip>
           ) : (
             <span className="font-mono text-3xl sm:text-4xl font-bold text-sapphire tabular-nums tracking-tight">
-              {value}
+              {value instanceof Date ? formatInspectionDate(value) : value}
             </span>
           )}
 
