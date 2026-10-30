@@ -29,6 +29,8 @@ import { Button } from "@/components/ui/button";
 export default function ModelPerformance() {
   const { data: modelStatus, isLoading } = trpc.model.status.useQuery();
   const { data: model2Status } = trpc.model2Elpv.status.useQuery();
+  const { data: sandiaStatus } = trpc.sandiaPerformance.status.useQuery();
+  const { data: model4Status } = trpc.predictiveMaintenance.status.useQuery();
   const ready = Boolean(modelStatus?.exists);
 
   return (
@@ -477,6 +479,132 @@ export default function ModelPerformance() {
           <p className="leading-relaxed">
             Every Model 2 output is designated <code>screening_only</code> with review status <code>pending</code>.
             Zero automated PASS/REJECT decisions are permitted. True module independence is not established (44 modules, no source IDs).
+          </p>
+        </div>
+      </div>
+
+      {/* Model 3 Sandia Solar Electrical Performance Prediction Registry Section */}
+      <div className="mt-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800 border border-sky-300">
+                Model 3
+              </span>
+              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-mono text-slate-700">
+                sandia_solar_performance_v1
+              </span>
+              <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-xs font-medium">
+                Pipeline Verified
+              </span>
+            </div>
+            <h3 className="mt-2 text-xl font-bold text-slate-900">
+              Model 3 — Sandia Solar Electrical Performance Prediction
+            </h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Trained scikit-learn regression pipeline estimating reference-normalized PV power retention from environmental and electrical parameters.
+            </p>
+          </div>
+          <Link href="/predictive-quality">
+            <Button className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs">
+              Open Sandia Performance UI
+            </Button>
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Target Metric</span>
+            <span className="text-sm font-bold text-slate-900 mt-1 block font-mono">power_retention_pct</span>
+            <span className="text-[10px] text-slate-500">Normalized percentage</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Test MAE</span>
+            <span className="text-xl font-bold text-emerald-700 mt-1 block">0.793 pp</span>
+            <span className="text-[10px] text-slate-500">Percentage points</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Test RMSE</span>
+            <span className="text-xl font-bold text-slate-900 mt-1 block">1.107 pp</span>
+            <span className="text-[10px] text-slate-500">Residual error</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Test R² Score</span>
+            <span className="text-xl font-bold text-sky-800 mt-1 block">0.581</span>
+            <span className="text-[10px] text-slate-500">Variance explained</span>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50/60 p-3.5 text-xs text-sky-950 space-y-1">
+          <p className="font-semibold flex items-center gap-1.5 text-sky-900">
+            <Info className="h-4 w-4 text-sky-600" />
+            Research Domain &amp; Dual-Domain Governance
+          </p>
+          <p className="leading-relaxed">
+            Sandia predictions are derived from real outdoor field-monitored crystalline silicon research arrays. UCI SECOM semiconductor manufacturing wafer benchmark (590 features, ROC-AUC 0.821) is preserved as a secondary quality benchmark within the Predictive Quality center.
+          </p>
+        </div>
+      </div>
+
+      {/* Model 4 AI4I Equipment Predictive Maintenance Registry Section */}
+      <div className="mt-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800 border border-purple-300">
+                Model 4
+              </span>
+              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-mono text-slate-700">
+                ai4i-2020-benchmark-v1
+              </span>
+              <span className="rounded-md bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 text-xs font-medium">
+                Benchmark Evaluated
+              </span>
+            </div>
+            <h3 className="mt-2 text-xl font-bold text-slate-900">
+              Model 4 — AI-Based Equipment Predictive Maintenance
+            </h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Evaluated on the UCI AI4I 2020 predictive maintenance benchmark. Estimates machine failure risk across 5 distinct mechanical and thermal modes.
+            </p>
+          </div>
+          <Link href="/predictive-maintenance">
+            <Button className="bg-[#0B0909] text-white hover:bg-slate-800 text-xs">
+              Open Maintenance Center UI
+            </Button>
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Benchmark Accuracy</span>
+            <span className="text-xl font-bold text-purple-700 mt-1 block">96.67%</span>
+            <span className="text-[10px] text-slate-500">Test split classification</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">ROC-AUC</span>
+            <span className="text-xl font-bold text-purple-700 mt-1 block">0.9307</span>
+            <span className="text-[10px] text-slate-500">Discrimination index</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Decision Threshold</span>
+            <span className="text-xl font-bold text-slate-900 mt-1 block">0.1981</span>
+            <span className="text-[10px] text-slate-500">Optimal F1 cutoff</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 block">Failure Modes</span>
+            <span className="text-xs font-bold text-slate-900 mt-1.5 block font-mono">TWF, HDF, PWF, OSF, RNF</span>
+            <span className="text-[10px] text-slate-500">5 distinct mechanisms</span>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-purple-200 bg-purple-50/60 p-3.5 text-xs text-purple-950 space-y-1">
+          <p className="font-semibold flex items-center gap-1.5 text-purple-900">
+            <ShieldAlert className="h-4 w-4 text-purple-700" />
+            Empirical Boundary Invariant
+          </p>
+          <p className="leading-relaxed">
+            Evaluated on synthetic physical milling telemetry (air/process temps, torque, rotational speed, tool wear). Not claimed as validated on solar cell factory laminators or stringer machines until in-situ solar factory telemetry is integrated.
           </p>
         </div>
       </div>

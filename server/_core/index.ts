@@ -15,6 +15,7 @@ import { serveStatic, setupVite } from "./vite";
 import { sdk } from "./sdk";
 import { safeCanonicalKey } from "../storage";
 import { getInspectionById, getCellScreeningById } from "../db";
+import { appLogger } from "../systemHealth/logger";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -63,6 +64,24 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Diagnostic Terminal & Console Request Logger
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on("finish", () => {
+      if (
+        req.path.startsWith("/api") ||
+        req.path.startsWith("/health") ||
+        req.path.startsWith("/uploads") ||
+        req.path.startsWith("/system-health")
+      ) {
+        if (req.originalUrl?.includes("systemHealth.logs")) return;
+        const line = `INFO:     127.0.0.1 - "${req.method} ${req.originalUrl || req.url} HTTP/${req.httpVersion}" ${res.statusCode} ${res.statusMessage || "OK"}`;
+        appLogger.ingestTerminalLine(line);
+      }
+    });
+    next();
+  });
 
   // Render & Staging Health Check Endpoints
   app.get("/healthz", stagingHealthHandler);

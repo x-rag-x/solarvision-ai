@@ -1,12 +1,17 @@
+import * as React from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { openOperatorLoginModal } from "@/const";
 import {
   AlertTriangle,
   CheckCircle2,
+  Compass,
   Database,
-  Gauge,
+  FlaskConical,
   HardDrive,
   ImageIcon,
   Info,
+  Lock,
   RotateCcw,
   Save,
   Scale,
@@ -26,13 +31,24 @@ import {
   useInspectionSettings,
 } from "@/lib/settings";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 export default function Settings() {
+  const { user } = useAuth();
   const { data: model } = trpc.model.status.useQuery();
+  const { data: systemSettings, refetch: refetchSettings } = trpc.system.getSettings.useQuery();
+  const updateSystemSettings = trpc.system.updateSettings.useMutation({
+    onSuccess: () => {
+      refetchSettings();
+    },
+  });
+
   const [settings, updateSettings] = useInspectionSettings();
   const [formValues, setFormValues] = useState<InspectionSettings>(settings);
 
   const supabaseReady = Boolean(model?.supabaseConfigured);
+  const isAdmin = user?.role === "admin";
+  const rootCauseEnabled = Boolean(systemSettings?.enableRootCause);
 
   const handleSave = () => {
     updateSettings(formValues);
@@ -47,10 +63,28 @@ export default function Settings() {
     toast.info("Reset to production defaults (Threshold: 0.25)");
   };
 
+  const handleToggleRootCause = async (checked: boolean) => {
+    if (!isAdmin) {
+      toast.error("Administrator privileges required to modify experimental modules.");
+      return;
+    }
+
+    try {
+      await updateSystemSettings.mutateAsync({ enableRootCause: checked });
+      toast.success(
+        checked
+          ? "Root Cause Analysis module enabled. Available in sidebar navigation."
+          : "Root Cause Analysis module disabled. Preserved underlying data."
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update module settings.");
+    }
+  };
+
   const isLoweredThreshold = formValues.confidenceThreshold < 0.25;
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageIntro
         eyebrow="System Configuration & Control Plane"
         title="Settings & inspection preferences."
@@ -99,7 +133,7 @@ export default function Settings() {
                   Default Confidence Threshold
                 </label>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Applied to YOLO26n inference. Controls detection sensitivity vs false alarms.
+                  Applied to YOLO inference. Controls detection sensitivity vs false alarms.
                 </p>
               </div>
               <span className="rounded-lg bg-[#0B0909] px-3 py-1 font-mono text-sm font-bold text-[#F2B941]">
@@ -202,7 +236,7 @@ export default function Settings() {
             <label className="block">
               <span className="text-xs font-semibold text-slate-700">Inference Image Resolution (YOLO imgsz)</span>
               <span className="mt-0.5 block text-[11px] text-slate-400">
-                Configures the runtime YOLO26n inference resolution passed to `model.predict(imgsz=...)`. Standard production baseline is 640×640. Setting 1024 preserves native EL sensor resolution.
+                Configures the runtime YOLO inference resolution passed to `model.predict(imgsz=...)`. Standard production baseline is 640×640. Setting 1024 preserves native EL sensor resolution.
               </span>
               <select
                 value={formValues.imageSize}
@@ -254,7 +288,7 @@ export default function Settings() {
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <span className="flex items-center gap-2 text-slate-400">
                   <ShieldCheck className="h-4 w-4 text-[#F2B941]" />
-                  YOLO26n Checkpoint
+                  Model 1 YOLO Checkpoint
                 </span>
                 <StatusBadge tone={model?.exists ? "success" : "danger"}>
                   {model?.exists ? "Present (best.pt)" : "Missing"}
@@ -299,11 +333,110 @@ export default function Settings() {
               <h3 className="text-sm font-semibold text-slate-800">EL & NIR Imagery Only</h3>
             </div>
             <p className="text-xs leading-relaxed text-slate-500">
-              The YOLO26n model was trained on high-contrast electroluminescence and near-infrared imagery. Standard RGB daylight solar panel photos will yield unreliable detections and must not be used for production inspection.
+              Visual defect models are trained on high-contrast electroluminescence and near-infrared imagery. Standard RGB daylight solar panel photos will yield unreliable detections and must not be used for production inspection.
             </p>
           </div>
         </section>
       </div>
+
+      {/* TASK 2: Optional / Experimental Modules Section */}
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_rgba(7,27,41,0.04)] space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3C4] text-[#0B0909]">
+              <FlaskConical className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F2B941]">
+                System Architecture &amp; Governance
+              </p>
+              <h2 className="mt-0.5 text-xl font-semibold text-slate-900">
+                Optional / Experimental Modules
+              </h2>
+            </div>
+          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-[11px] text-slate-600">
+            Administrative Access Control
+          </span>
+        </div>
+
+        {/* Setting Card: Enable Root Cause Analysis */}
+        <div className="rounded-xl border border-slate-200/80 bg-[#fbfbfc] p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="space-y-1 max-w-3xl">
+              <div className="flex items-center gap-2">
+                <Compass className="h-4 w-4 text-[#F2B941]" />
+                <h3 className="text-sm font-bold text-slate-900">
+                  Enable Root Cause Analysis
+                </h3>
+                {rootCauseEnabled ? (
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                    Active
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                    Disabled
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed pt-1">
+                Show the experimental manufacturing root-cause analysis module in SolarVision. This feature is not trained on a verified, linked factory root-cause dataset and should not be treated as production-grade causal diagnosis.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <Switch
+                id="enable-root-cause"
+                checked={rootCauseEnabled}
+                onCheckedChange={handleToggleRootCause}
+                disabled={!isAdmin || updateSystemSettings.isPending}
+                className="data-[state=checked]:bg-[#0B0909]"
+              />
+              <label
+                htmlFor="enable-root-cause"
+                className="text-xs font-semibold text-slate-700 cursor-pointer select-none"
+              >
+                {rootCauseEnabled ? "Enabled" : "Disabled"}
+              </label>
+            </div>
+          </div>
+
+          {/* Role Status & Persistent Invariant Notice */}
+          <div className="border-t border-slate-200/60 pt-3 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 text-slate-500">
+              {isAdmin ? (
+                <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Administrator permissions verified. Changes persist to server SQLite storage.
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-amber-800 font-medium">
+                  <Lock className="h-3.5 w-3.5 text-amber-600" />
+                  Restricted: Administrator privileges required to toggle optional modules.
+                </span>
+              )}
+            </div>
+
+            {!isAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openOperatorLoginModal}
+                className="h-7 text-[11px] rounded-lg border-slate-300"
+              >
+                Sign in as Admin
+              </Button>
+            )}
+          </div>
+
+          {/* Data Preservation Guarantee */}
+          <div className="rounded-lg bg-amber-50/60 border border-amber-200/70 p-3 text-xs text-amber-900 leading-relaxed">
+            <p>
+              <strong>Data Preservation Guarantee:</strong> Disabling this setting removes Root Cause Analysis from the navigation sidebar and entry points, but never deletes underlying database tables, CSV imports, or confirmed annotations. If re-enabled, all previously linked batches, machines, and annotations remain intact.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

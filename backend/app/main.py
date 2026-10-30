@@ -41,6 +41,47 @@ logging.basicConfig(
 )
 logger = logging.getLogger("solarvision.api")
 
+from collections import deque
+import threading
+
+class DiagnosticLogHandler(logging.Handler):
+    """
+    In-memory bounded circular log buffer for capturing all FastAPI, Uvicorn, and
+    pipeline diagnostic events emitted in the terminal.
+    """
+    def __init__(self, capacity: int = 500):
+        super().__init__()
+        self.capacity = capacity
+        self.buffer = deque(maxlen=capacity)
+        self.lock = threading.Lock()
+        self.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s"))
+
+    def emit(self, record: logging.LogRecord):
+        try:
+            formatted = self.format(record)
+            msg = record.getMessage() if hasattr(record, "getMessage") else str(record.msg)
+            with self.lock:
+                self.buffer.append({
+                    "raw": formatted,
+                    "asctime": getattr(record, "asctime", None) or time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "levelname": record.levelname,
+                    "name": record.name,
+                    "message": msg,
+                })
+        except Exception:
+            self.handleError(record)
+
+    def get_logs(self, limit: int = 250) -> list[dict[str, Any]]:
+        with self.lock:
+            return list(self.buffer)[-limit:]
+
+fastapi_log_handler = DiagnosticLogHandler(capacity=500)
+logging.getLogger().addHandler(fastapi_log_handler)
+logging.getLogger("uvicorn").addHandler(fastapi_log_handler)
+logging.getLogger("uvicorn.access").addHandler(fastapi_log_handler)
+logging.getLogger("solarvision.api").addHandler(fastapi_log_handler)
+logging.captureWarnings(True)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -165,6 +206,18 @@ async def health() -> dict[str, str | bool]:
         "model_exists": settings.model_path.exists(),
         "storage_available": settings.storage_dir.exists(),
         "model_ready": inference_service.is_ready(),
+    }
+
+
+@app.get("/logs")
+@app.get("/api/logs")
+@app.get("/api/diagnostics/logs")
+async def get_diagnostic_logs(limit: int = Query(default=250, ge=1, le=500)) -> dict[str, Any]:
+    """Returns recent diagnostic logs emitted in terminal by FastAPI, Uvicorn, and AI pipelines."""
+    return {
+        "status": "ok",
+        "total": len(fastapi_log_handler.buffer),
+        "logs": fastapi_log_handler.get_logs(limit=limit),
     }
 
 

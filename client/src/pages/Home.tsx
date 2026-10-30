@@ -1,3 +1,4 @@
+import * as React from "react";
 import { trpc } from "@/lib/trpc";
 import {
   Activity,
@@ -15,6 +16,7 @@ import {
   Info,
   LogIn,
   Radio,
+  Scan,
   ScanLine,
   ShieldAlert,
   ShieldCheck,
@@ -84,9 +86,8 @@ export default function Home() {
   });
 
   const { data: model1Status } = trpc.model.status.useQuery();
-  const { data: model2Status } = trpc.rootCause.status.useQuery(undefined, {
-    enabled: Boolean(isAuthenticated),
-  });
+  const { data: model2Status } = trpc.model2Elpv.status.useQuery();
+  const { data: sandiaStatus } = trpc.sandiaPerformance.status.useQuery();
   const { data: model3Status } = trpc.predictiveQuality.status.useQuery(undefined, {
     enabled: Boolean(isAuthenticated),
   });
@@ -118,7 +119,7 @@ export default function Home() {
       <PageIntro
         eyebrow="Unified Smart Factory Operations & Four-Model Architecture"
         title="SolarVision AI Control Center"
-        description="Unified industrial intelligence platform for crystalline photovoltaic manufacturing: visual electroluminescence inspection, root-cause correlation, predictive quality forecasting, and electromechanical equipment health monitoring."
+        description="Unified industrial intelligence platform for crystalline photovoltaic manufacturing: visual electroluminescence inspection, cell defectiveness screening, electrical performance forecasting, and electromechanical equipment health monitoring."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Link
@@ -232,14 +233,14 @@ export default function Home() {
                   <CheckCircle2 className="h-3 w-3" /> Academic Prototype
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">Visual Defect Detection</h3>
+              <h3 className="mt-3 text-sm font-bold text-slate-900">AI-Based Solar Cell Defect Detection</h3>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                YOLO26n anchor-free CNN inspecting EL/NIR solar cell frames. Academically validated on the PVELAD benchmark (not factory-production-certified).
+                Detect and localize visible defects in supported solar-cell EL/NIR inspection images with bounding-box coordinates. Academic prototype / non-certified industrial use.
               </p>
               <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
                 <div className="flex justify-between text-slate-600">
                   <span>Engine:</span>
-                  <span className="font-mono font-medium">YOLOv8 / PyTorch</span>
+                  <span className="font-mono font-medium">YOLO / PyTorch</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Checkpoint:</span>
@@ -247,7 +248,7 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Validation:</span>
-                  <span className="font-medium text-amber-700">PVELAD Benchmark</span>
+                  <span className="font-medium text-amber-700">PVELAD (91.87% mAP@50)</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Domain:</span>
@@ -271,34 +272,38 @@ export default function Home() {
                 <span className="rounded-lg bg-[#0B0909] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#F2B941]">
                   MODEL 2
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
-                  <ShieldAlert className="h-3 w-3" /> Training Blocked
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                  <CheckCircle2 className="h-3 w-3" /> Trained Screening
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">Root-Cause Analysis</h3>
+              <h3 className="mt-3 text-sm font-bold text-slate-900">AI-Based Solar Cell Defectiveness Screening</h3>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                Multimodal correlation software operational. Genuine supervised training quarantined pending authenticated factory SCADA & AOI telemetry.
+                Assess the likelihood that an individual cropped solar cell contains defects. Experimental screening only; every prediction requires mandatory operator review (no automated PASS/REJECT).
               </p>
               <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
                 <div className="flex justify-between text-slate-600">
-                  <span>Software:</span>
-                  <span className="font-mono text-emerald-700">Available</span>
+                  <span>Engine:</span>
+                  <span className="font-mono font-medium">EfficientNet-B0 / PyTorch</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Supervised Model:</span>
-                  <span className="font-mono text-amber-700">DATASET_BLOCKED</span>
+                  <span>Dataset:</span>
+                  <span className="font-mono text-slate-800">ELPV (2,624 images)</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Expert Review:</span>
-                  <span className="font-medium text-slate-800">Operational</span>
+                  <span>Accuracy / Recall:</span>
+                  <span className="font-mono text-emerald-700">69.81% / 68.67%</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Precision / F1:</span>
+                  <span className="font-mono text-slate-800">45.97% / 55.07% (τ=0.55)</span>
                 </div>
               </div>
             </div>
             <Link
-              href="/root-cause"
+              href="/cell-screening"
               className="mt-5 inline-flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
             >
-              <span>Audit Readiness</span>
+              <span>Cell Screening</span>
               <ArrowRight className="h-3.5 w-3.5 text-[#F2B941]" />
             </Link>
           </div>
@@ -311,25 +316,29 @@ export default function Home() {
                   MODEL 3
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-800">
-                  <CheckCircle2 className="h-3 w-3" /> Benchmark Active
+                  <CheckCircle2 className="h-3 w-3" /> Pipeline Ready
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">Predictive Quality</h3>
+              <h3 className="mt-3 text-sm font-bold text-slate-900">Sandia Solar Electrical Performance Prediction</h3>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                UCI SECOM semiconductor wafer benchmark integrated (590 features, ROC-AUC 0.821 / 0.637 drift). Solar quality model untrained.
+                Predict reference-normalized PV electrical performance from supported environmental and electrical features. Research-domain limitations apply; secondary UCI SECOM benchmark accessible.
               </p>
               <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
                 <div className="flex justify-between text-slate-600">
-                  <span>Benchmark Domain:</span>
-                  <span className="font-mono text-emerald-700">UCI SECOM Ready</span>
+                  <span>Engine:</span>
+                  <span className="font-mono font-medium">scikit-learn Pipeline</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Solar PV Domain:</span>
-                  <span className="font-mono text-amber-700">not_trained</span>
+                  <span>Dataset:</span>
+                  <span className="font-mono text-slate-800">Sandia PV Research</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Optimal Cutoff:</span>
-                  <span className="font-mono text-slate-800">&tau;* = 0.07</span>
+                  <span>Target:</span>
+                  <span className="font-mono text-sky-700">power_retention_pct</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>MAE / RMSE / R²:</span>
+                  <span className="font-mono text-emerald-700">0.793 pp / 1.107 pp / 0.581</span>
                 </div>
               </div>
             </div>
@@ -337,7 +346,7 @@ export default function Home() {
               href="/predictive-quality"
               className="mt-5 inline-flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
             >
-              <span>Explore Benchmark</span>
+              <span>Predict Performance</span>
               <ArrowRight className="h-3.5 w-3.5 text-[#F2B941]" />
             </Link>
           </div>
@@ -353,22 +362,26 @@ export default function Home() {
                   <CheckCircle2 className="h-3 w-3" /> Benchmark Evaluated
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-slate-900">Predictive Maintenance</h3>
+              <h3 className="mt-3 text-sm font-bold text-slate-900">AI-Based Equipment Predictive Maintenance</h3>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                AI4I 2020 synthetic milling benchmark evaluated (6 raw features, failure classification &amp; 5 modes). Solar machine model untrained.
+                Estimate equipment failure risk from machine operating inputs. AI4I physical benchmark evaluated; clear distinction from unvalidated solar factory machinery.
               </p>
               <div className="mt-4 space-y-1.5 border-t border-slate-200/60 pt-3 text-[11px]">
                 <div className="flex justify-between text-slate-600">
-                  <span>Benchmark Domain:</span>
-                  <span className="font-mono text-emerald-700">AI4I Evaluated</span>
+                  <span>Engine:</span>
+                  <span className="font-mono font-medium">AI4I 2020 Pipeline</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Solar PV Machine:</span>
-                  <span className="font-mono text-amber-700">not_trained</span>
+                  <span>Evaluation:</span>
+                  <span className="font-mono text-purple-700">Acc 96.67% · AUC 0.931</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Modes Modeled:</span>
+                  <span>Failure Modes:</span>
                   <span className="font-mono text-slate-800">TWF, HDF, PWF, OSF, RNF</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Validation Status:</span>
+                  <span className="font-medium text-amber-700">Benchmark Evaluated</span>
                 </div>
               </div>
             </div>
@@ -395,10 +408,10 @@ export default function Home() {
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed">
               SolarVision AI operates under an uncompromised zero-fabrication pledge. All four modules maintain independent lifecycle contracts:
-              <strong> Model 1</strong> executes real-time vision defect inference on solar cells.
-              <strong> Model 2</strong> correlation pipeline is ready, but genuine model weights remain quarantined.
-              <strong> Model 3</strong> is trained on the real UCI SECOM microelectronics benchmark, never misrepresented as solar fab yield.
-              <strong> Model 4</strong> is evaluated on the UCI AI4I 2020 synthetic milling benchmark, never claimed as solar cell laminator telemetry.
+              <strong> Model 1</strong> executes real-time vision defect localization on solar-cell EL/NIR images (PVELAD benchmark).
+              <strong> Model 2</strong> performs full-cell grayscale defectiveness screening using EfficientNet-B0 trained on ELPV (0.55 threshold, mandatory review).
+              <strong> Model 3</strong> predicts reference-normalized PV electrical power retention using a verified Sandia regression pipeline (R² 0.581), with UCI SECOM preserved as secondary benchmark.
+              <strong> Model 4</strong> evaluates electromechanical failure risk and 5 failure modes on the AI4I 2020 benchmark, distinct from unvalidated solar factory machinery.
             </p>
           </div>
         </div>
@@ -431,15 +444,15 @@ export default function Home() {
             },
             {
               n: "02",
-              title: "M2 Data Readiness",
-              desc: "Inspect SCADA readiness metrics and review expert-annotated defect records.",
-              path: "/root-cause",
-              icon: Compass,
+              title: "M2 Cell Screening",
+              desc: "Screen single-cell EL images using EfficientNet-B0 with 0.55 threshold and mandatory review.",
+              path: "/cell-screening",
+              icon: Scan,
             },
             {
               n: "03",
-              title: "M3 Quality Benchmark",
-              desc: "Simulate 590-feature semiconductor wafer runs with calibrated cost-sensitive cutoff.",
+              title: "M3 Sandia Performance",
+              desc: "Predict normalized PV power retention from environmental and electrical parameters.",
               path: "/predictive-quality",
               icon: Activity,
             },

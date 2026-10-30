@@ -11,6 +11,7 @@ import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { saveCellScreening, getCellScreenings, getCellScreeningById, type CellScreeningRecord, type RequesterContext } from "../db";
 import { storagePut } from "../storage";
+import { appLogger } from "../systemHealth/logger";
 import { model2ScreeningSummary } from "../../client_contract/model2";
 import type {
   CellScreeningInput,
@@ -201,6 +202,7 @@ export async function runCellScreening(
 
   const screeningId = randomUUID();
   const safeFilename = input.filename.replace(/[^a-zA-Z0-9._-]/g, "_") || "cell.png";
+  appLogger.info("MODEL 2", `Screening initiated: file="${safeFilename}", size=${buffer.length} bytes`);
 
   // 4. Store uploaded image into private storage
   const storageResult = await storagePut(
@@ -239,6 +241,7 @@ export async function runCellScreening(
     const defectiveScorePct = Math.round(rawResult.defective_probability * 10000) / 100;
     const thresholdPct = Math.round(rawResult.threshold * 10000) / 100;
     const summaryText = model2ScreeningSummary(rawResult);
+    appLogger.info("MODEL 2", `Screening completed: id="${screeningId}", class=${rawResult.predicted_class}, score=${defectiveScorePct}%`);
     const createdAt = new Date().toISOString();
 
     // 6. Persistent history recording

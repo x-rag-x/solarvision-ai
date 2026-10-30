@@ -4,6 +4,7 @@
  */
 
 import { SandiaApiClient, sandiaApiClient } from "./apiClient";
+import { appLogger } from "../systemHealth/logger";
 import {
   SandiaPersistenceRepository,
   getSandiaRepository,
@@ -79,7 +80,9 @@ export class SandiaPerformanceService {
     input: SandiaPredictionInput,
     requester?: RequesterContext
   ): Promise<SandiaPredictionResponse> {
+    appLogger.info("MODEL 3", `Executing Sandia solar electrical performance prediction...`);
     const response = await this.apiClient.predict(input);
+    appLogger.info("MODEL 3", `Sandia prediction completed: val=${response.prediction?.prediction?.toFixed(2)}%, status=${response.status}`);
 
     // Only persist if status is ready AND not a mock prediction
     const isMock = response.isMock || Boolean(response.prediction?.isMock);

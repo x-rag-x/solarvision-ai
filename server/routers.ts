@@ -18,6 +18,7 @@ import { predictiveQualityRouter } from "./predictiveQuality";
 import { predictiveMaintenanceRouter } from "./predictiveMaintenance";
 import { sandiaPerformanceRouter } from "./sandiaPerformance";
 import { cellScreeningRouter } from "./cellScreening";
+import { systemHealthRouter } from "./systemHealth";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { existsSync } from "node:fs";
@@ -147,6 +148,7 @@ export const appRouter = router({
   predictiveMaintenance: predictiveMaintenanceRouter,
   sandiaPerformance: sandiaPerformanceRouter,
   sandia: sandiaPerformanceRouter,
+  systemHealth: systemHealthRouter,
   inspection: router({
     run: authenticatedProcedure
       .input(inspectionInput)

@@ -87,6 +87,16 @@ export function getSqliteDb(): DatabaseSync {
   return _sqliteDb;
 }
 
+export function ensureSystemSettingsSchema(db: DatabaseSync): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+  `);
+}
+
 function initSqliteSchema(db: DatabaseSync) {
   // Base M1 inspection tables
   db.exec(`
@@ -318,6 +328,7 @@ function initSqliteSchema(db: DatabaseSync) {
 
   // Ensure Model 3 Sandia Solar Electrical Performance schema and migrations are active
   ensureSandiaPerformanceSchema(db);
+  ensureSystemSettingsSchema(db);
 }
 
 export const MODEL3_ADDITIVE_COLUMNS = [
@@ -1096,4 +1107,37 @@ export function getSqliteCellScreeningById(id: string, requester?: RequesterCont
     metadata: row.metadata ? JSON.parse(row.metadata) : null,
     createdAt: String(row.createdAt),
   };
+}
+
+export function getSystemSetting(key: string, defaultValue: string | null = null): string | null {
+  try {
+    const db = getSqliteDb();
+    const row = db.prepare("SELECT value FROM system_settings WHERE key = ?").get(key) as { value: string } | undefined;
+    return row ? row.value : defaultValue;
+  } catch (err) {
+    console.warn(`[SQLite] Failed to read system setting '${key}':`, err);
+    return defaultValue;
+  }
+}
+
+export function setSystemSetting(key: string, value: string): void {
+  const db = getSqliteDb();
+  const now = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO system_settings (key, value, updatedAt)
+    VALUES (?, ?, ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updatedAt = excluded.updatedAt
+  `).run(key, value, now);
+}
+
+export function isRootCauseEnabled(): boolean {
+  const val = getSystemSetting("enable_root_cause");
+  if (val === null) {
+    return false; // Default to disabled for a new configuration
+  }
+  return val === "true" || val === "1";
+}
+
+export function setRootCauseEnabled(enabled: boolean): void {
+  setSystemSetting("enable_root_cause", enabled ? "true" : "false");
 }

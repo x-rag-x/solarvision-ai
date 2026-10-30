@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
+import { isRootCauseEnabled, setRootCauseEnabled } from "../sqlite";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -25,5 +26,25 @@ export const systemRouter = router({
       return {
         success: delivered,
       } as const;
+    }),
+
+  getSettings: publicProcedure.query(() => {
+    return {
+      enableRootCause: isRootCauseEnabled(),
+    };
+  }),
+
+  updateSettings: adminProcedure
+    .input(
+      z.object({
+        enableRootCause: z.boolean(),
+      })
+    )
+    .mutation(({ input }) => {
+      setRootCauseEnabled(input.enableRootCause);
+      return {
+        success: true,
+        enableRootCause: input.enableRootCause,
+      };
     }),
 });

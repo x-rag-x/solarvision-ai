@@ -6,6 +6,7 @@
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
+import { appLogger } from "../systemHealth/logger";
 import {
   hasSufficientMaintenanceFeatures,
   MODEL4_CONTRACT_VERSION,

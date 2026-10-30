@@ -34,6 +34,9 @@ export default function InspectionDetail() {
   const inspectionId = params?.inspectionId || "";
   const { isAuthenticated } = useAuth();
 
+  const { data: systemSettings } = trpc.system.getSettings.useQuery();
+  const enableRootCause = Boolean(systemSettings?.enableRootCause);
+
   const { data, isLoading, isError, error, refetch } = trpc.inspection.detail.useQuery(
     { inspectionId: inspectionId || "00000000-0000-0000-0000-000000000000" },
     { enabled: Boolean(isAuthenticated && inspectionId) }
@@ -133,13 +136,15 @@ export default function InspectionDetail() {
                   description={`Persisted on ${createdAtDate.toLocaleDateString()} at ${createdAtDate.toLocaleTimeString()} · Engine: ${inspection.modelName}`}
                   action={
                     <div className="flex items-center gap-2">
-                      <Link
-                        href={`/root-cause/${inspection.inspectionId}`}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#F2B941]/40 bg-[#FFF3C4] px-3.5 text-xs font-semibold text-[#0B0909] shadow-sm hover:bg-[#ffe899] transition-colors"
-                      >
-                        <Compass className="h-4 w-4 text-[#0B0909]" />
-                        Root Cause
-                      </Link>
+                      {enableRootCause && (
+                        <Link
+                          href={`/root-cause/${inspection.inspectionId}`}
+                          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#F2B941]/40 bg-[#FFF3C4] px-3.5 text-xs font-semibold text-[#0B0909] shadow-sm hover:bg-[#ffe899] transition-colors"
+                        >
+                          <Compass className="h-4 w-4 text-[#0B0909]" />
+                          Root Cause
+                        </Link>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"

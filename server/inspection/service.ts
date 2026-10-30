@@ -8,6 +8,7 @@ import axios, { type AxiosError } from "axios";
 import { getInspectionById, saveInspection, type RequesterContext } from "../db";
 import { storagePut } from "../storage";
 import { isSupabaseConfigured, persistToSupabase, uploadToSupabase } from "./supabase";
+import { appLogger } from "../systemHealth/logger";
 
 export type RunInspectionInput = {
   filename: string;
@@ -272,6 +273,7 @@ export async function runInspection(input: RunInspectionInput): Promise<Inspecti
   const safeName = sanitizeFilename(input.filename);
   const timeoutMs = getInferenceTimeoutMs();
 
+  appLogger.info("MODEL 1", `Inspection initiated: file="${safeName}", size=${original.length} bytes, conf=${targetConfidence}`);
   console.log(
     `[Inspection] Initiating Model 1 inspection: file="${safeName}", size=${original.length} bytes, conf=${targetConfidence}, timeout=${timeoutMs}ms`
   );
@@ -585,6 +587,7 @@ export async function runInspection(input: RunInspectionInput): Promise<Inspecti
   }
 
   const elapsedTotal = Math.round(performance.now() - startTime);
+  appLogger.info("MODEL 1", `Inspection completed: id="${inspectionId}", detections=${rawDetections.length}, inferenceMs=${processingTimeMs}`);
   console.log(
     `[Inspection] Model 1 completed: id="${inspectionId}", file="${safeName}", detections=${rawDetections.length}, inferenceMs=${processingTimeMs}, elapsed=${elapsedTotal}ms (bridge=${httpSucceeded ? "fastapi_http" : "cli_fallback"})`
   );

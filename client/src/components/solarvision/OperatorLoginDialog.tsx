@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  CheckCircle2,
   Factory,
   KeyRound,
   Loader2,
@@ -21,8 +20,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   UserCheck,
-  Wrench,
-  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -85,7 +82,7 @@ export function OperatorLoginDialog() {
   const authConfigQuery = trpc.auth.config.useQuery();
   const passcodeRequired = Boolean(authConfigQuery.data?.passcodeRequired);
   const [passcode, setPasscode] = useState(
-    () => sessionStorage.getItem("solarvision:operator-passcode") || ""
+    () => (typeof window !== "undefined" && typeof sessionStorage !== "undefined" ? sessionStorage.getItem("solarvision:operator-passcode") || "" : "")
   );
 
   useEffect(() => {
@@ -137,224 +134,230 @@ export function OperatorLoginDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-xl rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-2xl">
-        <DialogHeader className="text-left space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#0B0909] text-[#F2B941] shadow-md">
-              <Lock className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F2B941]">
-                  Restricted Quality Zone
-                </span>
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-600">
-                  Zero-Fabrication Mode
-                </span>
+      <DialogContent className="w-[calc(100%-2rem)] max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 rounded-3xl border border-slate-200/90 bg-white shadow-2xl overflow-hidden focus:outline-none">
+        {/* Pinned Modal Header */}
+        <div className="shrink-0 border-b border-slate-100 bg-white px-6 pt-6 pb-4 sm:px-8 sm:pt-7 sm:pb-5">
+          <DialogHeader className="text-left space-y-2 pr-8 sm:pr-10">
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#0B0909] text-[#F2B941] shadow-md">
+                <Lock className="h-5 w-5" />
               </div>
-              <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                Operator ID Authentication
-              </DialogTitle>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F2B941]">
+                    Restricted Quality Zone
+                  </span>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-600">
+                    Zero-Fabrication Mode
+                  </span>
+                </div>
+                <DialogTitle className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+                  Operator ID Authentication
+                </DialogTitle>
+              </div>
             </div>
-          </div>
-          <DialogDescription className="text-xs leading-relaxed text-slate-500 pt-1">
-            Authenticate your quality engineering session to unlock the YOLO26n computer vision pipeline,
-            execute live solar cell defect inspections, and persist results to the factory audit database.
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Staging Access Control: Operator Passcode */}
-        <div className="mt-3 rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <Label htmlFor="operator-passcode" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <KeyRound className="h-3.5 w-3.5 text-[#F2B941]" />
-              Operator Access Passcode
-            </Label>
-            {passcodeRequired ? (
-              <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 border border-amber-300">
-                Required in Staging
-              </span>
-            ) : (
-              <span className="text-[10px] text-slate-400 font-mono">Optional</span>
-            )}
-          </div>
-          <Input
-            id="operator-passcode"
-            type="password"
-            value={passcode}
-            onChange={e => setPasscode(e.target.value)}
-            placeholder={passcodeRequired ? "Enter operator passcode configured in Render" : "Enter passcode if configured"}
-            className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs"
-          />
+            <DialogDescription className="text-xs leading-relaxed text-slate-500 pt-0.5">
+              Authenticate your quality engineering session to unlock the YOLO26n computer vision pipeline,
+              execute live solar cell defect inspections, and persist results to the factory audit database.
+            </DialogDescription>
+          </DialogHeader>
         </div>
 
-        {/* Tab Selection */}
-        <div className="mt-3 flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => setActiveTab("presets")}
-            className={cn(
-              "flex-1 rounded-lg py-2 transition-all",
-              activeTab === "presets"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
-            )}
-          >
-            Certified Operator Presets (1-Click)
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("custom")}
-            className={cn(
-              "flex-1 rounded-lg py-2 transition-all",
-              activeTab === "custom"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
-            )}
-          >
-            Custom Badge ID
-          </button>
-        </div>
+        {/* Scrollable Content Region */}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 py-4 sm:px-8 sm:py-5 space-y-4">
+          {/* Staging Access Control: Operator Passcode */}
+          <div className="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <Label htmlFor="operator-passcode" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <KeyRound className="h-3.5 w-3.5 text-[#F2B941]" />
+                Operator Access Passcode
+              </Label>
+              {passcodeRequired ? (
+                <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 border border-amber-300">
+                  Required in Staging
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-400 font-mono">Optional</span>
+              )}
+            </div>
+            <Input
+              id="operator-passcode"
+              type="password"
+              value={passcode}
+              onChange={e => setPasscode(e.target.value)}
+              placeholder={passcodeRequired ? "Enter operator passcode configured in Render" : "Enter passcode if configured"}
+              className="h-9 rounded-xl border-slate-300 bg-white font-mono text-xs focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+            />
+          </div>
 
-        {activeTab === "presets" ? (
-          <div className="mt-4 space-y-3">
-            {PRESET_OPERATORS.map(op => {
-              const Icon = op.icon;
-              const isPending = loginMutation.isPending;
-              return (
-                <button
-                  key={op.id}
-                  disabled={isPending}
-                  type="button"
-                  onClick={() => handleAuthenticate(op.id, op.name, op.role)}
-                  className="group flex w-full items-start gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4 text-left transition-all hover:border-[#F2B941] hover:bg-[#FFFDF5] hover:shadow-sm disabled:opacity-50"
-                >
-                  <div
+          {/* Tab Selection */}
+          <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setActiveTab("presets")}
+              className={cn(
+                "flex-1 rounded-lg py-2 transition-all",
+                activeTab === "presets"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              )}
+            >
+              Certified Operator Presets (1-Click)
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("custom")}
+              className={cn(
+                "flex-1 rounded-lg py-2 transition-all",
+                activeTab === "custom"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              )}
+            >
+              Custom Badge ID
+            </button>
+          </div>
+
+          {activeTab === "presets" ? (
+            <div className="space-y-2.5">
+              {PRESET_OPERATORS.map(op => {
+                const Icon = op.icon;
+                const isPending = loginMutation.isPending;
+                return (
+                  <button
+                    key={op.id}
+                    disabled={isPending}
+                    type="button"
+                    onClick={() => handleAuthenticate(op.id, op.name, op.role)}
+                    className="group flex w-full items-start gap-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 text-left transition-all hover:border-[#F2B941] hover:bg-[#FFFDF5] hover:shadow-sm disabled:opacity-50"
+                  >
+                    <div
+                      className={cn(
+                        "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-colors group-hover:scale-105",
+                        op.accent
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="truncate text-sm font-bold text-slate-900">{op.name}</span>
+                          <span className="shrink-0 font-mono text-[10px] text-slate-400">({op.id})</span>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200">
+                          {op.badge}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs font-medium text-slate-700 truncate">{op.roleTitle}</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-slate-500">{op.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (!customId.trim()) {
+                  toast.error("Please enter an Operator Badge ID.");
+                  return;
+                }
+                handleAuthenticate(customId.trim(), customName.trim() || customId.trim(), customRole);
+              }}
+              className="space-y-3.5"
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="operator-id" className="text-xs font-semibold text-slate-700">
+                  Operator Badge ID
+                </Label>
+                <Input
+                  id="operator-id"
+                  value={customId}
+                  onChange={e => setCustomId(e.target.value)}
+                  placeholder="e.g. OP-1042 or TECH-88"
+                  className="h-10 rounded-xl border-slate-300 font-mono text-xs focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="operator-name" className="text-xs font-semibold text-slate-700">
+                  Operator Full Name
+                </Label>
+                <Input
+                  id="operator-name"
+                  value={customName}
+                  onChange={e => setCustomName(e.target.value)}
+                  placeholder="e.g. Jordan Miller"
+                  className="h-10 rounded-xl border-slate-300 text-xs focus-visible:ring-1 focus-visible:ring-[#F2B941]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700">Quality Access Role</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCustomRole("user")}
                     className={cn(
-                      "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-colors group-hover:scale-105",
-                      op.accent
+                      "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all",
+                      customRole === "user"
+                        ? "border-[#F2B941] bg-[#FFF3C4] font-semibold text-[#0B0909]"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     )}
                   >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-900">{op.name}</span>
-                        <span className="font-mono text-[10px] text-slate-400">({op.id})</span>
-                      </div>
-                      <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200">
-                        {op.badge}
-                      </span>
+                    <UserCheck className="h-4 w-4 shrink-0 text-[#F2B941]" />
+                    <div>
+                      <p className="text-xs">Quality Operator</p>
+                      <p className="text-[10px] text-slate-500">Inspection & Analytics</p>
                     </div>
-                    <p className="mt-0.5 text-xs font-medium text-slate-700">{op.roleTitle}</p>
-                    <p className="mt-1 text-[11px] leading-relaxed text-slate-500">{op.description}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              if (!customId.trim()) {
-                toast.error("Please enter an Operator Badge ID.");
-                return;
-              }
-              handleAuthenticate(customId.trim(), customName.trim() || customId.trim(), customRole);
-            }}
-            className="mt-4 space-y-4"
-          >
-            <div className="space-y-1.5">
-              <Label htmlFor="operator-id" className="text-xs font-semibold text-slate-700">
-                Operator Badge ID
-              </Label>
-              <Input
-                id="operator-id"
-                value={customId}
-                onChange={e => setCustomId(e.target.value)}
-                placeholder="e.g. OP-1042 or TECH-88"
-                className="h-10 rounded-xl border-slate-300 font-mono text-xs"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="operator-name" className="text-xs font-semibold text-slate-700">
-                Operator Full Name
-              </Label>
-              <Input
-                id="operator-name"
-                value={customName}
-                onChange={e => setCustomName(e.target.value)}
-                placeholder="e.g. Jordan Miller"
-                className="h-10 rounded-xl border-slate-300 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Quality Access Role</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCustomRole("user")}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all",
-                    customRole === "user"
-                      ? "border-[#F2B941] bg-[#FFF3C4] font-semibold text-[#0B0909]"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                  )}
-                >
-                  <UserCheck className="h-4 w-4 shrink-0 text-[#F2B941]" />
-                  <div>
-                    <p className="text-xs">Quality Operator</p>
-                    <p className="text-[10px] text-slate-500">Inspection & Analytics</p>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCustomRole("admin")}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all",
-                    customRole === "admin"
-                      ? "border-[#F2B941] bg-[#FFF3C4] font-semibold text-[#0B0909]"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                  )}
-                >
-                  <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-700" />
-                  <div>
-                    <p className="text-xs">Plant Admin</p>
-                    <p className="text-[10px] text-slate-500">Full System Governance</p>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomRole("admin")}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all",
+                      customRole === "admin"
+                        ? "border-[#F2B941] bg-[#FFF3C4] font-semibold text-[#0B0909]"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    )}
+                  >
+                    <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-700" />
+                    <div>
+                      <p className="text-xs">Plant Admin</p>
+                      <p className="text-[10px] text-slate-500">Full System Governance</p>
+                    </div>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <Button
-              type="submit"
-              disabled={loginMutation.isPending || !customId.trim()}
-              className="mt-2 h-11 w-full gap-2 rounded-xl bg-[#0B0909] text-xs font-semibold text-white shadow-md hover:bg-slate-800 disabled:opacity-50"
-            >
-              {loginMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
-                  Signing in…
-                </>
-              ) : (
-                <>
-                  <LogIn className="h-4 w-4 text-[#F2B941]" />
-                  Sign In with Operator ID
-                </>
-              )}
-            </Button>
-          </form>
-        )}
+              <Button
+                type="submit"
+                disabled={loginMutation.isPending || !customId.trim()}
+                className="mt-2 h-11 w-full gap-2 rounded-xl bg-[#0B0909] text-xs font-semibold text-white shadow-md hover:bg-slate-800 disabled:opacity-50"
+              >
+                {loginMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-[#F2B941]" />
+                    Signing in…
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="h-4 w-4 text-[#F2B941]" />
+                    Sign In with Operator ID
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+        </div>
 
-        {/* Security & Audit Guarantee */}
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 text-left">
-          <div className="flex items-start gap-3">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+        {/* Pinned Modal Footer: Audit Compliance Guarantee */}
+        <div className="shrink-0 border-t border-slate-100 bg-slate-50/80 px-6 py-3.5 sm:px-8">
+          <div className="flex items-start gap-2.5 text-left">
+            <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500" />
             <div className="text-[11px] leading-relaxed text-slate-600">
               <span className="font-semibold text-slate-900">Audit Compliance:</span> Every YOLO26n inspection
               run is cryptographically bound to the authenticated operator's identity and timestamped in the

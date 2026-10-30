@@ -8,6 +8,7 @@ import { z } from "zod";
 import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { publicProcedure, router } from "../_core/trpc";
 import { getInspectionById } from "../db";
+import { isRootCauseEnabled } from "../sqlite";
 import { analyzeRootCause, getModel2Status } from "./service";
 import {
   persistRootCauseResponse,
@@ -126,6 +127,14 @@ export const rootCauseRouter = router({
   analyze: authenticatedProcedure
     .input(rootCauseAnalysisInputSchema)
     .mutation(async ({ input, ctx }) => {
+      if (!isRootCauseEnabled()) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Root Cause Analysis is currently disabled in system settings. Authorized administrators can enable it in Settings.",
+        });
+      }
+
       // 1. Guard against cross-user inspection access
       const requester = {
         userId: ctx.user.openId || String(ctx.user.id),
@@ -427,6 +436,14 @@ export const rootCauseRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      if (!isRootCauseEnabled()) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Root Cause Analysis is currently disabled in system settings. Authorized administrators can enable it in Settings.",
+        });
+      }
+
       const contentOrRows = input.csvContent || input.rows;
       if (!contentOrRows) {
         throw new TRPCError({
@@ -484,6 +501,14 @@ export const rootCauseRouter = router({
    * Satisfies all 5 engineering gate criteria.
    */
   seedDemoDataset: authenticatedProcedure.mutation(async () => {
+    if (!isRootCauseEnabled()) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "Root Cause Analysis is currently disabled in system settings. Authorized administrators can enable it in Settings.",
+      });
+    }
+
     try {
       return await seedModel2BenchmarkData();
     } catch (err: any) {
